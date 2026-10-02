@@ -41,34 +41,41 @@ hierarchyHub/
 
 - Node.js 22.12 or newer (`nvm use` reads `.nvmrc`)
 - pnpm 10 (`corepack enable` installs the version pinned in `package.json`)
+- [Task](https://taskfile.dev) for the short commands below (`brew install go-task` on macOS)
 
 ## Getting started
 
 ```bash
-corepack enable
-pnpm install
-cp apps/api/.env.example apps/api/.env
-pnpm dev
+task setup   # install dependencies and create .env files
+task dev     # start the frontend and backend
 ```
 
 - Web: http://localhost:5173. Until the real API is built, a mock API answers requests in development ([ADR 0008](docs/adr/0008-frontend-first-with-msw.md)).
 - API: http://localhost:3000/api/health
 
-## Scripts
+## Common commands
 
-Run from the repository root. Turborepo runs each task in every package that defines it, in dependency order, and caches results.
+Run `task` on its own to see every command. The main ones:
 
-| Command                             | What it does                                     |
-| ----------------------------------- | ------------------------------------------------ |
-| `pnpm dev`                          | Start web and API with hot reload                |
-| `pnpm build`                        | Build all packages                               |
-| `pnpm lint`                         | ESLint                                           |
-| `pnpm typecheck`                    | TypeScript, no output                            |
-| `pnpm test`                         | Unit tests (Vitest for web/shared, Jest for API) |
-| `pnpm format` / `pnpm format:check` | Prettier                                         |
-| `pnpm clean`                        | Remove build output and `node_modules`           |
+| Command                                              | What it does                                                 |
+| ---------------------------------------------------- | ------------------------------------------------------------ |
+| `task dev`                                           | Start the frontend and backend together                      |
+| `task web`                                           | Start only the frontend                                      |
+| `task api`                                           | Start only the backend                                       |
+| `task unit`                                          | Run all unit tests                                           |
+| `task unit:web`, `task unit:api`, `task unit:shared` | Run unit tests for one package                               |
+| `task watch`                                         | Re-run frontend tests on every change                        |
+| `task e2e`                                           | Run end-to-end tests                                         |
+| `task integration`                                   | Run integration tests against a real database (from Part 4)  |
+| `task test`                                          | Run every test                                               |
+| `task check`                                         | Run everything CI runs: format, lint, types, tests and build |
+| `task lint`, `task typecheck`, `task format`         | Individual quality checks                                    |
+| `task build`                                         | Build every package                                          |
+| `task clean`                                         | Remove build output, caches and `node_modules`               |
 
-Run a task for one package with a filter, e.g. `pnpm --filter @hierarchy-hub/api test:e2e`.
+### Without Task
+
+Every command is a shortcut for a pnpm script, so pnpm works too. For example `pnpm dev`, `pnpm test`, `pnpm lint`, or for one package `pnpm --filter @hierarchy-hub/api test:e2e`. The full list is in `Taskfile.yml`.
 
 ## Conventions
 
