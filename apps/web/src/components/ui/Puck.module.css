@@ -1,0 +1,40 @@
+.puck {
+  width: 58px;
+  height: 58px;
+  border: none;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: radial-gradient(
+    circle at 35% 30%,
+    var(--surface) 0%,
+    var(--surface) 45%,
+    var(--surface-2) 100%
+  );
+  box-shadow: var(--shadow-sm), var(--inset);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.puck:hover {
+  transform: translateY(-2px);
+}
+
+.puck[aria-pressed='true'] {
+  background: var(--surface-2);
+  box-shadow: var(--well);
+  transform: none;
+}
+
+.sm {
+  width: 46px;
+  height: 46px;
+}
+
+.lg {
+  width: 64px;
+  height: 64px;
+}

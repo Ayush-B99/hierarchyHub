@@ -1,0 +1,45 @@
+.glass {
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(26px) saturate(1.2);
+  backdrop-filter: blur(26px) saturate(1.2);
+  border: 1px solid var(--glass-edge);
+  border-radius: 30px;
+  box-shadow: var(--shadow-sm);
+}
+
+.solid {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow), var(--inset);
+}
+
+.spotlight {
+  position: relative;
+  overflow: hidden;
+}
+
+.spotlight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  background: radial-gradient(
+    400px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(255, 255, 255, 0.4),
+    transparent 60%
+  );
+}
+
+:global([data-theme='dark']) .spotlight::before {
+  background: radial-gradient(
+    400px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(255, 255, 255, 0.07),
+    transparent 60%
+  );
+}
+
+.spotlight:hover::before {
+  opacity: 1;
+}
