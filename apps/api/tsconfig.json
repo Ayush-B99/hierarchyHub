@@ -3,7 +3,8 @@
   "compilerOptions": {
     "outDir": "./dist",
     "baseUrl": "./",
-    "types": ["node", "jest"]
+    "types": ["node", "jest"],
+    "tsBuildInfoFile": "./dist/.tsbuildinfo"
   },
   "include": ["src", "test"]
 }
