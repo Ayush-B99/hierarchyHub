@@ -12,7 +12,6 @@
 
 ## Checklist
 
-- [ ] PR title follows Conventional Commits (e.g. `feat(api): add employee endpoints`)
 - [ ] `pnpm lint && pnpm typecheck && pnpm test && pnpm build` pass locally
 - [ ] Tests added or updated
 - [ ] Docs updated if behaviour changed
