@@ -2,7 +2,7 @@
 
 Employee hierarchy management platform for EPI-USE Africa: manage employees, set reporting lines, explore the org chart and report on staff, with Gravatar profile pictures.
 
-[![CI](https://github.com/YOUR_GITHUB_USERNAME/hierarchyHub/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_GITHUB_USERNAME/hierarchyHub/actions/workflows/ci.yml)
+[![CI](https://github.com/Ayush-B99/hierarchyHub/actions/workflows/ci.yml/badge.svg)](https://github.com/Ayush-B99/hierarchyHub/actions/workflows/ci.yml)
 
 ## Repository structure
 
