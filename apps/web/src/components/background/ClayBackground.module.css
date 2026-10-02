@@ -1,0 +1,43 @@
+.canvas,
+.fallback {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.canvas {
+  display: block;
+}
+
+.fallback span {
+  position: absolute;
+  border-radius: 50%;
+  box-shadow: var(--shadow);
+}
+
+.one {
+  width: 44vw;
+  height: 44vw;
+  left: -10vw;
+  top: -8vw;
+  background: radial-gradient(circle at 35% 30%, var(--w1a), var(--w4b));
+}
+
+.two {
+  width: 38vw;
+  height: 38vw;
+  right: -8vw;
+  bottom: -10vw;
+  background: radial-gradient(circle at 35% 30%, var(--w2a), var(--w5b));
+}
+
+.ball {
+  width: 5vw;
+  height: 5vw;
+  left: 30vw;
+  bottom: 14vh;
+  background: radial-gradient(circle at 35% 30%, var(--pearl-a), var(--pearl-b));
+}

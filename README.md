@@ -15,6 +15,7 @@ All project documents are in [docs/](docs/README.md):
 - [API contract](docs/api/API.md)
 - [User guide](docs/user-guide/USER_GUIDE.md)
 - [Roadmap](docs/planning/ROADMAP.md)
+- [Design](docs/design/README.md)
 
 ## Repository structure
 
@@ -50,7 +51,7 @@ cp apps/api/.env.example apps/api/.env
 pnpm dev
 ```
 
-- Web: http://localhost:5173 (shows "API online" when the API is up)
+- Web: http://localhost:5173. Until the real API is built, a mock API answers requests in development ([ADR 0008](docs/adr/0008-frontend-first-with-msw.md)).
 - API: http://localhost:3000/api/health
 
 ## Scripts
