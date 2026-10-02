@@ -1,64 +1,21 @@
-.hero {
-  position: relative;
+.layout {
   display: flex;
-  align-items: flex-end;
-  min-height: 260px;
-  margin-bottom: 28px;
-  padding: 26px;
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  background: linear-gradient(160deg, var(--hero-a) 0%, var(--hero-b) 100%);
-  box-shadow: var(--shadow), var(--inset);
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-start;
 }
 
-.waves {
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 70%;
-}
-
-.title {
-  position: relative;
-  padding: 24px 28px;
-  max-width: 560px;
-}
-
-.title h1 {
-  margin: 0;
-  font-size: clamp(32px, 4.4vw, 62px);
-  line-height: 1;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-}
-
-.title p {
-  margin: 10px 0 0;
-  font-size: 17px;
+.notice {
+  margin-bottom: 20px;
+  padding: 14px 20px;
   font-weight: 600;
-  color: var(--muted);
 }
 
-.section {
-  padding: 24px;
+.empty {
+  padding: 40px;
+  text-align: center;
 }
 
-.section h2 {
-  margin: 0 0 18px;
-  font-size: 15px;
-  font-weight: 800;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  gap: 16px;
-}
-
-@media (max-width: 760px) {
-  .waves {
-    width: 100%;
-    opacity: 0.5;
-  }
+.empty p {
+  margin: 0;
 }
