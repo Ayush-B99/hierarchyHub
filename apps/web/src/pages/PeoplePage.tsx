@@ -1,61 +1,147 @@
+import type { Employee, EmployeeSortField } from '@hierarchy-hub/shared';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ErrorState } from '../components/feedback/ErrorState';
 import { LoadingState } from '../components/feedback/LoadingState';
-import { Avatar } from '../components/ui/Avatar';
+import { Button } from '../components/ui/Button';
 import { Panel } from '../components/ui/Panel';
-import { useEmployees } from '../features/employees/queries';
-import { formatSalary, fullName, plural } from '../lib/format';
+import { useEmployees, useHierarchy } from '../features/employees/queries';
+import { buildOrgIndex } from '../features/explore/orgIndex';
+import { downloadCsv, toCsv } from '../features/people/csv';
+import { PAGE_SIZE, toApiQuery } from '../features/people/filters';
+import { Pagination } from '../features/people/Pagination';
+import { PeopleTable } from '../features/people/PeopleTable';
+import { SentenceFilters } from '../features/people/SentenceFilters';
+import { usePeopleParams } from '../features/people/usePeopleParams';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { api } from '../lib/api';
 import styles from './PeoplePage.module.css';
 
-/**
- * Starting point for the People page. A plain table for now; the sentence
- * filters and sortable columns arrive in part 3c.
- */
+/** the reporting table: filter with the sentence, sort by any column, page through, export */
 export function PeoplePage() {
-  const { data, isPending, error, refetch } = useEmployees({ pageSize: 100, sortBy: 'lastName' });
+  useDocumentTitle('People · Hierarchy Hub');
+  const { filters, update, reset } = usePeopleParams();
+  const apiQuery = useMemo(() => toApiQuery(filters), [filters]);
+
+  // the full list feeds the dropdowns and the "reports to" / "team below" columns
+  const hierarchy = useHierarchy();
+  const org = useMemo(
+    () => (hierarchy.data ? buildOrgIndex(hierarchy.data) : null),
+    [hierarchy.data],
+  );
+  const roles = useMemo(
+    () => [...new Set(hierarchy.data?.map((e) => e.role) ?? [])].sort((a, b) => a.localeCompare(b)),
+    [hierarchy.data],
+  );
+  const managers = useMemo(() => {
+    if (!org || !hierarchy.data) return [];
+    return hierarchy.data
+      .filter((e) => org.reportsOf(e.id).length > 0)
+      .sort((a, b) => a.firstName.localeCompare(b.firstName));
+  }, [hierarchy.data, org]);
+
+  const list = useEmployees({ ...apiQuery, page: filters.page, pageSize: PAGE_SIZE });
+
+  // if a filter leaves you on a page that no longer exists, hop back to the last real page
+  const total = list.data?.total;
+  useEffect(() => {
+    if (total === undefined) return;
+    const lastPage = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    if (filters.page > lastPage) update({ page: lastPage }, { replace: true });
+  }, [total, filters.page, update]);
+
+  const onSort = useCallback(
+    (field: EmployeeSortField) =>
+      update({
+        sort: field,
+        dir: field === filters.sort && filters.dir === 'asc' ? 'desc' : 'asc',
+      }),
+    [filters.sort, filters.dir, update],
+  );
+
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const onExport = useCallback(async () => {
+    if (!org) return;
+    setExporting(true);
+    setExportError(null);
+    try {
+      // grab every matching person, not just this page
+      const everyone: Employee[] = [];
+      for (let page = 1; ; page += 1) {
+        const batch = await api.listEmployees({ ...apiQuery, page, pageSize: 500 });
+        everyone.push(...batch.items);
+        if (everyone.length >= batch.total || batch.items.length === 0) break;
+      }
+      const today = new Date().toISOString().slice(0, 10);
+      downloadCsv(`hierarchy-hub-people-${today}.csv`, toCsv(everyone, org.byId));
+    } catch {
+      setExportError("The export didn't work. Please try again.");
+    } finally {
+      setExporting(false);
+    }
+  }, [apiQuery, org]);
+
+  if (hierarchy.isPending) return <LoadingState label="Loading people" />;
+  if (hierarchy.error || !org) {
+    return (
+      <ErrorState
+        title="We couldn't load people"
+        error={hierarchy.error}
+        onRetry={hierarchy.refetch}
+      />
+    );
+  }
 
   return (
     <>
-      <div className={styles.header}>
-        <h1>People</h1>
-        {data && <span className="muted">{plural(data.total, 'person', 'people')}</span>}
-      </div>
-      <Panel variant="solid" className={styles.tableBox}>
-        {isPending && <LoadingState label="Loading people" />}
-        {error && <ErrorState title="We couldn't load people" error={error} onRetry={refetch} />}
-        {data && (
-          <table className={styles.table}>
-            <caption className="sr-only">All employees</caption>
-            <thead>
-              <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Employee no.</th>
-                <th scope="col">Role</th>
-                <th scope="col" className={styles.right}>
-                  Salary
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.items.map((e) => (
-                <tr key={e.id}>
-                  <td>
-                    <span className={styles.who}>
-                      <Avatar
-                        email={e.email}
-                        firstName={e.firstName}
-                        lastName={e.lastName}
-                        size={36}
-                      />
-                      {fullName(e)}
-                    </span>
-                  </td>
-                  <td className="muted">{e.employeeNumber}</td>
-                  <td>{e.role}</td>
-                  <td className={`${styles.right} num`}>{formatSalary(e.salary)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <h1 className="sr-only">People</h1>
+      <SentenceFilters
+        filters={filters}
+        roles={roles}
+        managers={managers}
+        onChange={update}
+        onReset={reset}
+        onExport={onExport}
+        exporting={exporting}
+      />
+
+      {exportError && (
+        <Panel className={styles.exportError} role="alert">
+          {exportError}
+        </Panel>
+      )}
+
+      <Panel variant="solid" aria-label="Employees">
+        {list.error ? (
+          <ErrorState
+            title="We couldn't load this list"
+            error={list.error}
+            onRetry={list.refetch}
+          />
+        ) : !list.data ? (
+          <LoadingState label="Loading people" />
+        ) : list.data.total === 0 ? (
+          <div className={styles.empty}>
+            <p>Nobody matches that. Try changing one of the highlighted words.</p>
+            <Button onClick={reset}>Clear filters</Button>
+          </div>
+        ) : (
+          <>
+            <PeopleTable
+              rows={list.data.items}
+              org={org}
+              sort={filters.sort}
+              dir={filters.dir}
+              onSort={onSort}
+              busy={list.isPlaceholderData}
+            />
+            <Pagination
+              page={filters.page}
+              pageSize={PAGE_SIZE}
+              total={list.data.total}
+              onPage={(page) => update({ page })}
+            />
+          </>
         )}
       </Panel>
     </>
