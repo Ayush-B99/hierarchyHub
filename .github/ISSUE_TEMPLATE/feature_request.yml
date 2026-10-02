@@ -1,0 +1,23 @@
+name: Feature
+description: A new capability or improvement
+labels: [enhancement]
+body:
+  - type: input
+    id: requirement
+    attributes:
+      label: Requirement ID
+      description: From docs/srs/SRS.md, if applicable (e.g. FR-07)
+  - type: textarea
+    id: story
+    attributes:
+      label: User story
+      placeholder: As a … I want … so that …
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      placeholder: '- [ ] …'
+    validations:
+      required: true

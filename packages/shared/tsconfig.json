@@ -1,0 +1,5 @@
+{
+  "extends": "@hierarchy-hub/tsconfig/library.json",
+  "compilerOptions": { "types": [] },
+  "include": ["src", "tsup.config.ts", "vitest.config.ts"]
+}

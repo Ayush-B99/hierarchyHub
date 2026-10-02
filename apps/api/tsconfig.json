@@ -1,0 +1,9 @@
+{
+  "extends": "@hierarchy-hub/tsconfig/nestjs.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "types": ["node", "jest"]
+  },
+  "include": ["src", "test"]
+}
