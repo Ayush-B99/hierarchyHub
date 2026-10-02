@@ -70,9 +70,41 @@ The selected person and view are saved in the address bar, so:
 - the browser's back button takes you to the person you were looking at before
 - you can copy the address and send it to someone to show them a specific person
 
-## 7. Using the employee table
+## 7. Using the People page
 
-_To do: sorting, filtering, and sharing a view with the URL._
+The People page lists everyone in a table, 10 people at a time.
+
+### Filtering with the sentence
+
+At the top is a sentence: _Show people in **any role**, earning **any salary**, born **in any year** and reporting to **anyone**._
+
+Each word in a pill is a dropdown. Click one and pick an option to filter the table, for example "Software Engineer" or "over R 50 000". Pills that are filtering the table turn solid so you can see what's applied. **Clear filters** puts everything back.
+
+### Searching
+
+Type in the search box to find people by name, surname, email or employee number. The table updates as you type.
+
+### Sorting
+
+Click any column heading to sort by it. Click it again to reverse the order. The arrow next to the heading shows which column is sorted and in which direction. **Reports to** sorts by the manager's surname, with people who have no manager first.
+
+### Pages
+
+Below the table you'll see how many people match, for example "Showing 1 to 10 of 14 people". Use **Previous** and **Next** to move between pages.
+
+### Opening someone
+
+Click a person's name, or anywhere on their row, to open them on the Explore page.
+
+### Exporting
+
+**Export CSV** downloads everyone who matches the current filters, not just the page you can see. The file opens in Excel, Google Sheets or Numbers.
+
+### Sharing a view
+
+Your filters, sort and page are saved in the address bar. Copy the address to bookmark a view or send it to someone.
+
+_(Screenshot to add: People page with filters)_
 
 ## 8. Profile pictures
 
