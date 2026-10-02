@@ -78,9 +78,15 @@ export const handlers = [
     });
 
     const direction = q.sortOrder === 'asc' ? 1 : -1;
+    // the manager's name isn't on the row itself, so look it up (empty sorts first)
+    const managerName = (e: Employee) => {
+      const manager = e.managerId ? db.find(e.managerId) : undefined;
+      return manager ? `${manager.lastName} ${manager.firstName}` : '';
+    };
+    const valueOf = (e: Employee) => (q.sortBy === 'managerName' ? managerName(e) : e[q.sortBy]);
     items = [...items].sort((a, b) => {
-      const x = a[q.sortBy];
-      const y = b[q.sortBy];
+      const x = valueOf(a);
+      const y = valueOf(b);
       const result =
         typeof x === 'number' && typeof y === 'number'
           ? x - y
