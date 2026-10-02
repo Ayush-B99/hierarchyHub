@@ -1,0 +1,106 @@
+/*
+ * Design tokens. Light mode is layered whites, dark mode is graphite and black.
+ * Components only use these variables, never raw colours, so both themes stay in sync.
+ */
+:root {
+  --bg-a: #f5f5f3;
+  --bg-b: #e4e5e3;
+  --ink: #1c1c1e;
+  --muted: #5e5f63;
+  --surface: #ffffff;
+  --surface-2: #f2f2f0;
+  --surface-3: #e7e7e5;
+  --glass: rgba(255, 255, 255, 0.55);
+  --glass-edge: rgba(255, 255, 255, 0.95);
+  --fill: #1c1c1e;
+  --on-fill: #ffffff;
+  --ring: #1c1c1e;
+  --line: rgba(28, 28, 30, 0.09);
+  --rail: #d4d5d3;
+  --danger: #a8322a;
+  --hero-a: #ffffff;
+  --hero-b: #efefed;
+
+  /* Avatar tones */
+  --t1: #f3f3f1;
+  --t2: #e5e6e4;
+  --t3: #d9dad8;
+  --t4: #ededeb;
+  --t5: #dfe0de;
+
+  /* Sculpted wave bands, back to front */
+  --w1a: #ffffff;
+  --w1b: #ededeb;
+  --w2a: #f8f8f6;
+  --w2b: #e0e1df;
+  --w3a: #efefed;
+  --w3b: #d4d5d3;
+  --w4a: #e5e6e4;
+  --w4b: #c7c8c6;
+  --w5a: #d9dad8;
+  --w5b: #b8b9b7;
+
+  /* The small glossy ball accent */
+  --pearl-a: #5a5a5e;
+  --pearl-b: #0e0e10;
+
+  --shadow: 0 30px 60px -30px rgba(40, 40, 44, 0.42), 0 6px 16px -6px rgba(40, 40, 44, 0.1);
+  --shadow-sm: 0 14px 26px -14px rgba(40, 40, 44, 0.45), 0 2px 6px rgba(40, 40, 44, 0.06);
+  --inset: inset 0 2px 0 rgba(255, 255, 255, 1), inset 0 -3px 8px rgba(40, 40, 44, 0.05);
+  --well: inset 0 3px 8px rgba(40, 40, 44, 0.12), inset 0 -2px 0 rgba(255, 255, 255, 0.9);
+
+  --radius-sm: 18px;
+  --radius-md: 28px;
+  --radius-lg: 32px;
+  --radius-xl: 38px;
+  --font: 'Manrope Variable', 'Helvetica Neue', Arial, sans-serif;
+
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --bg-a: #121214;
+  --bg-b: #1b1c1f;
+  --ink: #f2f2f0;
+  --muted: #a6a7ab;
+  --surface: #1f2023;
+  --surface-2: #26272b;
+  --surface-3: #2f3034;
+  --glass: rgba(34, 35, 38, 0.55);
+  --glass-edge: rgba(255, 255, 255, 0.1);
+  --fill: #f2f2f0;
+  --on-fill: #111113;
+  --ring: #f2f2f0;
+  --line: rgba(255, 255, 255, 0.08);
+  --rail: #3a3b3f;
+  --danger: #f0948a;
+  --hero-a: #25262a;
+  --hero-b: #18191b;
+
+  --t1: #3a3b3f;
+  --t2: #2f3034;
+  --t3: #46474b;
+  --t4: #35363a;
+  --t5: #404145;
+
+  --w1a: #3c3d41;
+  --w1b: #27282b;
+  --w2a: #333438;
+  --w2b: #202124;
+  --w3a: #2b2c30;
+  --w3b: #19191c;
+  --w4a: #232427;
+  --w4b: #131315;
+  --w5a: #1b1c1f;
+  --w5b: #0a0a0b;
+
+  --pearl-a: #ffffff;
+  --pearl-b: #8e8f93;
+
+  --shadow: 0 30px 60px -28px rgba(0, 0, 0, 0.85), 0 6px 16px -6px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 14px 26px -14px rgba(0, 0, 0, 0.85), 0 2px 6px rgba(0, 0, 0, 0.3);
+  --inset: inset 0 1px 0 rgba(255, 255, 255, 0.07), inset 0 -3px 8px rgba(0, 0, 0, 0.25);
+  --well: inset 0 3px 10px rgba(0, 0, 0, 0.55), inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+
+  color-scheme: dark;
+}
