@@ -1,0 +1,42 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 18px 10px 16px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+  box-shadow: var(--shadow-sm), var(--inset);
+  text-align: center;
+  animation: pop-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
+}
+
+.name {
+  margin: 8px 0 0;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.role {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.tag {
+  margin-top: 8px;
+  padding: 3px 11px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+  box-shadow: var(--well);
+}
+
+.tagOn {
+  background: var(--fill);
+  color: var(--on-fill);
+  box-shadow: none;
+}
