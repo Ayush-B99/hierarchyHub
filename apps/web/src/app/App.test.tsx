@@ -1,16 +1,13 @@
-import { screen, within } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { renderApp } from '../test/renderApp';
 
 describe('App', () => {
-  it('shows the top of the organisation and their direct reports on Explore', async () => {
+  it('opens on Explore with the top of the organisation', async () => {
     renderApp('/');
-    expect(
-      await screen.findByRole('heading', { level: 1, name: 'Thandi Nkosi' }),
-    ).toBeInTheDocument();
-    const reports = screen.getByRole('region', { name: 'Reports to Thandi' });
-    expect(within(reports).getAllByRole('article')).toHaveLength(3);
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent('Thandi Nkosi');
+    expect(screen.getByRole('link', { name: 'Explore' })).toHaveAttribute('aria-current', 'page');
   });
 
   it('moves to the People page from the navigation', async () => {

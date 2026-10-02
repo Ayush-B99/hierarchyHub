@@ -1,0 +1,21 @@
+.word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.45em);
+  animation: rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes rise {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .word {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}

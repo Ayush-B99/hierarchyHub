@@ -2,64 +2,71 @@ import { useMemo } from 'react';
 import { ErrorState } from '../components/feedback/ErrorState';
 import { LoadingState } from '../components/feedback/LoadingState';
 import { Panel } from '../components/ui/Panel';
-import { Waves } from '../components/ui/Waves';
-import { PersonCard } from '../features/employees/PersonCard';
 import { useHierarchy } from '../features/employees/queries';
+import { DetailsPanel } from '../features/explore/DetailsPanel';
+import { Hero } from '../features/explore/Hero';
+import { LevelsView } from '../features/explore/LevelsView';
+import { OrbitView } from '../features/explore/OrbitView';
+import { buildOrgIndex } from '../features/explore/orgIndex';
+import { PathRail } from '../features/explore/PathRail';
+import { useExploreParams } from '../features/explore/useExploreParams';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { fullName } from '../lib/format';
 import styles from './ExplorePage.module.css';
 
-/**
- * Starting point for the Explore page. Shows the top of the organisation and
- * their direct reports. The Orbit and Levels views replace the grid in part 3b.
- */
+/** explore the org one person at a time, in orbit or levels view */
 export function ExplorePage() {
   const { data, isPending, error, refetch } = useHierarchy();
+  const { personId, view, selectPerson, setView } = useExploreParams();
 
-  const view = useMemo(() => {
-    if (!data) return null;
-    const top = data.find((e) => e.managerId === null) ?? data[0];
-    if (!top) return null;
-    const teamSize = (id: string) => data.filter((e) => e.managerId === id).length;
-    const reports = data.filter((e) => e.managerId === top.id);
-    return { top, reports, teamSize };
-  }, [data]);
+  const org = useMemo(() => (data ? buildOrgIndex(data) : null), [data]);
+
+  // whoever is in the url, or the top of the org if nobody is picked yet
+  const fromUrl = personId ? org?.byId.get(personId) : undefined;
+  const person = fromUrl ?? org?.roots[0];
+  const missing = Boolean(personId && org && !fromUrl);
+
+  useDocumentTitle(person ? `${fullName(person)} · Hierarchy Hub` : 'Explore · Hierarchy Hub');
 
   if (isPending) return <LoadingState label="Loading the organisation" />;
   if (error)
     return <ErrorState title="We couldn't load the organisation" error={error} onRetry={refetch} />;
-  if (!view) {
+  if (!org || !person) {
     return (
-      <Panel>
-        <p style={{ padding: 32, margin: 0 }}>
-          No employees yet. Add the first person to get started.
-        </p>
+      <Panel className={styles.empty}>
+        <h1 className="sr-only">Explore</h1>
+        <p>No employees yet. Add the first person to get started.</p>
       </Panel>
     );
   }
 
   return (
     <>
-      <section className={styles.hero} aria-labelledby="hero-name">
-        <Waves className={styles.waves} ball />
-        <Panel as="div" className={styles.title}>
-          <h1 id="hero-name">{fullName(view.top)}</h1>
-          <p>{view.top.role}</p>
+      {missing && (
+        <Panel className={styles.notice} role="status">
+          We couldn't find that person. They may have been deleted, so here's the top of the
+          organisation instead.
         </Panel>
-      </section>
+      )}
 
-      <Panel spotlight className={styles.section} aria-labelledby="reports-heading">
-        <h2 id="reports-heading">Reports to {view.top.firstName}</h2>
-        <div className={styles.grid}>
-          {view.reports.map((employee, index) => (
-            <PersonCard
-              key={employee.id}
-              employee={employee}
-              teamSize={view.teamSize(employee.id)}
-              index={index}
+      <Hero person={person} view={view} onViewChange={setView} />
+
+      <div className={styles.layout}>
+        {view === 'orbit' ? (
+          <>
+            <PathRail chain={org.chainOf(person.id)} onSelect={selectPerson} />
+            <OrbitView
+              person={person}
+              org={org}
+              onSelect={selectPerson}
+              onShowAll={() => setView('levels')}
             />
-          ))}
-        </div>
-      </Panel>
+          </>
+        ) : (
+          <LevelsView person={person} org={org} onSelect={selectPerson} />
+        )}
+        <DetailsPanel person={person} org={org} onSelect={selectPerson} />
+      </div>
     </>
   );
 }

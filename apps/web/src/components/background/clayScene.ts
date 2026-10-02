@@ -17,7 +17,8 @@ const BLOBS = [
   { position: [-5.2, 1.9, -1.5], scale: 2.6, amp: 0.32, freq: 0.9 },
   { position: [5.6, -1.6, -2.5], scale: 3.3, amp: 0.38, freq: 0.7 },
   { position: [1.4, 3.6, -4.0], scale: 2.0, amp: 0.3, freq: 1.0 },
-  { position: [-2.4, -3.0, -0.5], scale: 1.05, amp: 0.18, freq: 1.3 },
+  // the small glossy accent ball, kept small and further back so it stays an accent
+  { position: [-5.6, -3.1, -1.2], scale: 0.5, amp: 0.025, freq: 1.3 },
   { position: [6.4, 3.2, -3.0], scale: 1.6, amp: 0.26, freq: 1.1 },
   { position: [-7.0, -2.2, -3.5], scale: 2.2, amp: 0.3, freq: 0.8 },
 ] as const;

@@ -15,6 +15,14 @@ Installed automatically by `pnpm install`:
 
 - **pre-commit:** formats staged files with Prettier, so formatting never fails CI.
 
+## Code comments
+
+Keep comments short and casual, like you're explaining the code to a teammate. Lowercase is fine and full stops aren't needed. Explain why something is done, not what the code already says.
+
+```ts
+// the url holds the selected person so the back button just works
+```
+
 ## Adding dependencies
 
 ```bash

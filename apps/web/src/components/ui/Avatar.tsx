@@ -21,6 +21,9 @@ function toneFor(text: string): string {
 /**
  * Shows the employee's Gravatar picture (FR-15). While it loads, or when they have
  * no Gravatar, it shows a soft disc with their initials instead.
+ *
+ * it's purely decorative since the name is always shown next to it,
+ * so screen readers skip it instead of hearing the name twice
  */
 export function Avatar({ email, firstName, lastName, size = 40 }: AvatarProps) {
   const [src, setSrc] = useState<string | null>(null);
@@ -42,6 +45,7 @@ export function Avatar({ email, firstName, lastName, size = 40 }: AvatarProps) {
 
   return (
     <span
+      aria-hidden="true"
       className={styles.avatar}
       style={{
         width: size,
@@ -50,7 +54,7 @@ export function Avatar({ email, firstName, lastName, size = 40 }: AvatarProps) {
         background: toneFor(email),
       }}
     >
-      <span aria-hidden="true">{initials}</span>
+      <span>{initials}</span>
       {src && !failed && (
         <img
           className={styles.image}
@@ -62,7 +66,6 @@ export function Avatar({ email, firstName, lastName, size = 40 }: AvatarProps) {
           onError={() => setFailed(true)}
         />
       )}
-      <span className="sr-only">{`${firstName} ${lastName}`}</span>
     </span>
   );
 }

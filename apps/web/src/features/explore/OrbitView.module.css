@@ -1,0 +1,131 @@
+.box {
+  flex: 999 1 560px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.fit {
+  position: relative;
+  margin: 0 auto;
+}
+
+.stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 780px;
+  height: 680px;
+  transform-origin: 0 0;
+}
+
+.link {
+  position: absolute;
+  height: 6px;
+  border-radius: 6px;
+  background: var(--surface);
+  transform-origin: 0 50%;
+  box-shadow:
+    0 4px 10px -2px rgba(0, 0, 0, 0.18),
+    var(--inset);
+  animation: fade 0.5s ease both;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.focus {
+  position: absolute;
+  left: 260px;
+  top: 180px;
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 24px 12px 20px;
+  text-align: center;
+  border-radius: 40px;
+  background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+  box-shadow: var(--shadow), var(--inset);
+  animation: pop-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
+}
+
+.focus:focus {
+  outline: none;
+}
+
+.focus:focus-visible {
+  outline: 3px solid var(--fill);
+  outline-offset: 4px;
+}
+
+.ring {
+  margin: 12px 0 12px;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 8px var(--surface),
+    0 0 0 14px var(--ring),
+    0 18px 34px -8px rgba(0, 0, 0, 0.4);
+}
+
+.focusName {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.empty {
+  position: absolute;
+  left: 190px;
+  top: 470px;
+  width: 400px;
+  margin: 0;
+  text-align: center;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* stacked layout for narrow screens */
+.stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0 16px;
+}
+
+.focusStacked {
+  position: relative;
+  left: auto;
+  top: auto;
+  width: min(280px, 100%);
+}
+
+.stem {
+  width: 6px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--surface);
+  box-shadow: var(--inset);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+.grid > button {
+  width: 100%;
+}
+
+.emptyStacked {
+  margin: 16px 0 0;
+  text-align: center;
+  font-weight: 600;
+  color: var(--muted);
+}
