@@ -6,8 +6,8 @@ The project is built in parts. Each part is one branch and one pull request, mad
 | ---- | ------------------------------------------------------------------------------------------- | ---------------------------- | ----------- |
 | 1    | Monorepo, tooling, git hooks and CI                                                         | `chore/monorepo-setup`       | Done        |
 | 2    | Initial documentation                                                                       | `docs/initial-documentation` | Done        |
-| 3a   | Frontend foundation: design tokens, themes, UI components, 3D background, routing, mock API | `feat/web-foundation`        | In progress |
-| 3b   | Explore page: Orbit and Levels views, path to the top, details panel                        | `feat/web-explore`           | Not started |
+| 3a   | Frontend foundation: design tokens, themes, UI components, 3D background, routing, mock API | `feat/web-foundation`        | Done        |
+| 3b   | Explore page: Orbit and Levels views, path to the top, details panel                        | `feat/web-explore`           | In progress |
 | 3c   | People page: sentence filters and sortable table                                            | `feat/web-people`            | Not started |
 | 3d   | Add and edit forms, manager rules, delete confirmation                                      | `feat/web-forms`             | Not started |
 | 3e   | Search, React Bits effects and polish                                                       | `feat/web-polish`            | Not started |
