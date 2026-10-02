@@ -1,0 +1,43 @@
+:root {
+  --paper: #f6f7f9;
+  --ink: #1e2a3b;
+  --ink-soft: #586579;
+  --branch: #2e6f57;
+  --signal: #b42318;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+  line-height: 1.5;
+}
+
+body {
+  margin: 0;
+}
+
+.shell {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+.status::before {
+  content: '';
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 0.5rem;
+  border-radius: 50%;
+  background: var(--ink-soft);
+}
+
+.status-online::before {
+  background: var(--branch);
+}
+
+.status-offline::before {
+  background: var(--signal);
+}
