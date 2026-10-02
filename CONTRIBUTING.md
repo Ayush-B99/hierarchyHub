@@ -26,6 +26,6 @@ Tools used by several packages (TypeScript, ESLint, Vitest, Zod) are pinned once
 
 ## Definition of done
 
-- `pnpm lint && pnpm typecheck && pnpm test && pnpm build` pass
+- `task check` passes (it runs the same checks as CI)
 - New behaviour has tests
 - Docs updated where behaviour changed
