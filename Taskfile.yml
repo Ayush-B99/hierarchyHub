@@ -1,0 +1,145 @@
+# Short commands for everyday work. Run `task` to see them all.
+# Install Task once: `brew install go-task` (macOS). Other options: https://taskfile.dev/installation
+version: '3'
+
+vars:
+  WEB: '@hierarchy-hub/web'
+  API: '@hierarchy-hub/api'
+  SHARED: '@hierarchy-hub/shared'
+
+tasks:
+  default:
+    desc: List all tasks
+    silent: true
+    cmds:
+      - task --list
+
+  # ---------- Setup ----------
+
+  setup:
+    desc: Install dependencies and create local .env files
+    cmds:
+      - corepack enable
+      - pnpm install
+      - task: env
+
+  env:
+    desc: Create local .env files from the examples (keeps existing ones)
+    cmds:
+      - cp -n apps/api/.env.example apps/api/.env || true
+      - cp -n apps/web/.env.example apps/web/.env || true
+
+  # ---------- Run ----------
+
+  dev:
+    desc: Start the frontend and backend together
+    aliases: [start, both]
+    cmds:
+      - pnpm dev
+
+  web:
+    desc: Start only the frontend (http://localhost:5173)
+    aliases: [frontend, dev:web]
+    cmds:
+      - pnpm --filter {{.WEB}} dev
+
+  api:
+    desc: Start only the backend (http://localhost:3000/api)
+    aliases: [backend, dev:api]
+    cmds:
+      - pnpm --filter {{.API}} dev
+
+  preview:
+    desc: Build the frontend and serve the production version
+    cmds:
+      - pnpm turbo run build --filter={{.WEB}}
+      - pnpm --filter {{.WEB}} preview
+
+  # ---------- Tests ----------
+
+  test:
+    desc: Run every test (unit, then end-to-end)
+    cmds:
+      - task: unit
+      - task: e2e
+
+  unit:
+    desc: Run all unit tests
+    aliases: [test:unit]
+    cmds:
+      - pnpm test
+
+  unit:web:
+    desc: Run frontend tests only
+    cmds:
+      - pnpm turbo run test --filter={{.WEB}}
+
+  unit:api:
+    desc: Run backend unit tests only
+    cmds:
+      - pnpm turbo run test --filter={{.API}}
+
+  unit:shared:
+    desc: Run shared package tests only
+    cmds:
+      - pnpm --filter {{.SHARED}} test
+
+  watch:
+    desc: Re-run frontend tests on every change
+    cmds:
+      - pnpm turbo run build --filter={{.SHARED}}
+      - pnpm --filter {{.WEB}} test:watch
+
+  e2e:
+    desc: Run end-to-end tests (boots the API and calls it over HTTP)
+    aliases: [test:e2e]
+    cmds:
+      - pnpm turbo run build --filter={{.SHARED}}
+      - pnpm --filter {{.API}} test:e2e
+
+  integration:
+    desc: Run integration tests against a real database (added in Part 4)
+    aliases: [test:integration]
+    silent: true
+    cmds:
+      - echo "No integration tests yet. They arrive with the database in Part 4."
+
+  # ---------- Quality ----------
+
+  lint:
+    desc: Check code with ESLint
+    cmds:
+      - pnpm lint
+
+  typecheck:
+    desc: Check TypeScript types
+    aliases: [types]
+    cmds:
+      - pnpm typecheck
+
+  format:
+    desc: Format every file with Prettier
+    cmds:
+      - pnpm format
+
+  check:
+    desc: Run everything CI runs (format, lint, types, tests, build)
+    aliases: [ci]
+    cmds:
+      - pnpm format:check
+      - pnpm lint
+      - pnpm typecheck
+      - task: test
+      - pnpm build
+
+  # ---------- Build and clean ----------
+
+  build:
+    desc: Build every package
+    cmds:
+      - pnpm build
+
+  clean:
+    desc: Remove build output, caches and node_modules
+    cmds:
+      - pnpm clean
