@@ -1,0 +1,892 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hierarchy Hub: concept v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+  :root {
+    --bg-a: #F5F5F3;
+    --bg-b: #E4E5E3;
+    --ink: #1C1C1E;
+    --muted: #5E5F63;
+    --surface: #FFFFFF;
+    --surface-2: #F2F2F0;
+    --surface-3: #E7E7E5;
+    --glass: rgba(255, 255, 255, 0.55);
+    --glass-edge: rgba(255, 255, 255, 0.95);
+    --fill: #1C1C1E;
+    --on-fill: #FFFFFF;
+    --ring: #1C1C1E;
+    --line: rgba(28, 28, 30, 0.09);
+    --rail: #D4D5D3;
+    --danger: #A8322A;
+    --hero-a: #FFFFFF; --hero-b: #EFEFED;
+    --t1: #F3F3F1; --t2: #E5E6E4; --t3: #D9DAD8; --t4: #EDEDEB; --t5: #DFE0DE;
+    --w1a: #FFFFFF; --w1b: #EDEDEB;
+    --w2a: #F8F8F6; --w2b: #E0E1DF;
+    --w3a: #EFEFED; --w3b: #D4D5D3;
+    --w4a: #E5E6E4; --w4b: #C7C8C6;
+    --w5a: #D9DAD8; --w5b: #B8B9B7;
+    --pearl-a: #5A5A5E; --pearl-b: #0E0E10;
+    --shadow: 0 30px 60px -30px rgba(40, 40, 44, 0.42), 0 6px 16px -6px rgba(40, 40, 44, 0.10);
+    --shadow-sm: 0 14px 26px -14px rgba(40, 40, 44, 0.45), 0 2px 6px rgba(40, 40, 44, 0.06);
+    --inset: inset 0 2px 0 rgba(255, 255, 255, 1), inset 0 -3px 8px rgba(40, 40, 44, 0.05);
+    --well: inset 0 3px 8px rgba(40, 40, 44, 0.12), inset 0 -2px 0 rgba(255, 255, 255, 0.9);
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    --bg-a: #121214;
+    --bg-b: #1B1C1F;
+    --ink: #F2F2F0;
+    --muted: #A6A7AB;
+    --surface: #1F2023;
+    --surface-2: #26272B;
+    --surface-3: #2F3034;
+    --glass: rgba(34, 35, 38, 0.55);
+    --glass-edge: rgba(255, 255, 255, 0.10);
+    --fill: #F2F2F0;
+    --on-fill: #111113;
+    --ring: #F2F2F0;
+    --line: rgba(255, 255, 255, 0.08);
+    --rail: #3A3B3F;
+    --danger: #F0948A;
+    --hero-a: #25262A; --hero-b: #18191B;
+    --t1: #3A3B3F; --t2: #2F3034; --t3: #46474B; --t4: #35363A; --t5: #404145;
+    --w1a: #3C3D41; --w1b: #27282B;
+    --w2a: #333438; --w2b: #202124;
+    --w3a: #2B2C30; --w3b: #19191C;
+    --w4a: #232427; --w4b: #131315;
+    --w5a: #1B1C1F; --w5b: #0A0A0B;
+    --pearl-a: #FFFFFF; --pearl-b: #8E8F93;
+    --shadow: 0 30px 60px -28px rgba(0, 0, 0, 0.85), 0 6px 16px -6px rgba(0, 0, 0, 0.4);
+    --shadow-sm: 0 14px 26px -14px rgba(0, 0, 0, 0.85), 0 2px 6px rgba(0, 0, 0, 0.3);
+    --inset: inset 0 1px 0 rgba(255, 255, 255, 0.07), inset 0 -3px 8px rgba(0, 0, 0, 0.25);
+    --well: inset 0 3px 10px rgba(0, 0, 0, 0.55), inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    color: var(--ink); font-family: 'Manrope', 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(100deg, var(--bg-a) 0%, var(--bg-a) 44%, var(--bg-b) 56%, var(--bg-b) 100%);
+    background-attachment: fixed; transition: color .4s ease;
+  }
+  button, input, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--fill); outline-offset: 3px; }
+  .muted { color: var(--muted); }
+  .num { font-variant-numeric: tabular-nums; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  #bg { position: fixed; inset: 0; z-index: 0; width: 100%; height: 100%; display: block; }
+  .bg-fallback { position: fixed; inset: 0; z-index: 0; display: none; }
+  .bg-fallback span { position: absolute; border-radius: 50%; box-shadow: var(--shadow); }
+  .app { position: relative; z-index: 1; min-height: 100vh; }
+
+  /* Clay surfaces */
+  .brutal { background: var(--surface); border-radius: 32px; box-shadow: var(--shadow), var(--inset); }
+  .glass {
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(26px) saturate(1.2);
+    backdrop-filter: blur(26px) saturate(1.2);
+    border: 1px solid var(--glass-edge);
+    border-radius: 30px;
+    box-shadow: var(--shadow-sm);
+  }
+  .spot { position: relative; overflow: hidden; }
+  .spot::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .3s;
+    background: radial-gradient(400px circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.4), transparent 60%);
+  }
+  :root[data-theme="dark"] .spot::before { background: radial-gradient(400px circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.07), transparent 60%); }
+  .spot:hover::before { opacity: 1; }
+
+  /* Sculpted wave art */
+  .art { position: relative; overflow: hidden; pointer-events: none; }
+  .art svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+  /* Buttons */
+  .btn {
+    min-height: 46px; padding: 0 22px; border: none; border-radius: 999px; background: var(--surface);
+    font-weight: 700; font-size: 15px; box-shadow: var(--shadow-sm), var(--inset);
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn:active { transform: translateY(1px); box-shadow: var(--well); }
+  .btn.primary, .btn.ink { background: var(--fill); color: var(--on-fill); box-shadow: var(--shadow-sm); }
+  .btn.danger { color: var(--danger); }
+  .puck {
+    width: 58px; height: 58px; border: none; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 35% 30%, var(--surface) 0%, var(--surface) 45%, var(--surface-2) 100%);
+    box-shadow: var(--shadow-sm), var(--inset); transition: transform .2s ease, box-shadow .2s ease; flex-shrink: 0;
+  }
+  .puck:hover { transform: translateY(-2px); }
+  .puck[aria-pressed="true"] { background: var(--surface-2); box-shadow: var(--well); }
+  .puck.small { width: 46px; height: 46px; }
+  .avatar { border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; color: var(--ink); flex-shrink: 0; box-shadow: inset 0 -5px 10px rgba(0, 0, 0, 0.08), inset 0 3px 6px rgba(255, 255, 255, 0.55), 0 6px 12px -6px rgba(0, 0, 0, 0.35); }
+
+  .split .w { display: inline-block; opacity: 0; transform: translateY(0.45em); animation: rise .7s cubic-bezier(.2, .8, .2, 1) forwards; }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+  .pop { animation: pop .5s cubic-bezier(.2, .9, .3, 1.15) both; }
+  @keyframes pop { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
+  .magnet { transition: transform .3s cubic-bezier(.2, .8, .2, 1); }
+
+  /* Nav */
+  .nav-wrap { position: sticky; top: 0; z-index: 20; padding: 18px 24px 0; }
+  .nav { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; padding: 8px 8px 8px 20px; max-width: 1440px; margin: 0 auto; border-radius: 999px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 17px; letter-spacing: -0.01em; }
+  .tabs { display: flex; gap: 4px; padding: 4px; border-radius: 999px; box-shadow: var(--well); background: var(--surface-2); }
+  .tabs button { min-height: 40px; padding: 0 18px; border: none; border-radius: 999px; background: transparent; font-weight: 700; font-size: 14px; color: var(--muted); }
+  .tabs button[aria-current="page"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-sm), var(--inset); }
+  .search { position: relative; margin-left: auto; flex: 0 1 300px; min-width: 200px; }
+  .search input { width: 100%; height: 46px; padding: 0 16px 0 42px; border: none; border-radius: 999px; background: var(--surface-2); font-size: 15px; box-shadow: var(--well); }
+  .search svg { position: absolute; left: 15px; top: 14px; pointer-events: none; color: var(--muted); }
+  .results { position: absolute; left: 0; right: 0; top: 54px; padding: 8px; display: flex; flex-direction: column; gap: 2px; z-index: 30; }
+  .results button { display: flex; align-items: center; gap: 10px; min-height: 50px; padding: 6px 10px; border: none; background: transparent; text-align: left; border-radius: 18px; }
+  .results button:hover, .results button:focus-visible { background: var(--surface); }
+
+  main { max-width: 1440px; margin: 0 auto; padding: 28px 24px 64px; }
+
+  /* Hero */
+  .hero { position: relative; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px 24px; min-height: 260px; margin-bottom: 26px; padding: 26px; border-radius: 38px; overflow: hidden;
+    background: linear-gradient(160deg, var(--hero-a) 0%, var(--hero-b) 100%); box-shadow: var(--shadow), var(--inset); }
+  .hero .art { position: absolute; right: 0; top: 0; bottom: 0; width: 70%; }
+  .hero .title { position: relative; padding: 24px 28px; max-width: 560px; }
+  .hero h1 { margin: 0; font-size: clamp(32px, 4.4vw, 62px); line-height: 1; font-weight: 800; letter-spacing: -0.04em; }
+  .hero .role { margin: 10px 0 0; font-size: 17px; font-weight: 600; color: var(--muted); }
+  .views { position: relative; display: flex; gap: 16px; margin-left: auto; }
+  .views .v { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--muted); }
+  .views .puck { width: 64px; height: 64px; }
+
+  .explore { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+  .rail { flex: 1 1 220px; max-width: 270px; padding: 24px 22px 0; }
+  .rail h2, .details h2 { margin: 0 0 4px; font-size: 15px; font-weight: 800; }
+  .rail .art { height: 90px; margin: 10px -22px 0; }
+  .stations { position: relative; display: flex; flex-direction: column; gap: 2px; margin-top: 14px; }
+  .stations::before { content: ''; position: absolute; left: 10px; top: 24px; bottom: 24px; width: 4px; border-radius: 4px; background: var(--rail); box-shadow: var(--well); }
+  .station { position: relative; display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 4px 0; border: none; background: transparent; text-align: left; }
+  .station .dot { width: 24px; height: 24px; border-radius: 50%; background: var(--surface); box-shadow: var(--shadow-sm), var(--inset); flex-shrink: 0; }
+  .station.here .dot { background: radial-gradient(circle at 35% 30%, var(--pearl-a), var(--pearl-b)); }
+  .station .nm { display: block; font-size: 14px; font-weight: 600; }
+  .station.here .nm { font-weight: 800; }
+  .station .rl { display: block; font-size: 12px; color: var(--muted); }
+
+  .stage-box { flex: 999 1 560px; min-width: 0; overflow-x: auto; }
+  .stage { position: relative; width: 780px; height: 680px; margin: 0 auto; }
+  .link { position: absolute; height: 6px; border-radius: 6px; background: var(--surface); transform-origin: 0 50%; box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.18), var(--inset); }
+  .node {
+    position: absolute; display: flex; flex-direction: column; align-items: center; gap: 4px; width: 140px; padding: 16px 8px 14px;
+    border: none; border-radius: 28px; background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%); box-shadow: var(--shadow-sm), var(--inset); text-align: center;
+    transition: transform .25s ease, box-shadow .25s ease;
+  }
+  .node:hover { transform: translateY(-5px); box-shadow: var(--shadow), var(--inset); }
+  .node .nm { font-size: 14px; font-weight: 800; line-height: 1.15; }
+  .node .rl { font-size: 12px; color: var(--muted); }
+  .tag { display: inline-block; margin-top: 6px; padding: 3px 11px; font-size: 12px; font-weight: 700; border-radius: 999px; background: var(--surface-2); color: var(--muted); box-shadow: var(--well); }
+  .tag.on { background: var(--fill); color: var(--on-fill); box-shadow: none; }
+  .node .up { font-size: 12px; font-weight: 700; color: var(--muted); }
+  .focus { position: absolute; left: 260px; top: 180px; width: 260px; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 24px 12px 20px; text-align: center; border-radius: 40px; background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%); box-shadow: var(--shadow), var(--inset); }
+  .focus .avatar { box-shadow: 0 0 0 8px var(--surface), 0 0 0 14px var(--ring), 0 18px 34px -8px rgba(0, 0, 0, 0.4); margin: 12px 0 12px; }
+  .focus .nm { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
+  .stage-empty { position: absolute; left: 190px; top: 470px; width: 400px; margin: 0; text-align: center; font-weight: 600; }
+
+  .details { flex: 1 1 290px; max-width: 350px; padding: 0 24px 24px; display: flex; flex-direction: column; gap: 18px; }
+  .details .art { height: 96px; margin: 0 -24px; }
+  .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .stat { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; }
+  .stat b { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 800;
+    background: radial-gradient(circle at 35% 30%, var(--surface) 0%, var(--surface) 45%, var(--surface-2) 100%); box-shadow: var(--shadow-sm), var(--inset); }
+  .stat span { font-size: 12px; font-weight: 600; color: var(--muted); }
+  dl.facts { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; font-size: 14px; }
+  dl.facts dt { font-size: 12px; color: var(--muted); }
+  dl.facts dd { margin: 2px 0 0; font-weight: 700; overflow-wrap: anywhere; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { min-height: 44px; padding: 4px 14px 4px 4px; display: inline-flex; align-items: center; gap: 8px; border: none; border-radius: 999px; background: var(--surface); font-size: 13px; font-weight: 600; box-shadow: var(--shadow-sm), var(--inset); }
+  .chip:hover { background: var(--fill); color: var(--on-fill); }
+  .actions { display: flex; flex-direction: column; gap: 10px; }
+
+  /* Levels */
+  .levels { flex: 999 1 640px; min-width: 0; overflow-x: auto; }
+  .cols { display: flex; min-height: 560px; }
+  .col { flex: 0 0 252px; padding: 18px 12px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; }
+  .col:last-child { border-right: none; }
+  .col h3 { margin: 0 8px 8px; font-size: 12px; font-weight: 700; color: var(--muted); }
+  .row { display: flex; align-items: center; gap: 10px; min-height: 58px; padding: 6px 10px; border: none; border-radius: 22px; background: transparent; text-align: left; width: 100%; transition: background .2s; }
+  .row:hover { background: var(--surface-2); }
+  .row .txt { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .row .nm { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row .rl { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row .ct { font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 2px; color: var(--muted); }
+  .row.trail { background: var(--surface-2); box-shadow: var(--well); }
+  .row.active { background: var(--fill); color: var(--on-fill); box-shadow: var(--shadow-sm); }
+  .row.active .rl, .row.active .ct { color: var(--on-fill); opacity: .75; }
+  .levels-foot { margin: 0; padding: 14px 20px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+
+  /* People */
+  .sentence { padding: 32px 34px 26px; margin-bottom: 24px; }
+  .sentence .art { position: absolute; right: 0; top: 0; bottom: 0; width: 34%; opacity: .9; }
+  .sentence p, .sentence .bar { position: relative; }
+  .sentence p { margin: 0; font-size: clamp(22px, 2.8vw, 38px); line-height: 1.75; font-weight: 700; letter-spacing: -0.025em; max-width: 1050px; }
+  .sentence select {
+    font-size: inherit; font-weight: 800; letter-spacing: -0.02em; color: var(--ink);
+    border: none; border-radius: 999px; background: var(--surface); padding: 2px 20px; margin: 0 2px;
+    -webkit-appearance: none; appearance: none; cursor: pointer; max-width: 100%; box-shadow: var(--shadow-sm), var(--inset);
+  }
+  .sentence select:hover { background: var(--fill); color: var(--on-fill); }
+  .sentence select option { font-size: 16px; color: #000; background: #fff; }
+  .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 20px; }
+  .count { font-size: 15px; font-weight: 700; }
+  .table-box { overflow-x: auto; padding: 10px; }
+  table { width: 100%; min-width: 1080px; border-collapse: separate; border-spacing: 0; font-size: 14px; }
+  thead th { text-align: left; padding: 0; background: var(--surface-2); }
+  thead th:first-child { border-radius: 24px 0 0 24px; }
+  thead th:last-child { border-radius: 0 24px 24px 0; }
+  thead th button { width: 100%; min-height: 52px; padding: 0 16px; border: none; background: transparent; font-size: 13px; font-weight: 700; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  thead th.right button { justify-content: flex-end; }
+  thead th .arrow { color: var(--ink); font-size: 14px; }
+  tbody td { padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover td { background: var(--surface-2); }
+  td.right { text-align: right; font-weight: 800; }
+  .who { display: flex; align-items: center; gap: 10px; }
+  .who .em { display: block; font-size: 12px; color: var(--muted); }
+  .trailmark { display: inline-flex; align-items: center; margin-right: 10px; vertical-align: middle; }
+  .trailmark .seg2 { width: 8px; height: 3px; border-radius: 3px; background: var(--rail); }
+  .trailmark .pt { width: 11px; height: 11px; border-radius: 50%; background: var(--rail); }
+  .trailmark .pt.end { background: radial-gradient(circle at 35% 30%, var(--pearl-a), var(--pearl-b)); }
+  .meter { display: inline-block; width: 72px; height: 10px; border-radius: 999px; background: var(--surface-2); vertical-align: middle; margin-right: 8px; overflow: hidden; box-shadow: var(--well); }
+  .meter span { display: block; height: 100%; border-radius: 999px; background: var(--fill); }
+  .empty { margin: 0; padding: 36px; text-align: center; font-weight: 700; }
+
+  /* Modal */
+  .scrim { position: fixed; inset: 0; z-index: 50; background: rgba(20, 20, 22, 0.28); display: flex; align-items: flex-start; justify-content: center; padding: 6vh 16px; overflow-y: auto; }
+  .modal { width: 100%; max-width: 640px; padding: 32px; border-radius: 36px; }
+  .modal h2 { margin: 0 0 4px; font-size: 30px; font-weight: 800; letter-spacing: -0.03em; }
+  .form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field.full { grid-column: 1 / -1; }
+  .field label { font-size: 13px; font-weight: 700; }
+  .field input, .field select { height: 52px; padding: 0 18px; border: 2px solid transparent; background: var(--surface-2); font-size: 15px; border-radius: 18px; box-shadow: var(--well); }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--fill); }
+  .field .err { font-size: 13px; font-weight: 700; color: var(--danger); min-height: 1em; }
+  .field .help { font-size: 12px; color: var(--muted); }
+  .field.bad input, .field.bad select { border-color: var(--danger); }
+  .modal-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+
+  .toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 60; padding: 14px 22px; border-radius: 999px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+  .toast i { width: 14px; height: 14px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, var(--pearl-a), var(--pearl-b)); display: inline-block; }
+
+  @media (max-width: 760px) {
+    .nav { border-radius: 30px; }
+    .nav-wrap { padding: 10px 10px 0; }
+    main { padding: 20px 14px 48px; }
+    .rail, .details { max-width: none; }
+    .views { margin-left: 0; }
+    .search { flex-basis: 100%; margin-left: 0; }
+    .form { grid-template-columns: 1fr; }
+    .hero .art { width: 100%; opacity: .5; }
+    .sentence .art { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .split .w, .pop { animation: none; opacity: 1; transform: none; }
+    .btn, .node, .magnet, .puck { transition: none; }
+  }
+</style>
+</head>
+<body>
+<canvas id="bg" aria-hidden="true"></canvas>
+<div class="bg-fallback" id="bg-fallback" aria-hidden="true">
+  <span style="width:44vw;height:44vw;left:-10vw;top:-8vw;background:radial-gradient(circle at 35% 30%, var(--w1a), var(--w4b))"></span>
+  <span style="width:38vw;height:38vw;right:-8vw;bottom:-10vw;background:radial-gradient(circle at 35% 30%, var(--w2a), var(--w5b))"></span>
+  <span style="width:5vw;height:5vw;left:30vw;bottom:14vh;background:radial-gradient(circle at 35% 30%, var(--pearl-a), var(--pearl-b))"></span>
+</div>
+
+<div class="app">
+  <div class="nav-wrap">
+    <header class="nav glass spot">
+      <div class="brand">
+        <span class="puck small" aria-hidden="true" style="width:36px;height:36px"><svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="6" r="3.2" fill="currentColor"></circle><circle cx="5" cy="14.5" r="2.6" fill="currentColor" opacity=".45"></circle><circle cx="15" cy="14.5" r="2.6" fill="currentColor" opacity=".45"></circle></svg></span>
+        Hierarchy Hub
+      </div>
+      <nav class="tabs" aria-label="Main">
+        <button type="button" data-act="page" data-id="explore" id="tab-explore">Explore</button>
+        <button type="button" data-act="page" data-id="people" id="tab-people">People</button>
+      </nav>
+      <div class="search">
+        <label for="q" class="sr">Find someone</label>
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="7.5" cy="7.5" r="5.5"></circle><path d="M12 12l4.5 4.5"></path></svg>
+        <input id="q" type="search" placeholder="Find someone" autocomplete="off">
+        <div id="results"></div>
+      </div>
+      <button type="button" class="puck small" id="theme" aria-label="Switch to dark mode" aria-pressed="false"></button>
+      <button type="button" class="btn primary magnet" data-act="add">Add employee</button>
+    </header>
+  </div>
+  <main id="main"></main>
+</div>
+<div id="modal-root"></div>
+<div id="toast-root" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+  /* ================= Data ================= */
+  var PEOPLE = [
+    { id: 'p1', first: 'Thandi', last: 'Nkosi', role: 'Chief Executive Officer', m: null, no: 'EMP-0001', sal: 185000, birth: '1975-04-12' },
+    { id: 'p2', first: 'Sipho', last: 'Dlamini', role: 'Chief Technology Officer', m: 'p1', no: 'EMP-0002', sal: 162000, birth: '1979-09-03' },
+    { id: 'p3', first: 'Ayesha', last: 'Patel', role: 'Chief Financial Officer', m: 'p1', no: 'EMP-0003', sal: 158000, birth: '1981-01-21' },
+    { id: 'p4', first: 'Lerato', last: 'Mokoena', role: 'Head of People', m: 'p1', no: 'EMP-0004', sal: 121000, birth: '1984-06-08' },
+    { id: 'p5', first: 'Johan', last: 'van der Merwe', role: 'Engineering Manager', m: 'p2', no: 'EMP-0005', sal: 98000, birth: '1986-11-17' },
+    { id: 'p6', first: 'Naledi', last: 'Khumalo', role: 'Head of Product', m: 'p2', no: 'EMP-0006', sal: 104000, birth: '1985-03-30' },
+    { id: 'p7', first: 'Ruan', last: 'Botha', role: 'Senior Engineer', m: 'p5', no: 'EMP-0007', sal: 76000, birth: '1990-02-02' },
+    { id: 'p8', first: 'Zanele', last: 'Mthembu', role: 'Software Engineer', m: 'p5', no: 'EMP-0008', sal: 54000, birth: '1995-07-19' },
+    { id: 'p9', first: 'Kagiso', last: 'Molefe', role: 'Software Engineer', m: 'p5', no: 'EMP-0009', sal: 51000, birth: '1996-12-05' },
+    { id: 'p10', first: 'Priya', last: 'Naidoo', role: 'QA Engineer', m: 'p5', no: 'EMP-0010', sal: 47000, birth: '1993-08-23' },
+    { id: 'p11', first: 'Megan', last: 'Fourie', role: 'Product Designer', m: 'p6', no: 'EMP-0011', sal: 58000, birth: '1992-05-14' },
+    { id: 'p12', first: 'Thabo', last: 'Sithole', role: 'Financial Analyst', m: 'p3', no: 'EMP-0012', sal: 49000, birth: '1994-10-09' },
+    { id: 'p13', first: 'Fatima', last: 'Adams', role: 'Accountant', m: 'p3', no: 'EMP-0013', sal: 45000, birth: '1991-02-27' },
+    { id: 'p14', first: 'Bongani', last: 'Zulu', role: 'HR Partner', m: 'p4', no: 'EMP-0014', sal: 44000, birth: '1997-01-11' }
+  ];
+  var ICON_ORBIT = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><circle cx="12" cy="12" r="9" stroke-dasharray="3 3"></circle><circle cx="20.5" cy="9" r="1.6" fill="currentColor"></circle></svg>';
+  var ICON_LEVELS = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="4" width="5" height="16" rx="2"></rect><rect x="10" y="4" width="5" height="16" rx="2"></rect><rect x="17" y="4" width="4" height="16" rx="2"></rect></svg>';
+  var waveN = 0;
+  function waves(ball) {
+    var id = 'wv' + (waveN += 1);
+    var paths = [
+      'M0 260 C 120 170, 220 90, 360 70 C 470 55, 540 20, 600 0 L 600 260 Z',
+      'M90 260 C 190 190, 280 130, 400 112 C 500 98, 560 70, 600 52 L 600 260 Z',
+      'M180 260 C 260 210, 340 165, 450 150 C 530 140, 575 120, 600 108 L 600 260 Z',
+      'M260 260 C 330 222, 400 196, 480 190 C 545 185, 580 172, 600 164 L 600 260 Z',
+      'M330 260 C 390 236, 450 224, 520 222 C 560 221, 585 214, 600 208 L 600 260 Z'
+    ];
+    var defs = '<filter id="' + id + 'f" x="-10%" y="-20%" width="120%" height="140%"><feDropShadow dx="-6" dy="-10" stdDeviation="12" flood-color="#000" flood-opacity="0.14"></feDropShadow></filter>' +
+      '<radialGradient id="' + id + 'b" cx="35%" cy="30%" r="70%"><stop offset="0" style="stop-color:var(--pearl-a)"></stop><stop offset="1" style="stop-color:var(--pearl-b)"></stop></radialGradient>';
+    var body = '';
+    paths.forEach(function (d, i) {
+      var n = i + 1;
+      defs += '<linearGradient id="' + id + 'g' + n + '" x1="0" y1="0" x2="0.3" y2="1"><stop offset="0" style="stop-color:var(--w' + n + 'a)"></stop><stop offset="1" style="stop-color:var(--w' + n + 'b)"></stop></linearGradient>';
+      body += '<path d="' + d + '" fill="url(#' + id + 'g' + n + ')" filter="url(#' + id + 'f)"></path>';
+    });
+    if (ball) body += '<circle cx="548" cy="46" r="15" fill="url(#' + id + 'b)" filter="url(#' + id + 'f)"></circle>';
+    return '<div class="art" aria-hidden="true"><svg viewBox="0 0 600 260" preserveAspectRatio="xMaxYMax slice"><defs>' + defs + '</defs>' + body + '</svg></div>';
+  }
+  var TONES = ['#CFE7DF', '#CFE1EE', '#F3E3C8', '#E3DCEF', '#F2D9CF', '#E3E8B8'];
+  var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  var CHEV = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 3l4 4-4 4"></path></svg>';
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var byId = {};
+  PEOPLE.forEach(function (p) { byId[p.id] = p; });
+
+  var state = {
+    page: 'explore', view: 'orbit', focus: 'p5', path: ['p1', 'p2', 'p5'],
+    role: 'all', pay: 'any', mgr: 'anyone', sortKey: 'name', sortDir: 'asc',
+    theme: (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light',
+    modal: null
+  };
+
+  function kids(id) { return PEOPLE.filter(function (p) { return p.m === id; }); }
+  function under(id) { return kids(id).reduce(function (n, k) { return n + 1 + under(k.id); }, 0); }
+  function depth(p) { var d = 0, c = p; while (c.m) { d += 1; c = byId[c.m]; } return d; }
+  function inTeamOf(rootId, id) { var c = byId[id]; while (c) { if (c.id === rootId) return true; c = c.m ? byId[c.m] : null; } return false; }
+  function full(p) { return p.first + ' ' + p.last; }
+  function initials(p) { var parts = p.last.split(' '); return p.first[0] + parts[parts.length - 1][0]; }
+  function tone(p) { return 'var(--t' + (((parseInt(p.id.slice(1), 10) - 1) % 5) + 1) + ')'; }
+  function email(p) { return (p.first + '.' + p.last.split(' ').join('')).toLowerCase() + '@example.com'; }
+  function money(n) { return 'R ' + n.toLocaleString('en-ZA'); }
+  function date(iso) { var a = iso.split('-'); return parseInt(a[2], 10) + ' ' + MONTHS[parseInt(a[1], 10) - 1] + ' ' + a[0]; }
+  function plural(n, one, many) { return n + ' ' + (n === 1 ? one : many); }
+  function av(p, size, font) {
+    return '<span class="avatar" style="width:' + size + 'px;height:' + size + 'px;font-size:' + font + 'px;background:' + tone(p) + '">' + initials(p) + '</span>';
+  }
+
+  /* ================= Explore ================= */
+  function heroHtml(p, withSeg) {
+    return '<section class="hero">' + waves(true) + '<div class="title glass"><h1 class="split">' + full(p) + '</h1><p class="role">' + p.role + '</p></div>' +
+      (withSeg ? '<div class="views" role="group" aria-label="View">' +
+        '<span class="v"><button type="button" class="puck" data-act="view" data-id="orbit" aria-label="Orbit view" aria-pressed="' + (state.view === 'orbit') + '">' + ICON_ORBIT + '</button>Orbit</span>' +
+        '<span class="v"><button type="button" class="puck" data-act="view" data-id="levels" aria-label="Levels view" aria-pressed="' + (state.view === 'levels') + '">' + ICON_LEVELS + '</button>Levels</span></div>' : '') +
+      '</section>';
+  }
+
+  function detailsHtml(p) {
+    var mgr = p.m ? byId[p.m] : null;
+    var n = kids(p.id).length;
+    var peers = mgr ? kids(mgr.id).filter(function (x) { return x.id !== p.id; }) : [];
+    var note = 'Nobody reports to ' + p.first + ', so nobody moves if deleted.';
+    if (n > 0) note = mgr ? 'If deleted, ' + plural(n, 'person', 'people') + ' will move to ' + full(mgr) + '.' : 'If deleted, ' + plural(n, 'person becomes', 'people become') + ' top-level.';
+    return '<aside class="details glass spot" aria-label="Employee details">' + waves(false) +
+      '<h2>Details</h2>' +
+      '<div class="stats">' +
+        '<div class="stat"><b data-count="' + n + '">' + n + '</b><span>Direct reports</span></div>' +
+        '<div class="stat"><b data-count="' + under(p.id) + '">' + under(p.id) + '</b><span>Whole team</span></div>' +
+        '<div class="stat"><b data-count="' + depth(p) + '">' + depth(p) + '</b><span>Levels from top</span></div>' +
+      '</div>' +
+      '<dl class="facts">' +
+        '<div><dt>Employee no.</dt><dd>' + p.no + '</dd></div>' +
+        '<div><dt>Salary</dt><dd class="num">' + money(p.sal) + '</dd></div>' +
+        '<div><dt>Birth date</dt><dd>' + date(p.birth) + '</dd></div>' +
+        '<div><dt>Reports to</dt><dd>' + (mgr ? full(mgr) : 'Nobody (top level)') + '</dd></div>' +
+        '<div style="grid-column:1 / -1"><dt>Email</dt><dd>' + email(p) + '</dd></div>' +
+      '</dl>' +
+      '<div><h2 style="margin-bottom:10px">Works alongside</h2><div class="chips">' +
+        (peers.length ? peers.map(function (x) { return '<button type="button" class="chip" data-act="focus" data-id="' + x.id + '">' + av(x, 30, 11) + full(x) + '</button>'; }).join('') : '<span class="muted" style="font-size:13px">Nobody else at this level.</span>') +
+      '</div></div>' +
+      '<div class="actions">' +
+        '<button type="button" class="btn ink magnet" data-act="edit" data-id="' + p.id + '">Edit details</button>' +
+        '<button type="button" class="btn magnet" data-act="edit" data-id="' + p.id + '" data-field="manager">Change manager</button>' +
+        '<button type="button" class="btn danger magnet" data-act="delete" data-id="' + p.id + '">Delete</button>' +
+        '<p class="muted" style="margin:0;font-size:12px">' + note + '</p>' +
+      '</div></aside>';
+  }
+
+  function railHtml(f) {
+    var chain = [], c = f;
+    while (c) { chain.unshift(c); c = c.m ? byId[c.m] : null; }
+    return '<aside class="rail glass spot" aria-label="Path to the top"><h2>Path to the top</h2>' +
+      '<p class="muted" style="margin:0;font-size:13px">Everyone between this person and the top.</p><div class="stations">' +
+      chain.map(function (p) {
+        return '<button type="button" class="station' + (p.id === f.id ? ' here' : '') + '" data-act="focus" data-id="' + p.id + '">' +
+          '<span class="dot"></span><span><span class="nm">' + full(p) + '</span><span class="rl">' + p.role + '</span></span></button>';
+      }).join('') + '</div>' + waves(true) + '</aside>';
+  }
+
+  function orbitHtml(f) {
+    var mgr = f.m ? byId[f.m] : null;
+    var cx = 390, cy = 250, R = 260, links = '', nodes = '';
+    function link(x1, y1, x2, y2) {
+      var len = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+      var ang = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+      return '<div class="link" style="left:' + x1 + 'px;top:' + y1 + 'px;width:' + len + 'px;transform:rotate(' + ang + 'deg)"></div>';
+    }
+    if (mgr) {
+      links += link(cx, 110, cx, cy);
+      nodes += '<button type="button" class="node pop" data-act="focus" data-id="' + mgr.id + '" style="left:' + (cx - 70) + 'px;top:4px">' +
+        '<span class="up">Reports to</span>' + av(mgr, 48, 16) + '<span class="nm">' + full(mgr) + '</span><span class="rl">' + mgr.role + '</span></button>';
+    }
+    var reports = kids(f.id), n = reports.length;
+    reports.forEach(function (p, i) {
+      var deg = n === 1 ? 90 : 18 + (144 * i) / (n - 1);
+      var rad = deg * Math.PI / 180;
+      var x = Math.round(cx + R * Math.cos(rad));
+      var y = Math.round(cy + 70 + R * 0.72 * Math.sin(rad));
+      links += link(cx, cy, x, y + 30);
+      var t = kids(p.id).length;
+      nodes += '<button type="button" class="node pop" data-act="focus" data-id="' + p.id + '" style="left:' + (x - 70) + 'px;top:' + y + 'px;animation-delay:' + (60 + i * 50) + 'ms">' +
+        av(p, 48, 16) + '<span class="nm">' + full(p) + '</span><span class="rl">' + p.role + '</span>' +
+        '<span class="tag' + (t ? ' on' : '') + '">' + (t ? plural(t, 'report', 'reports') : 'No team') + '</span></button>';
+    });
+    var focus = '<div class="focus pop">' + av(f, 96, 32) + '<span class="nm">' + full(f) + '</span><span class="muted" style="font-size:13px">' + f.role + '</span></div>';
+    var empty = n === 0 ? '<p class="stage-empty">Nobody reports to ' + f.first + ' yet.</p>' : '';
+    return '<section class="stage-box" aria-label="Orbit view"><div class="stage">' + links + nodes + focus + empty + '</div></section>';
+  }
+
+  function levelsHtml() {
+    var path = state.path;
+    var levels = [PEOPLE.filter(function (p) { return !p.m; })];
+    path.forEach(function (id) { levels.push(kids(id)); });
+    var cols = levels.map(function (list, k) {
+      var owner = k === 0 ? null : byId[path[k - 1]];
+      var rows = list.map(function (p) {
+        var sel = path[k] === p.id;
+        var cls = sel ? (k === path.length - 1 ? ' active' : ' trail') : '';
+        var ct = kids(p.id).length;
+        return '<button type="button" class="row' + cls + '" data-act="col" data-level="' + k + '" data-id="' + p.id + '">' + av(p, 36, 13) +
+          '<span class="txt"><span class="nm">' + full(p) + '</span><span class="rl">' + p.role + '</span></span>' +
+          (ct ? '<span class="ct">' + ct + CHEV + '</span>' : '') + '</button>';
+      }).join('');
+      if (!list.length) rows = '<p class="muted" style="margin:6px;font-size:13px">Nobody reports to ' + owner.first + ' yet.</p>';
+      return '<div class="col"><h3>' + (owner ? 'Reports to ' + owner.first : 'Top level') + '</h3>' + rows + '</div>';
+    }).join('');
+    return '<section class="levels brutal" aria-label="Levels view"><div class="cols">' + cols + '</div>' +
+      '<p class="levels-foot">Each column is one level down. In the real app you can drag someone into another column to change their manager.</p></section>';
+  }
+
+  function exploreHtml() {
+    if (state.view === 'orbit') {
+      var f = byId[state.focus];
+      return heroHtml(f, true) + '<div class="explore">' + railHtml(f) + orbitHtml(f) + detailsHtml(f) + '</div>';
+    }
+    var sel = byId[state.path[state.path.length - 1]];
+    return heroHtml(sel, true) + '<div class="explore">' + levelsHtml() + detailsHtml(sel) + '</div>';
+  }
+
+  /* ================= People (ledger) ================= */
+  var PAY = {
+    any: ['any salary', function () { return true; }],
+    low: ['under R 50 000', function (n) { return n < 50000; }],
+    mid: ['R 50 000 to R 100 000', function (n) { return n >= 50000 && n <= 100000; }],
+    high: ['over R 100 000', function (n) { return n > 100000; }]
+  };
+  var ROLES = [['all', 'everyone'], ['Software Engineer', 'software engineers'], ['Senior Engineer', 'senior engineers'], ['QA Engineer', 'QA engineers'],
+    ['Engineering Manager', 'engineering managers'], ['Product Designer', 'product designers'], ['Financial Analyst', 'financial analysts'],
+    ['Accountant', 'accountants'], ['HR Partner', 'HR partners'], ['Head of People', 'heads of people'], ['Head of Product', 'heads of product']];
+  function opts(list, cur) { return list.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === cur ? ' selected' : '') + '>' + o[1] + '</option>'; }).join(''); }
+
+  function peopleHtml() {
+    var mgrList = [['anyone', 'anyone']].concat(PEOPLE.filter(function (p) { return kids(p.id).length; }).map(function (p) { return [p.id, full(p)]; }));
+    var payList = Object.keys(PAY).map(function (k) { return [k, PAY[k][0]]; });
+    var list = PEOPLE.filter(function (p) {
+      return (state.role === 'all' || p.role === state.role) && PAY[state.pay][1](p.sal) && (state.mgr === 'anyone' || p.m === state.mgr);
+    });
+    var keyOf = {
+      name: function (p) { return p.last.toLowerCase(); }, number: function (p) { return p.no; }, role: function (p) { return p.role; },
+      line: function (p) { return depth(p); }, team: function (p) { return under(p.id); }, birth: function (p) { return p.birth; }, salary: function (p) { return p.sal; }
+    };
+    var key = keyOf[state.sortKey];
+    list = list.slice().sort(function (a, b) { var x = key(a), y = key(b), r = x < y ? -1 : x > y ? 1 : 0; return state.sortDir === 'asc' ? r : -r; });
+    var maxTeam = Math.max.apply(null, PEOPLE.map(function (p) { return under(p.id); }));
+    var cols = [['name', 'Name'], ['number', 'Employee no.'], ['role', 'Role'], ['line', 'Reports to'], ['team', 'Team below'], ['birth', 'Birth date'], ['salary', 'Salary', 1]];
+    var head = cols.map(function (c) {
+      var on = c[0] === state.sortKey;
+      return '<th scope="col"' + (c[2] ? ' class="right"' : '') + ' aria-sort="' + (on ? (state.sortDir === 'asc' ? 'ascending' : 'descending') : 'none') + '">' +
+        '<button type="button" data-act="sort" data-id="' + c[0] + '">' + c[1] + '<span class="arrow">' + (on ? (state.sortDir === 'asc' ? '\u2191' : '\u2193') : '') + '</span></button></th>';
+    }).join('');
+    var rows = list.map(function (p) {
+      var d = depth(p), t = under(p.id), trail = '';
+      for (var i = 0; i <= d; i += 1) trail += (i ? '<span class="seg2"></span>' : '') + '<span class="pt' + (i === d ? ' end' : '') + '"></span>';
+      var lab = d === 0 ? 'Top level' : plural(d, 'level', 'levels') + ' below the top';
+      return '<tr data-act="open" data-id="' + p.id + '">' +
+        '<td><span class="who">' + av(p, 38, 13) + '<span><strong>' + full(p) + '</strong><span class="em">' + email(p) + '</span></span></span></td>' +
+        '<td class="muted">' + p.no + '</td><td>' + p.role + '</td>' +
+        '<td><span class="trailmark" title="' + lab + '" aria-label="' + lab + '">' + trail + '</span>' + (p.m ? full(byId[p.m]) : 'Top level') + '</td>' +
+        '<td><span class="meter"><span style="width:' + Math.round(t / maxTeam * 100) + '%"></span></span><span class="num">' + (t ? plural(t, 'person', 'people') : 'None') + '</span></td>' +
+        '<td class="muted">' + date(p.birth) + '</td><td class="right num">' + money(p.sal) + '</td></tr>';
+    }).join('');
+    return '<section class="sentence glass spot" aria-label="Filters">' + waves(true) + '<p>Show ' +
+      '<select aria-label="Role" data-filter="role">' + opts(ROLES, state.role) + '</select> earning ' +
+      '<select aria-label="Salary" data-filter="pay">' + opts(payList, state.pay) + '</select> and reporting to ' +
+      '<select aria-label="Manager" data-filter="mgr">' + opts(mgrList, state.mgr) + '</select>.</p>' +
+      '<div class="bar"><span class="count"><span data-count="' + list.length + '">' + list.length + '</span> of ' + PEOPLE.length + ' people</span>' +
+      '<button type="button" class="btn" data-act="reset">Clear filters</button><button type="button" class="btn" style="margin-left:auto">Export CSV</button></div></section>' +
+      '<section class="table-box brutal" aria-label="Employees"><table><thead><tr>' + head + '</tr></thead><tbody>' + rows + '</tbody></table>' +
+      (list.length ? '' : '<p class="empty">Nobody matches that sentence. Change one of the coloured words.</p>') + '</section>';
+  }
+
+  /* ================= Modal (add / edit) ================= */
+  function modalHtml() {
+    var m = state.modal;
+    var p = m.id ? byId[m.id] : null;
+    var v = function (k, def) { return m.values && m.values[k] !== undefined ? m.values[k] : def; };
+    var e = m.errors || {};
+    var mgrOptions = '<option value="">No manager (top level)</option>' + PEOPLE.map(function (x) {
+      var blocked = p && inTeamOf(p.id, x.id);
+      var why = p && x.id === p.id ? ' (this person)' : blocked ? ' (in their team)' : '';
+      var cur = v('manager', p ? (p.m || '') : '');
+      return '<option value="' + x.id + '"' + (blocked ? ' disabled' : '') + (cur === x.id ? ' selected' : '') + '>' + full(x) + ' (' + x.role + ')' + why + '</option>';
+    }).join('');
+    function field(id, label, type, val, full, extra) {
+      return '<div class="field' + (full ? ' full' : '') + (e[id] ? ' bad' : '') + '"><label for="f-' + id + '">' + label + '</label>' +
+        '<input id="f-' + id + '" name="' + id + '" type="' + type + '" value="' + (val || '') + '"' + (extra || '') + (e[id] ? ' aria-invalid="true" aria-describedby="e-' + id + '"' : '') + '>' +
+        '<span class="err" id="e-' + id + '">' + (e[id] || '') + '</span></div>';
+    }
+    return '<div class="scrim" data-act="close-scrim"><div class="modal glass pop" role="dialog" aria-modal="true" aria-labelledby="m-title">' +
+      '<h2 id="m-title">' + (p ? 'Edit ' + p.first : 'Add employee') + '</h2>' +
+      '<p class="muted" style="margin:0">' + (p ? 'Change any detail, including who they report to.' : 'Everything is required except the manager.') + '</p>' +
+      '<form class="form" id="emp-form" novalidate>' +
+        field('first', 'First name', 'text', v('first', p ? p.first : '')) +
+        field('last', 'Surname', 'text', v('last', p ? p.last : '')) +
+        field('email', 'Email', 'email', v('email', p ? email(p) : ''), true) +
+        field('no', 'Employee number', 'text', v('no', p ? p.no : '')) +
+        field('birth', 'Birth date', 'date', v('birth', p ? p.birth : '')) +
+        field('role', 'Role', 'text', v('role', p ? p.role : '')) +
+        field('sal', 'Salary (R)', 'number', v('sal', p ? String(p.sal) : ''), false, ' min="0" step="0.01"') +
+        '<div class="field full"><label for="f-manager">Reports to</label><select id="f-manager" name="manager">' + mgrOptions + '</select>' +
+        '<span class="help">' + (p ? 'Greyed-out people are ' + p.first + ' or someone in their team. Picking them would create a reporting loop.' : 'Leave as "No manager" for someone at the top, like the CEO.') + '</span></div>' +
+      '</form>' +
+      '<div class="modal-actions"><button type="button" class="btn" data-act="close">Cancel</button>' +
+      '<button type="submit" form="emp-form" class="btn primary">' + (p ? 'Save changes' : 'Add employee') + '</button></div>' +
+      '</div></div>';
+  }
+
+  function validate(form) {
+    var d = {};
+    ['first', 'last', 'email', 'no', 'birth', 'role', 'sal', 'manager'].forEach(function (k) { d[k] = form.elements[k].value.trim(); });
+    var e = {};
+    if (!d.first) e.first = 'Enter a first name.';
+    if (!d.last) e.last = 'Enter a surname.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) e.email = 'Enter a valid email address.';
+    if (!/^[A-Za-z0-9-]+$/.test(d.no)) e.no = 'Use letters, numbers and dashes.';
+    if (!d.birth) e.birth = 'Enter a birth date.';
+    else if (new Date(d.birth) >= new Date()) e.birth = 'Birth date must be in the past.';
+    if (!d.role) e.role = 'Enter a role.';
+    if (d.sal === '' || isNaN(Number(d.sal)) || Number(d.sal) < 0) e.sal = 'Enter a salary of 0 or more.';
+    return { values: d, errors: e };
+  }
+
+  function toast(msg) {
+    var root = document.getElementById('toast-root');
+    root.innerHTML = '<div class="toast brutal pop"><i></i>' + msg + '</div>';
+    clearTimeout(toast.t);
+    toast.t = setTimeout(function () { root.innerHTML = ''; }, 2600);
+  }
+
+  /* ================= Render ================= */
+  var mainEl = document.getElementById('main');
+  var lastHero = '';
+
+  function render() {
+    mainEl.innerHTML = state.page === 'explore' ? exploreHtml() : peopleHtml();
+    document.getElementById('tab-explore').setAttribute('aria-current', state.page === 'explore' ? 'page' : 'false');
+    document.getElementById('tab-people').setAttribute('aria-current', state.page === 'people' ? 'page' : 'false');
+    document.getElementById('modal-root').innerHTML = state.modal ? modalHtml() : '';
+    afterRender();
+  }
+
+  function afterRender() {
+    var h1 = mainEl.querySelector('.split');
+    if (h1) {
+      var text = h1.textContent;
+      if (!reduceMotion && text !== lastHero) {
+        h1.innerHTML = text.split(' ').map(function (w, i) { return '<span class="w" style="animation-delay:' + (i * 70) + 'ms">' + w + '</span>'; }).join(' ');
+      }
+      lastHero = text;
+    }
+    if (!reduceMotion) {
+      var counters = mainEl.querySelectorAll('[data-count]');
+      Array.prototype.forEach.call(counters, function (el) {
+        var to = parseInt(el.getAttribute('data-count'), 10), start = null;
+        if (!to) return;
+        function step(ts) {
+          if (!start) start = ts;
+          var k = Math.min((ts - start) / 700, 1);
+          el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3)));
+          if (k < 1) requestAnimationFrame(step);
+        }
+        el.textContent = '0';
+        requestAnimationFrame(step);
+      });
+    }
+  }
+
+  /* ================= Theme ================= */
+  var themeBtn = document.getElementById('theme');
+  var SUN = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="10" cy="10" r="4"></circle><path d="M10 1v2.5M10 16.5V19M1 10h2.5M16.5 10H19M3.6 3.6l1.8 1.8M14.6 14.6l1.8 1.8M3.6 16.4l1.8-1.8M14.6 5.4l1.8-1.8"></path></svg>';
+  var MOON = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M16.5 12.5A7 7 0 0 1 7.5 3.5a7 7 0 1 0 9 9z"></path></svg>';
+  function applyTheme() {
+    document.documentElement.setAttribute('data-theme', state.theme);
+    var dark = state.theme === 'dark';
+    themeBtn.innerHTML = dark ? SUN : MOON;
+    themeBtn.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+    themeBtn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+    if (window.__bg) window.__bg.setTheme(dark);
+  }
+  themeBtn.addEventListener('click', function () { state.theme = state.theme === 'dark' ? 'light' : 'dark'; applyTheme(); });
+
+  /* ================= Events ================= */
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest ? e.target.closest('[data-act]') : null;
+    if (!el) return;
+    var act = el.getAttribute('data-act'), id = el.getAttribute('data-id'), lvl = parseInt(el.getAttribute('data-level'), 10);
+    if (act === 'close-scrim' && e.target !== el) return;
+    switch (act) {
+      case 'page': state.page = id; break;
+      case 'view':
+        state.view = id;
+        if (id === 'levels') { var chain = [], c = byId[state.focus]; while (c) { chain.unshift(c.id); c = c.m ? byId[c.m] : null; } state.path = chain; }
+        else state.focus = state.path[state.path.length - 1];
+        break;
+      case 'focus': state.focus = id; state.page = 'explore'; if (state.view === 'levels') { var ch = [], cc = byId[id]; while (cc) { ch.unshift(cc.id); cc = cc.m ? byId[cc.m] : null; } state.path = ch; } break;
+      case 'col': state.path = state.path.slice(0, lvl).concat(id); state.focus = id; break;
+      case 'open': state.focus = id; state.page = 'explore'; state.view = 'orbit'; window.scrollTo(0, 0); break;
+      case 'sort': state.sortDir = state.sortKey === id && state.sortDir === 'asc' ? 'desc' : 'asc'; state.sortKey = id; break;
+      case 'reset': state.role = 'all'; state.pay = 'any'; state.mgr = 'anyone'; break;
+      case 'add': state.modal = { id: null }; break;
+      case 'edit': state.modal = { id: id }; break;
+      case 'delete': toast('This is a mockup, so nothing was deleted.'); return;
+      case 'close': case 'close-scrim': state.modal = null; break;
+      default: return;
+    }
+    render();
+    if (act === 'edit' && el.getAttribute('data-field') === 'manager') { var s = document.getElementById('f-manager'); if (s) s.focus(); }
+    else if (act === 'add' || act === 'edit') { var f = document.getElementById('f-first'); if (f) f.focus(); }
+  });
+
+  document.addEventListener('change', function (e) {
+    var f = e.target.getAttribute && e.target.getAttribute('data-filter');
+    if (!f) return;
+    state[f] = e.target.value;
+    render();
+  });
+
+  document.addEventListener('submit', function (e) {
+    if (e.target.id !== 'emp-form') return;
+    e.preventDefault();
+    var r = validate(e.target);
+    if (Object.keys(r.errors).length) {
+      state.modal.values = r.values; state.modal.errors = r.errors; render();
+      var first = document.querySelector('.field.bad input'); if (first) first.focus();
+      return;
+    }
+    state.modal = null; render();
+    toast('Saved. This is a mockup, so nothing is stored.');
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && state.modal) { state.modal = null; render(); }
+  });
+
+  /* Search */
+  var q = document.getElementById('q'), resEl = document.getElementById('results');
+  function showResults() {
+    var term = q.value.trim().toLowerCase();
+    if (!term) { resEl.innerHTML = ''; resEl.className = ''; return; }
+    var hits = PEOPLE.filter(function (p) { return (full(p) + ' ' + p.role + ' ' + p.no + ' ' + email(p)).toLowerCase().indexOf(term) !== -1; }).slice(0, 6);
+    resEl.className = 'results glass';
+    resEl.innerHTML = hits.length ? hits.map(function (p) {
+      return '<button type="button" data-act="focus" data-id="' + p.id + '">' + av(p, 32, 12) + '<span><strong style="display:block;font-size:14px">' + full(p) + '</strong><span class="muted" style="font-size:12px">' + p.role + '</span></span></button>';
+    }).join('') : '<p class="muted" style="margin:10px;font-size:14px">Nobody matches "' + q.value.replace(/</g, '&lt;') + '".</p>';
+  }
+  q.addEventListener('input', showResults);
+  q.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { var b = resEl.querySelector('button'); if (b) b.click(); }
+    if (e.key === 'Escape') { q.value = ''; showResults(); }
+  });
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.search') || e.target.closest('#results button')) { if (resEl.innerHTML) { setTimeout(function () { if (!document.activeElement || document.activeElement !== q) { q.value = ''; showResults(); } }, 0); } }
+  });
+
+  /* Spotlight and magnet (React Bits style) */
+  document.addEventListener('pointermove', function (e) {
+    var spot = e.target.closest ? e.target.closest('.spot') : null;
+    if (spot) {
+      var r = spot.getBoundingClientRect();
+      spot.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      spot.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    }
+    if (reduceMotion) return;
+    var mags = document.querySelectorAll('.magnet');
+    Array.prototype.forEach.call(mags, function (m) {
+      var b = m.getBoundingClientRect();
+      var dx = e.clientX - (b.left + b.width / 2), dy = e.clientY - (b.top + b.height / 2);
+      var dist = Math.sqrt(dx * dx + dy * dy);
+      m.style.transform = dist < 110 ? 'translate(' + (dx * 0.18) + 'px,' + (dy * 0.25) + 'px)' : '';
+    });
+  });
+
+  /* ================= 3D background (Three.js) ================= */
+  function startBackground() {
+    var canvas = document.getElementById('bg');
+    if (!window.THREE) { canvas.style.display = 'none'; document.getElementById('bg-fallback').style.display = 'block'; return; }
+    var renderer;
+    try { renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true }); }
+    catch (err) { canvas.style.display = 'none'; document.getElementById('bg-fallback').style.display = 'block'; return; }
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+    camera.position.set(0, 0, 9);
+
+    var noise = [
+      'vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}',
+      'vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}',
+      'vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}',
+      'vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}',
+      'float snoise(vec3 v){const vec2 C=vec2(1.0/6.0,1.0/3.0);const vec4 D=vec4(0.0,0.5,1.0,2.0);',
+      'vec3 i=floor(v+dot(v,C.yyy));vec3 x0=v-i+dot(i,C.xxx);vec3 g=step(x0.yzx,x0.xyz);vec3 l=1.0-g;',
+      'vec3 i1=min(g.xyz,l.zxy);vec3 i2=max(g.xyz,l.zxy);vec3 x1=x0-i1+C.xxx;vec3 x2=x0-i2+C.yyy;vec3 x3=x0-D.yyy;',
+      'i=mod289(i);vec4 p=permute(permute(permute(i.z+vec4(0.0,i1.z,i2.z,1.0))+i.y+vec4(0.0,i1.y,i2.y,1.0))+i.x+vec4(0.0,i1.x,i2.x,1.0));',
+      'float n_=0.142857142857;vec3 ns=n_*D.wyz-D.xzx;vec4 j=p-49.0*floor(p*ns.z*ns.z);vec4 x_=floor(j*ns.z);vec4 y_=floor(j-7.0*x_);',
+      'vec4 x=x_*ns.x+ns.yyyy;vec4 y=y_*ns.x+ns.yyyy;vec4 h=1.0-abs(x)-abs(y);vec4 b0=vec4(x.xy,y.xy);vec4 b1=vec4(x.zw,y.zw);',
+      'vec4 s0=floor(b0)*2.0+1.0;vec4 s1=floor(b1)*2.0+1.0;vec4 sh=-step(h,vec4(0.0));vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;',
+      'vec3 p0=vec3(a0.xy,h.x);vec3 p1=vec3(a0.zw,h.y);vec3 p2=vec3(a1.xy,h.z);vec3 p3=vec3(a1.zw,h.w);',
+      'vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));p0*=norm.x;p1*=norm.y;p2*=norm.z;p3*=norm.w;',
+      'vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0);m=m*m;',
+      'return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));}'
+    ].join('\n');
+
+    var vert = noise + '\nuniform float uTime;uniform float uAmp;uniform float uFreq;uniform float uSeed;varying vec3 vN;varying vec3 vV;' +
+      'void main(){vec3 p=position;float n=snoise(normal*uFreq+vec3(uTime*0.12+uSeed));p+=normal*n*uAmp;' +
+      'vec4 mv=modelViewMatrix*vec4(p,1.0);vN=normalize(normalMatrix*normal);vV=normalize(-mv.xyz);gl_Position=projectionMatrix*mv;}';
+    var frag = 'uniform vec3 uColor;uniform float uDark;varying vec3 vN;varying vec3 vV;' +
+      'void main(){vec3 n=normalize(vN);float d=dot(n,normalize(vec3(-0.45,0.85,0.6)));float wrap=clamp(d*0.5+0.5,0.0,1.0);' +
+      'float spec=pow(max(dot(reflect(-normalize(vec3(-0.45,0.85,0.6)),n),vV),0.0),24.0);' +
+      'float rim=pow(1.0-max(dot(n,vV),0.0),3.0);' +
+      'vec3 col=uColor*mix(0.64+0.40*wrap,0.55+0.60*wrap,uDark)+spec*mix(0.18,0.20,uDark)+rim*mix(vec3(0.06),vec3(0.10),uDark);' +
+      'gl_FragColor=vec4(col,1.0);}';
+
+    var LIGHT = ['#FFFFFF', '#F1F1EF', '#FAFAF8', '#1E1E20', '#E6E7E5', '#FFFFFF'];
+    var DARK = ['#2C2D31', '#1D1E21', '#26272B', '#E9E9E7', '#34353A', '#18191C'];
+    var defs = [
+      { p: [-5.2, 1.9, -1.5], s: 2.6, amp: 0.32, f: 0.9 },
+      { p: [5.6, -1.6, -2.5], s: 3.3, amp: 0.38, f: 0.7 },
+      { p: [1.4, 3.6, -4.0], s: 2.0, amp: 0.30, f: 1.0 },
+      { p: [-2.4, -3.0, -0.5], s: 1.05, amp: 0.18, f: 1.3 },
+      { p: [6.4, 3.2, -3.0], s: 1.6, amp: 0.26, f: 1.1 },
+      { p: [-7.0, -2.2, -3.5], s: 2.2, amp: 0.30, f: 0.8 }
+    ];
+    var geo = new THREE.IcosahedronGeometry(1, 48);
+    var blobs = defs.map(function (d, i) {
+      var mat = new THREE.ShaderMaterial({
+        vertexShader: vert, fragmentShader: frag,
+        uniforms: { uTime: { value: 0 }, uAmp: { value: d.amp }, uFreq: { value: d.f }, uSeed: { value: i * 7.3 }, uColor: { value: new THREE.Color(LIGHT[i]) }, uDark: { value: 0 } }
+      });
+      var mesh = new THREE.Mesh(geo, mat);
+      mesh.position.set(d.p[0], d.p[1], d.p[2]);
+      mesh.scale.setScalar(d.s);
+      mesh.userData = { base: d.p.slice(), phase: i * 1.7 };
+      scene.add(mesh);
+      return mesh;
+    });
+
+    var mouse = { x: 0, y: 0 }, cam = { x: 0, y: 0 };
+    window.addEventListener('pointermove', function (e) {
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = (e.clientY / window.innerHeight) * 2 - 1;
+    });
+
+    function resize() {
+      var w = window.innerWidth, h = window.innerHeight;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    window.addEventListener('resize', function () { resize(); if (reduceMotion) draw(0); });
+    resize();
+
+    function draw(t) {
+      var s = t / 1000;
+      blobs.forEach(function (b) {
+        b.material.uniforms.uTime.value = s;
+        var u = b.userData;
+        b.position.x = u.base[0] + Math.sin(s * 0.18 + u.phase) * 0.45;
+        b.position.y = u.base[1] + Math.cos(s * 0.15 + u.phase) * 0.35;
+        b.rotation.y = s * 0.05 + u.phase;
+      });
+      cam.x += (mouse.x * 0.7 - cam.x) * 0.04;
+      cam.y += (-mouse.y * 0.45 - cam.y) * 0.04;
+      camera.position.x = cam.x;
+      camera.position.y = cam.y;
+      camera.lookAt(0, 0, -2);
+      renderer.render(scene, camera);
+    }
+
+    var running = true;
+    function loop(t) { if (!running) return; draw(t); requestAnimationFrame(loop); }
+    document.addEventListener('visibilitychange', function () {
+      if (reduceMotion) return;
+      running = !document.hidden;
+      if (running) requestAnimationFrame(loop);
+    });
+    if (reduceMotion) draw(0); else requestAnimationFrame(loop);
+
+    window.__bg = {
+      setTheme: function (dark) {
+        var set = dark ? DARK : LIGHT;
+        blobs.forEach(function (b, i) { b.material.uniforms.uColor.value.set(set[i]); b.material.uniforms.uDark.value = dark ? 1 : 0; });
+        if (reduceMotion) draw(0);
+      }
+    };
+  }
+
+  startBackground();
+  applyTheme();
+  render();
+})();
+</script>
+</body>
+</html>

@@ -11,6 +11,7 @@ This folder holds all project documentation. Start with the SRS to see what the 
 | [API contract](api/API.md)                              | The REST endpoints the frontend and backend agree on.                                                      |
 | [User guide](user-guide/USER_GUIDE.md)                  | How to use the app. This is a required deliverable. Filled in as features are built.                       |
 | [Roadmap](planning/ROADMAP.md)                          | The order we build things in, and the status of each part.                                                 |
+| [Design](design/README.md)                              | The visual direction, building blocks and design rules, with the clickable concept.                        |
 
 ## Diagrams
 
