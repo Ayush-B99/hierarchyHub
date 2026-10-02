@@ -1,0 +1,34 @@
+{
+  "name": "hierarchy-hub",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Employee hierarchy management platform for EPI-USE Africa",
+  "packageManager": "pnpm@10.34.6",
+  "engines": {
+    "node": ">=22.12.0",
+    "pnpm": ">=10"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "clean": "turbo run clean && rm -rf node_modules .turbo",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,mjs,cjs,json,md,yml,yaml,css,html}": "prettier --write"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.0",
+    "@commitlint/config-conventional": "^19.8.0",
+    "husky": "^9.1.0",
+    "lint-staged": "^16.0.0",
+    "prettier": "^3.5.0",
+    "turbo": "^2.5.0",
+    "typescript": "catalog:"
+  }
+}
