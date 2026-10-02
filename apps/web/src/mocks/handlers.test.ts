@@ -14,6 +14,12 @@ describe('mock API rules', () => {
     expect(page.items.map((e) => e.lastName)).toEqual(['Mthembu', 'Molefe']);
   });
 
+  it('sorts by manager name', async () => {
+    const page = await api.listEmployees({ sortBy: 'managerName', sortOrder: 'asc', pageSize: 3 });
+    // thandi has no manager so she comes first, then sipho dlamini's team
+    expect(page.items.map((e) => e.lastName)).toEqual(['Nkosi', 'van der Merwe', 'Khumalo']);
+  });
+
   it('refuses to make someone their own manager (BR-01)', async () => {
     await expect(
       api.updateEmployee(SEED_IDS.cto, { managerId: SEED_IDS.cto }),

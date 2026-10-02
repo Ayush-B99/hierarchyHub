@@ -25,17 +25,17 @@ This is the agreement between the web app and the API. It is written before the 
 
 Used with `GET /employees`. All are optional.
 
-| Parameter                 | Type   | Description                                                                                                                   |
-| ------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `search`                  | text   | Matches first name, surname, email, employee number or role. Not case sensitive.                                              |
-| `role`                    | text   | Exact role. Not case sensitive.                                                                                               |
-| `managerId`               | UUID   | Only the direct reports of this manager.                                                                                      |
-| `salaryMin`, `salaryMax`  | number | Salary range, including both ends.                                                                                            |
-| `bornAfter`, `bornBefore` | date   | Birth date range, including both ends.                                                                                        |
-| `sortBy`                  | text   | One of `employeeNumber`, `firstName`, `lastName`, `email`, `birthDate`, `salary`, `role`, `createdAt`. Default is `lastName`. |
-| `sortOrder`               | text   | `asc` or `desc`. Default is `asc`.                                                                                            |
-| `page`                    | number | Page number, starting at 1. Default is 1.                                                                                     |
-| `pageSize`                | number | Results per page, up to 500. Default is 25.                                                                                   |
+| Parameter                 | Type   | Description                                                                                                                                                                                                             |
+| ------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `search`                  | text   | Matches first name, surname, email, employee number or role. Not case sensitive.                                                                                                                                        |
+| `role`                    | text   | Exact role. Not case sensitive.                                                                                                                                                                                         |
+| `managerId`               | UUID   | Only the direct reports of this manager.                                                                                                                                                                                |
+| `salaryMin`, `salaryMax`  | number | Salary range, including both ends.                                                                                                                                                                                      |
+| `bornAfter`, `bornBefore` | date   | Birth date range, including both ends.                                                                                                                                                                                  |
+| `sortBy`                  | text   | One of `employeeNumber`, `firstName`, `lastName`, `email`, `birthDate`, `salary`, `role`, `managerName`, `createdAt`. `managerName` sorts by the manager's surname, with top-level people first. Default is `lastName`. |
+| `sortOrder`               | text   | `asc` or `desc`. Default is `asc`.                                                                                                                                                                                      |
+| `page`                    | number | Page number, starting at 1. Default is 1.                                                                                                                                                                               |
+| `pageSize`                | number | Results per page, up to 500. Default is 25.                                                                                                                                                                             |
 
 Example: `GET /api/employees?role=engineer&sortBy=salary&sortOrder=desc&page=1`
 

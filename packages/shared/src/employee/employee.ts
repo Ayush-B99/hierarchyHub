@@ -44,6 +44,8 @@ export const EMPLOYEE_SORT_FIELDS = [
   'birthDate',
   'salary',
   'role',
+  // sorts by the manager's surname, top level people (no manager) come first
+  'managerName',
   'createdAt',
 ] as const;
 
