@@ -4,6 +4,18 @@ Employee hierarchy management platform for EPI-USE Africa: manage employees, set
 
 [![CI](https://github.com/Ayush-B99/hierarchyHub/actions/workflows/ci.yml/badge.svg)](https://github.com/Ayush-B99/hierarchyHub/actions/workflows/ci.yml)
 
+## Documentation
+
+All project documents are in [docs/](docs/README.md):
+
+- [Software Requirements Specification (SRS)](docs/srs/SRS.md)
+- [Software Architecture Specification (SAS)](docs/sas/SAS.md)
+- [Architecture Decision Records](docs/adr/README.md)
+- [Technical document](docs/technical/TECHNICAL.md)
+- [API contract](docs/api/API.md)
+- [User guide](docs/user-guide/USER_GUIDE.md)
+- [Roadmap](docs/planning/ROADMAP.md)
+
 ## Repository structure
 
 ```text
@@ -15,6 +27,7 @@ hierarchyHub/
 │   ├── shared/               Types + Zod schemas used by api and web (@hierarchy-hub/shared)
 │   ├── tsconfig/             Shared TypeScript presets (@hierarchy-hub/tsconfig)
 │   └── eslint-config/        Shared ESLint presets     (@hierarchy-hub/eslint-config)
+├── docs/                     Requirements, architecture, decisions and guides
 ├── .github/                  CI workflow, CODEOWNERS, templates, Dependabot
 ├── .husky/                   Git hooks (format staged files, check commit messages)
 ├── turbo.json                Task pipeline and caching
