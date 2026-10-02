@@ -1,0 +1,92 @@
+.rail {
+  flex: 1 1 220px;
+  max-width: 270px;
+  padding: 24px 22px 0;
+}
+
+.rail h2 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.stations {
+  position: relative;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stations::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 24px;
+  bottom: 24px;
+  width: 4px;
+  border-radius: 4px;
+  background: var(--rail);
+  box-shadow: var(--well);
+}
+
+.station {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 4px 0;
+  border: none;
+  background: transparent;
+  text-align: left;
+}
+
+.dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm), var(--inset);
+}
+
+.here .dot {
+  background: radial-gradient(circle at 35% 30%, var(--pearl-a), var(--pearl-b));
+}
+
+.name {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.here .name {
+  font-weight: 800;
+}
+
+.role {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.art {
+  height: 90px;
+  margin: 10px -22px 0;
+}
+
+@media (max-width: 760px) {
+  .rail {
+    max-width: none;
+  }
+}
