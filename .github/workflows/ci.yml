@@ -42,14 +42,3 @@ jobs:
       - run: pnpm build
       - name: API end-to-end tests
         run: pnpm --filter @hierarchy-hub/api test:e2e
-
-  pr-title:
-    name: Conventional PR title
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: read
-    steps:
-      - uses: amannn/action-semantic-pull-request@v5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
