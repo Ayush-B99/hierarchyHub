@@ -1,3 +1,3 @@
 import { reactConfig } from '@hierarchy-hub/eslint-config/react';
 
-export default reactConfig;
+export default [...reactConfig, { ignores: ['public/mockServiceWorker.js'] }];
