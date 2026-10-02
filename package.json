@@ -23,8 +23,6 @@
     "*.{ts,tsx,js,mjs,cjs,json,md,yml,yaml,css,html}": "prettier --write"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.8.0",
-    "@commitlint/config-conventional": "^19.8.0",
     "husky": "^9.1.0",
     "lint-staged": "^16.0.0",
     "prettier": "^3.5.0",
