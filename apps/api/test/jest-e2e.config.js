@@ -12,7 +12,7 @@ module.exports = {
       { tsconfig: '<rootDir>/../tsconfig.json', diagnostics: { ignoreCodes: [151002] } },
     ],
   },
-  setupFiles: ['<rootDir>/integration/load-env.js'],
+  setupFiles: ['<rootDir>/integration/load-env.js', '<rootDir>/e2e-env.js'],
   testEnvironment: 'node',
   maxWorkers: 1,
   testTimeout: 15000,
