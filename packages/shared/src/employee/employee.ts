@@ -13,7 +13,9 @@ export const employeeInputSchema = z.object({
     .trim()
     .min(1, 'Required')
     .max(20, 'Keep it under 20 characters')
-    .regex(/^[A-Za-z0-9-]+$/, 'Use letters, numbers and dashes only'),
+    .regex(/^[A-Za-z0-9-]+$/, 'Use letters, numbers and dashes only')
+    // stored upper case so "emp-1" and "EMP-1" count as the same number (the database checks this too)
+    .transform((value) => value.toUpperCase()),
   firstName: name,
   lastName: name,
   email: z.string().trim().toLowerCase().email('Enter a valid email address'),
