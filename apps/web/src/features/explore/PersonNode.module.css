@@ -63,3 +63,66 @@
   font-size: 15px;
   font-weight: 800;
 }
+
+/* soft light that follows the cursor, react bits spotlight card style */
+.node::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  background: radial-gradient(
+    160px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(255, 255, 255, 0.5),
+    transparent 65%
+  );
+}
+
+:global([data-theme='dark']) .node::before {
+  background: radial-gradient(
+    160px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(255, 255, 255, 0.08),
+    transparent 65%
+  );
+}
+
+.node:hover::before {
+  opacity: 1;
+}
+
+/* drag and drop looks */
+.dragging {
+  opacity: 0.4;
+}
+
+.target {
+  outline: 2px dashed var(--muted);
+  outline-offset: 4px;
+}
+
+.over {
+  outline: 3px solid var(--fill);
+  outline-offset: 4px;
+  transform: translateY(-5px) scale(1.04);
+}
+
+.blocked {
+  opacity: 0.35;
+}
+
+.ghost {
+  position: fixed;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 6px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  pointer-events: none;
+}
