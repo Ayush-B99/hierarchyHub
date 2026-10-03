@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import { ErrorState } from '../components/feedback/ErrorState';
-import { LoadingState } from '../components/feedback/LoadingState';
 import { Panel } from '../components/ui/Panel';
 import { useHierarchy } from '../features/employees/queries';
 import { DetailsPanel } from '../features/explore/DetailsPanel';
+import { ExploreSkeleton } from '../features/explore/ExploreSkeleton';
 import { Hero } from '../features/explore/Hero';
 import { LevelsView } from '../features/explore/LevelsView';
 import { OrbitView } from '../features/explore/OrbitView';
@@ -28,7 +28,7 @@ export function ExplorePage() {
 
   useDocumentTitle(person ? `${fullName(person)} · Hierarchy Hub` : 'Explore · Hierarchy Hub');
 
-  if (isPending) return <LoadingState label="Loading the organisation" />;
+  if (isPending) return <ExploreSkeleton />;
   if (error)
     return <ErrorState title="We couldn't load the organisation" error={error} onRetry={refetch} />;
   if (!org || !person) {
