@@ -1,0 +1,76 @@
+.form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.field label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.field input,
+.field select {
+  /* without these the manager dropdown grows to fit its longest name and pushes
+     the whole dialog wider than a phone screen */
+  width: 100%;
+  min-width: 0;
+  height: 52px;
+  padding: 0 18px;
+  border: 2px solid transparent;
+  border-radius: 18px;
+  background: var(--surface-2);
+  font-size: 15px;
+  box-shadow: var(--well);
+}
+
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--fill);
+}
+
+.invalid input,
+.invalid select {
+  border-color: var(--danger);
+}
+
+.error {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--danger);
+}
+
+.help {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.banner {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-weight: 700;
+  color: var(--danger);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 760px) {
+  .form {
+    grid-template-columns: 1fr;
+  }
+}
