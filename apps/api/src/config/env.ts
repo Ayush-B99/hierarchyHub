@@ -10,6 +10,14 @@ export const envSchema = z
     PORT: z.coerce.number().int().positive().default(3000),
     CORS_ORIGIN: z.string().default('http://localhost:5173'),
 
+    // --- security ---
+    // how many proxies sit in front of the api (aws: cloudfront then the load balancer = 2),
+    // so the real visitor's ip is used for rate limiting instead of the proxy's
+    TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(0),
+    // requests per minute from one ip address, reads and changes counted separately
+    RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).default(300),
+    RATE_LIMIT_WRITES_PER_MINUTE: z.coerce.number().int().min(1).default(60),
+
     // --- database ---
     // the app user (hh_app), never the migrator. see docs/adr/0010-database-design.md
     DATABASE_URL: z

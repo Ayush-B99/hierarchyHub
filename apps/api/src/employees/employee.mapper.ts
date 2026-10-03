@@ -1,4 +1,5 @@
-import type { Employee } from '@hierarchy-hub/shared';
+import { Prisma } from '@prisma/client';
+import type { CreateEmployeeInput, Employee, UpdateEmployeeInput } from '@hierarchy-hub/shared';
 
 /** the columns we read, whether they came through prisma's client or a raw query */
 export interface EmployeeRecord {
@@ -37,4 +38,38 @@ export function toEmployee(row: EmployeeRecord): Employee {
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
+}
+
+/** "1990-05-01" -> midnight utc on that day, how the database's date column round trips */
+const toDate = (isoDate: string) => new Date(`${isoDate}T00:00:00Z`);
+/** exact decimal from the validated number, never a float, so cents can't drift */
+const toSalary = (amount: number) => new Prisma.Decimal(amount.toFixed(2));
+
+/** checked input -> what prisma needs to add an employee */
+export function toCreateData(input: CreateEmployeeInput): Prisma.EmployeeUncheckedCreateInput {
+  return {
+    employeeNumber: input.employeeNumber,
+    firstName: input.firstName,
+    lastName: input.lastName,
+    email: input.email,
+    birthDate: toDate(input.birthDate),
+    salary: toSalary(input.salary),
+    role: input.role,
+    managerId: input.managerId ?? null,
+  };
+}
+
+/** only the fields that were sent, so a change never touches anything else */
+export function toUpdateData(input: UpdateEmployeeInput): Prisma.EmployeeUncheckedUpdateInput {
+  const data: Prisma.EmployeeUncheckedUpdateInput = {};
+  if (input.employeeNumber !== undefined) data.employeeNumber = input.employeeNumber;
+  if (input.firstName !== undefined) data.firstName = input.firstName;
+  if (input.lastName !== undefined) data.lastName = input.lastName;
+  if (input.email !== undefined) data.email = input.email;
+  if (input.birthDate !== undefined) data.birthDate = toDate(input.birthDate);
+  if (input.salary !== undefined) data.salary = toSalary(input.salary);
+  if (input.role !== undefined) data.role = input.role;
+  // null is meaningful here: it makes them top level
+  if (input.managerId !== undefined) data.managerId = input.managerId;
+  return data;
 }

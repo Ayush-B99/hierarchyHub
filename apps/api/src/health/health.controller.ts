@@ -1,11 +1,15 @@
 import { Controller, Get, HttpCode, HttpStatus, Res } from '@nestjs/common';
 import { type HealthResponse } from '@hierarchy-hub/shared';
+import { SkipThrottle } from '@nestjs/throttler';
 import type { Response } from 'express';
 import { DatabaseService } from '../database/database.service';
 
 const SERVICE = 'hierarchy-hub-api';
 const VERSION = process.env.npm_package_version ?? '0.0.0';
 
+// the load balancer polls these constantly, so they're never rate limited. with named
+// limits each one has to be skipped by name, a bare @SkipThrottle() only skips one called default
+@SkipThrottle({ reads: true, writes: true })
 @Controller('health')
 export class HealthController {
   constructor(private readonly database: DatabaseService) {}
