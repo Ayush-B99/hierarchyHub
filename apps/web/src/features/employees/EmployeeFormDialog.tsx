@@ -159,7 +159,7 @@ export function EmployeeFormDialog({
       [errors[name] && `${idBase}-${name}-error`, help && `${idBase}-${name}-help`]
         .filter(Boolean)
         .join(' ') || undefined,
-    autoFocus: focus === name,
+    'data-autofocus': focus === name ? true : undefined,
   });
 
   return (
@@ -188,7 +188,11 @@ export function EmployeeFormDialog({
         {field(
           'firstName',
           'First name',
-          <input {...inputProps('firstName')} autoComplete="off" autoFocus={!focus} />,
+          <input
+            {...inputProps('firstName')}
+            autoComplete="off"
+            data-autofocus={!focus ? true : undefined}
+          />,
         )}
         {field('lastName', 'Surname', <input {...inputProps('lastName')} autoComplete="off" />)}
         {field(
