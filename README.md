@@ -51,28 +51,29 @@ task setup   # install dependencies, create .env files, start and migrate the da
 task dev     # start the frontend and backend
 ```
 
-- Web: http://localhost:5173. Until the real API is built, a mock API answers requests in development ([ADR 0008](docs/adr/0008-frontend-first-with-msw.md)).
+- Web: http://localhost:5173, using the real API and your local database. Load the sample people with `task db:seed`.
 - API: http://localhost:3000/api/health
 
 ## Common commands
 
 Run `task` on its own to see every command. The main ones:
 
-| Command                                              | What it does                                                 |
-| ---------------------------------------------------- | ------------------------------------------------------------ |
-| `task dev`                                           | Start the frontend and backend together                      |
-| `task web`                                           | Start only the frontend                                      |
-| `task api`                                           | Start only the backend                                       |
-| `task unit`                                          | Run all unit tests                                           |
-| `task unit:web`, `task unit:api`, `task unit:shared` | Run unit tests for one package                               |
-| `task watch`                                         | Re-run frontend tests on every change                        |
-| `task e2e`                                           | Run end-to-end tests                                         |
-| `task integration`                                   | Run integration tests against a real database (from Part 4)  |
-| `task test`                                          | Run every test                                               |
-| `task check`                                         | Run everything CI runs: format, lint, types, tests and build |
-| `task lint`, `task typecheck`, `task format`         | Individual quality checks                                    |
-| `task build`                                         | Build every package                                          |
-| `task clean`                                         | Remove build output, caches and `node_modules`               |
+| Command                                              | What it does                                                      |
+| ---------------------------------------------------- | ----------------------------------------------------------------- |
+| `task dev`                                           | Start the frontend and backend together                           |
+| `task web`                                           | Start only the frontend                                           |
+| `task web:mock`                                      | Start only the frontend, against the mock API (no backend needed) |
+| `task api`                                           | Start only the backend                                            |
+| `task unit`                                          | Run all unit tests                                                |
+| `task unit:web`, `task unit:api`, `task unit:shared` | Run unit tests for one package                                    |
+| `task watch`                                         | Re-run frontend tests on every change                             |
+| `task e2e`                                           | Run end-to-end tests                                              |
+| `task integration`                                   | Run integration tests against a real database (from Part 4)       |
+| `task test`                                          | Run every test                                                    |
+| `task check`                                         | Run everything CI runs: format, lint, types, tests and build      |
+| `task lint`, `task typecheck`, `task format`         | Individual quality checks                                         |
+| `task build`                                         | Build every package                                               |
+| `task clean`                                         | Remove build output, caches and `node_modules`                    |
 
 ### Without Task
 
