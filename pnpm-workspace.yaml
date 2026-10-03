@@ -15,3 +15,10 @@ catalog:
 onlyBuiltDependencies:
   - '@nestjs/core'
   - esbuild
+
+# install scripts we deliberately skip. msw only refreshes a file we already commit,
+# and prisma downloads its engines on first use instead of at install time
+ignoredBuiltDependencies:
+  - msw
+  - prisma
+  - '@prisma/engines'

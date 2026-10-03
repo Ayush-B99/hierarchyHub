@@ -1,0 +1,48 @@
+// the database schema, see docs/adr/0010-database-design.md
+//
+// prisma only knows about the table, indexes and the manager link. the extra safety rules
+// (checks and the loop trigger) live in the migration sql, prisma can't describe those.
+// ci compares this file to the real database after migrating, so the two can't drift apart
+
+generator client {
+  provider      = "prisma-client-js"
+  // native for your machine, debian for the docker image the api runs in on aws
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  // the app user, which can only read and write rows. migrations swap in the migrator user
+  url      = env("DATABASE_URL")
+}
+
+/// one row per employee. each points at their manager, null means top of the org (adjacency list, adr 0003)
+model Employee {
+  id             String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  /// always upper case, so uniqueness ignores capitals
+  employeeNumber String     @unique @map("employee_number") @db.VarChar(20)
+  firstName      String     @map("first_name") @db.VarChar(100)
+  lastName       String     @map("last_name") @db.VarChar(100)
+  /// always lower case, so uniqueness ignores capitals
+  email          String     @unique @db.VarChar(255)
+  birthDate      DateTime   @map("birth_date") @db.Date
+  /// exact decimal, never a float, so money doesn't get rounded
+  salary         Decimal    @db.Decimal(12, 2)
+  role           String     @db.VarChar(100)
+  managerId      String?    @map("manager_id") @db.Uuid
+  manager        Employee?  @relation("ReportingLine", fields: [managerId], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  directReports  Employee[] @relation("ReportingLine")
+  /// goes up by one on every change (set by the database), used to catch clashing edits
+  version        Int        @default(1)
+  createdAt      DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  /// set by the database on every change
+  updatedAt      DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  // one index per thing we sort, filter or look up by
+  @@index([managerId])
+  @@index([lastName, firstName])
+  @@index([role])
+  @@index([salary])
+  @@index([birthDate])
+  @@map("employees")
+}
