@@ -12,6 +12,6 @@
 
 ## Checklist
 
-- [ ] `task check` passes locally
+- [ ] `pnpm lint && pnpm typecheck && pnpm test && pnpm build` pass locally
 - [ ] Tests added or updated
 - [ ] Docs updated if behaviour changed
