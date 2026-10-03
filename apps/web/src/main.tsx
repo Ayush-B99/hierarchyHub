@@ -7,11 +7,13 @@ import { createQueryClient } from './lib/queryClient';
 import './styles/global.css';
 
 /**
- * In development the mock API (MSW) answers /api requests until the real API is built.
- * `import.meta.env.DEV` is false in production builds, so Vite removes the mocks entirely.
+ * the app talks to the real api by default, in development through vite's proxy to
+ * localhost:3000. set VITE_API_MOCKING=true (or run `task web:mock`) to use the mock api
+ * instead, eg to work on screens without the backend running. `import.meta.env.DEV` is false
+ * in production builds, so vite removes the mock from them entirely (adr 0008)
  */
 async function enableMocking() {
-  if (!import.meta.env.DEV || import.meta.env.VITE_API_MOCKING === 'false') return;
+  if (!import.meta.env.DEV || import.meta.env.VITE_API_MOCKING !== 'true') return;
   const { worker } = await import('./mocks/browser');
   await worker.start({ onUnhandledRequest: 'bypass', quiet: true });
 }
