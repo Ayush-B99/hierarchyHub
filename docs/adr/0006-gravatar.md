@@ -17,11 +17,15 @@ The brief requires Gravatar profile pictures. Gravatar finds a picture using a h
 
 ## Decision
 
-Store the email address with each employee. The browser trims it, makes it lower case, hashes it with SHA-256 and loads `https://gravatar.com/avatar/{hash}?s={size}&d=identicon`.
+Store the email address with each employee. The browser trims it, makes it lower case, hashes it with SHA-256 and loads `https://gravatar.com/avatar/{hash}?s={size}&d=blank`.
+
+The picture sits on top of a disc with the person's initials. When someone has no Gravatar, `d=blank` returns a transparent image, so their initials show through.
 
 ## Consequences
 
 - No storage or server work for pictures.
 - The plain email address is never sent to Gravatar.
-- People with no Gravatar get a unique generated picture (`d=identicon`).
+- People with no Gravatar see their initials on a soft coloured disc, which matches the design system better than Gravatar's generated patterns (`d=identicon`).
+- We don't use `d=404` for this. It works, but the browser logs every missing picture as a red error in the console, which looks like a fault to anyone inspecting the app.
+- If Gravatar can't be reached at all, the image fails to load and the initials still show.
 - If picture upload is added later (FR-16), an uploaded picture will take priority over Gravatar.
