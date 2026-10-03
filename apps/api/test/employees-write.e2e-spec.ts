@@ -1,4 +1,5 @@
 import { type INestApplication } from '@nestjs/common';
+import { WRITE_SCENARIOS } from '@hierarchy-hub/shared/testing';
 import request from 'supertest';
 import type { DatabaseService } from '../src/database/database.service';
 import { loadSamplePeople, startApp } from './app';
@@ -29,6 +30,17 @@ beforeAll(async () => {
 });
 beforeEach(() => loadSamplePeople(db));
 afterAll(() => app.close());
+
+describe('changes follow the shared contract', () => {
+  // the same examples the mock api is tested with (apps/web/src/mocks/contract.test.ts)
+  it.each(WRITE_SCENARIOS)('$name', async ({ method, path, ifMatch, body, status, field }) => {
+    let call = http()[method.toLowerCase() as 'post' | 'patch' | 'delete'](`/api${path}`);
+    if (ifMatch) call = call.set('If-Match', ifMatch);
+    const res = await (body ? call.send(body) : call);
+    expect(res.status).toBe(status);
+    if (field) expect(Object.keys(res.body.errors ?? {})).toContain(field);
+  });
+});
 
 describe('POST /api/employees', () => {
   it('adds someone, tidied up, with a location and etag', async () => {

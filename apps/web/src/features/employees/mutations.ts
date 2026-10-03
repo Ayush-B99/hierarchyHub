@@ -14,19 +14,29 @@ export function useCreateEmployee() {
   });
 }
 
+/** version is the one the change is based on, the api refuses it (412) if someone saved since */
 export function useUpdateEmployee() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: UpdateEmployeeInput }) =>
-      api.updateEmployee(id, input),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: employeeKeys.all }),
+    mutationFn: ({
+      id,
+      input,
+      version,
+    }: {
+      id: string;
+      input: UpdateEmployeeInput;
+      version: number;
+    }) => api.updateEmployee(id, input, version),
+    // refresh on failure too: a 412 means our copy is out of date
+    onSettled: () => queryClient.invalidateQueries({ queryKey: employeeKeys.all }),
   });
 }
 
 export function useDeleteEmployee() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => api.deleteEmployee(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: employeeKeys.all }),
+    mutationFn: ({ id, version }: { id: string; version: number }) =>
+      api.deleteEmployee(id, version),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: employeeKeys.all }),
   });
 }

@@ -10,7 +10,7 @@ import {
 } from 'react';
 import { Button } from '../../components/ui/Button';
 import { Dialog, DialogActions } from '../../components/ui/Dialog';
-import { ApiError } from '../../lib/api';
+import { api, ApiError } from '../../lib/api';
 import { fullName } from '../../lib/format';
 import styles from './EmployeeFormDialog.module.css';
 import {
@@ -46,6 +46,10 @@ export function EmployeeFormDialog({
   onSaved,
 }: EmployeeFormDialogProps) {
   const editing = Boolean(employee);
+  // the version of the employee this form is based on. it moves on when you load the latest
+  // after a clash, so the next save is checked against what you're actually looking at
+  const [base, setBase] = useState<Employee | undefined>(employee);
+  const [stale, setStale] = useState(false);
   const [values, setValues] = useState<FormValues>(employee ? valuesFrom(employee) : EMPTY_VALUES);
   const [errors, setErrors] = useState<FormErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -89,19 +93,27 @@ export function EmployeeFormDialog({
     }
 
     try {
-      if (!employee) {
+      if (!base) {
         onSaved(await create.mutateAsync(data), 'added');
         return;
       }
-      const changes = changedFields(employee, data);
+      const changes = changedFields(base, data);
       if (Object.keys(changes).length === 0) {
-        onSaved(employee, 'unchanged');
+        onSaved(base, 'unchanged');
         return;
       }
-      onSaved(await update.mutateAsync({ id: employee.id, input: changes }), 'updated');
+      onSaved(
+        await update.mutateAsync({ id: base.id, input: changes, version: base.version }),
+        'updated',
+      );
     } catch (error) {
       if (!(error instanceof ApiError)) {
         setFormError("We couldn't save that. Check your connection and try again.");
+        return;
+      }
+      // someone else saved first. nothing was overwritten, offer to load their version
+      if (error.isStale) {
+        setStale(true);
         return;
       }
       const serverErrors = fromServerErrors(error.fieldErrors);
@@ -115,6 +127,26 @@ export function EmployeeFormDialog({
       } else {
         setFormError(error.message);
       }
+    }
+  };
+
+  /** after a clash: swap the form over to the latest saved version so you can edit from there */
+  const loadLatest = async () => {
+    if (!base) return;
+    try {
+      const latest = await api.getEmployee(base.id);
+      setBase(latest);
+      setValues(valuesFrom(latest));
+      setErrors({});
+      setStale(false);
+      formRef.current?.querySelector<HTMLElement>(`[name="${focus ?? 'firstName'}"]`)?.focus();
+    } catch (error) {
+      setStale(false);
+      setFormError(
+        error instanceof ApiError && error.status === 404
+          ? 'Someone else has deleted this employee.'
+          : "We couldn't load the latest version. Please try again.",
+      );
     }
   };
 
@@ -184,6 +216,15 @@ export function EmployeeFormDialog({
           <p className={styles.banner} role="alert">
             {formError}
           </p>
+        )}
+        {stale && base && (
+          <div className={styles.banner} role="alert">
+            <p className={styles.bannerText}>
+              Someone else changed {base.firstName} while you were editing, so your changes weren't
+              saved. Load their latest version, then make your change again.
+            </p>
+            <Button onClick={loadLatest}>Load the latest version</Button>
+          </div>
         )}
         {field(
           'firstName',

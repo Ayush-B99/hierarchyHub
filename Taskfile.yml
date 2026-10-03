@@ -33,7 +33,7 @@ tasks:
   # ---------- Run ----------
 
   dev:
-    desc: Start the frontend and backend together
+    desc: Start the frontend and backend together (needs the database, task db:up)
     aliases: [start, both]
     cmds:
       - pnpm dev
@@ -41,6 +41,14 @@ tasks:
   web:
     desc: Start only the frontend (http://localhost:5173)
     aliases: [frontend, dev:web]
+    cmds:
+      - pnpm turbo run build --filter={{.SHARED}}
+      - pnpm --filter {{.WEB}} dev
+
+  web:mock:
+    desc: Start only the frontend, using the mock API instead of the real one
+    env:
+      VITE_API_MOCKING: 'true'
     cmds:
       - pnpm turbo run build --filter={{.SHARED}}
       - pnpm --filter {{.WEB}} dev

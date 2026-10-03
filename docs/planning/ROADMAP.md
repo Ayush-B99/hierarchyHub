@@ -14,8 +14,8 @@ The project is built in parts. Each part is one branch and one pull request, mad
 | 4a   | Database: local PostgreSQL, table, rules, users, migrations, integration tests              | `feat/database`              | Done        |
 | 4b   | Connect the API to the database securely, sample data for local work                        | `feat/database-access`       | Done        |
 | 5a   | Employee API, reading: list, filters, sorting, paging, hierarchy, caching                   | `feat/api-read`              | Done        |
-| 5b   | Employee API, changes: create, update, delete, clashing edits, security layer               | `feat/api-write`             | In progress |
-| 5c   | Switch the frontend from the mock to the real API                                           | `feat/web-real-api`          | Not started |
+| 5b   | Employee API, changes: create, update, delete, clashing edits, security layer               | `feat/api-write`             | Done        |
+| 5c   | Switch the frontend from the mock to the real API                                           | `feat/web-real-api`          | In progress |
 | 6    | AWS setup and deployment                                                                    | `feat/aws-deployment`        | Not started |
 | 7    | Final user guide, technical document and extras                                             | `docs/final-documentation`   | Not started |
 

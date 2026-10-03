@@ -22,20 +22,20 @@ describe('mock API rules', () => {
 
   it('refuses to make someone their own manager (BR-01)', async () => {
     await expect(
-      api.updateEmployee(SEED_IDS.cto, { managerId: SEED_IDS.cto }),
+      api.updateEmployee(SEED_IDS.cto, { managerId: SEED_IDS.cto }, 1),
     ).rejects.toMatchObject({
       status: 400,
     });
   });
 
   it('refuses a manager from the employee’s own team (BR-02)', async () => {
-    const attempt = api.updateEmployee(SEED_IDS.cto, { managerId: SEED_IDS.seniorEngineer });
+    const attempt = api.updateEmployee(SEED_IDS.cto, { managerId: SEED_IDS.seniorEngineer }, 1);
     await expect(attempt).rejects.toBeInstanceOf(ApiError);
     await expect(attempt).rejects.toMatchObject({ status: 400 });
   });
 
   it('moves direct reports up when a manager is deleted (BR-04)', async () => {
-    await api.deleteEmployee(SEED_IDS.engineeringManager);
+    await api.deleteEmployee(SEED_IDS.engineeringManager, 1);
     const team = await api.listEmployees({ managerId: SEED_IDS.cto });
     expect(team.items.map((e) => e.lastName)).toEqual(
       expect.arrayContaining(['Botha', 'Mthembu', 'Molefe', 'Naidoo', 'Khumalo']),

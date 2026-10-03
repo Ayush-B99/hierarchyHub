@@ -19,6 +19,11 @@ export class ApiError extends Error {
     this.status = status;
     this.fieldErrors = body.errors ?? {};
   }
+
+  /** someone else saved this employee after we loaded them (412) */
+  get isStale(): boolean {
+    return this.status === 412;
+  }
 }
 
 function toUrl(path: string): string {
@@ -46,6 +51,9 @@ function toQueryString(query: Partial<ListEmployeesQuery>): string {
   return text ? `?${text}` : '';
 }
 
+/** the etag the api uses for an employee's version, eg "v3" */
+const versionTag = (version: number) => `"v${version}"`;
+
 /** Typed client for the REST API described in docs/api/API.md. */
 export const api = {
   health: () => request<HealthResponse>('/health'),
@@ -55,7 +63,17 @@ export const api = {
   getEmployee: (id: string) => request<Employee>(`/employees/${id}`),
   createEmployee: (input: CreateEmployeeInput) =>
     request<Employee>('/employees', { method: 'POST', body: JSON.stringify(input) }),
-  updateEmployee: (id: string, input: UpdateEmployeeInput) =>
-    request<Employee>(`/employees/${id}`, { method: 'PATCH', body: JSON.stringify(input) }),
-  deleteEmployee: (id: string) => request<void>(`/employees/${id}`, { method: 'DELETE' }),
+  // changes send back the version they were based on, so the api can refuse them (412)
+  // if someone else saved in between, instead of quietly overwriting their work
+  updateEmployee: (id: string, input: UpdateEmployeeInput, version: number) =>
+    request<Employee>(`/employees/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+      headers: { 'If-Match': versionTag(version) },
+    }),
+  deleteEmployee: (id: string, version: number) =>
+    request<void>(`/employees/${id}`, {
+      method: 'DELETE',
+      headers: { 'If-Match': versionTag(version) },
+    }),
 };

@@ -25,16 +25,42 @@ function validationError(zodError: FlattenableError) {
   return error(400, 'Validation failed', fieldErrors);
 }
 
-function duplicateOf(input: { email?: string; employeeNumber?: string }, exceptId?: string) {
-  return db
-    .all()
-    .find(
-      (row) =>
-        row.id !== exceptId &&
-        ((input.email && row.email === input.email) ||
-          (input.employeeNumber &&
-            row.employeeNumber.toLowerCase() === input.employeeNumber.toLowerCase())),
+function fieldError(statusCode: number, field: string, message: string) {
+  return error(statusCode, message, { [field]: [message] });
+}
+
+/** a 409 on the right field when the email or employee number is already taken, like the real api */
+function duplicateProblem(input: { email?: string; employeeNumber?: string }, exceptId?: string) {
+  const others = db.all().filter((row) => row.id !== exceptId);
+  if (input.email && others.some((row) => row.email === input.email)) {
+    return fieldError(409, 'email', 'Another employee already has that email address');
+  }
+  if (input.employeeNumber && others.some((row) => row.employeeNumber === input.employeeNumber)) {
+    return fieldError(409, 'employeeNumber', 'Another employee already has that employee number');
+  }
+  return null;
+}
+
+const etagFor = (row: Employee) => `"v${row.version}"`;
+
+/**
+ * the same If-Match rules as the real api (apps/api/src/common/if-match.ts):
+ * missing is 428, malformed is 400, an old version is 412, and * skips the check
+ */
+function versionProblem(ifMatch: string | null, row: Employee | undefined) {
+  if (!ifMatch) {
+    return error(428, 'Send the If-Match header with the version you loaded, eg If-Match: "v3"');
+  }
+  if (ifMatch.trim() === '*') return null;
+  const version = /^(?:W\/)?"v(\d{1,9})"$/.exec(ifMatch.trim())?.[1];
+  if (!version) return error(400, 'If-Match must look like "v3"');
+  if (row && Number(version) !== row.version) {
+    return error(
+      412,
+      'Someone else changed this employee while you were editing. Reload to see their changes, then try again.',
     );
+  }
+  return null;
 }
 
 const managerOf = (id: string) => db.find(id)?.managerId;
@@ -109,18 +135,22 @@ export const handlers = [
   http.get(`${API}/employees/:id`, async ({ params }) => {
     await delay();
     const row = db.find(String(params.id));
-    return row ? HttpResponse.json(row) : error(404, 'Employee not found');
+    if (!row) return error(404, 'Employee not found');
+    return HttpResponse.json(row, { headers: { ETag: etagFor(row) } });
   }),
 
   http.post(`${API}/employees`, async ({ request }) => {
     await delay();
-    const parsed = createEmployeeSchema.safeParse(await request.json());
+    // strict, like the real api: unknown fields such as id or version are refused
+    const parsed = createEmployeeSchema.strict().safeParse(await request.json());
     if (!parsed.success) return validationError(parsed.error);
     const input = parsed.data;
 
-    if (duplicateOf(input))
-      return error(409, 'Another employee already has that email or employee number');
-    if (input.managerId && !db.find(input.managerId)) return error(404, 'Manager not found');
+    const duplicate = duplicateProblem(input);
+    if (duplicate) return duplicate;
+    if (input.managerId && !db.find(input.managerId)) {
+      return fieldError(404, 'managerId', 'That manager no longer exists');
+    }
 
     const now = new Date().toISOString();
     const row: Employee = {
@@ -132,40 +162,57 @@ export const handlers = [
       updatedAt: now,
     };
     db.insert(row);
-    return HttpResponse.json(row, { status: 201 });
+    return HttpResponse.json(row, {
+      status: 201,
+      headers: { ETag: etagFor(row), Location: `/api/employees/${row.id}` },
+    });
   }),
 
   http.patch(`${API}/employees/:id`, async ({ params, request }) => {
     await delay();
     const id = String(params.id);
-    if (!db.find(id)) return error(404, 'Employee not found');
+    const ifMatch = request.headers.get('If-Match');
 
-    const parsed = updateEmployeeSchema.safeParse(await request.json());
+    const parsed = updateEmployeeSchema.strict().safeParse(await request.json());
     if (!parsed.success) return validationError(parsed.error);
     const input = parsed.data;
+    if (Object.keys(input).length === 0) {
+      return error(400, 'Validation failed', { _: ['Send at least one field to change'] });
+    }
+
+    const current = db.find(id);
+    const versionCheck = versionProblem(ifMatch, current);
+    if (versionCheck) return versionCheck;
+    if (!current) return error(404, 'Employee not found');
 
     if (input.managerId) {
-      if (input.managerId === id) return error(400, 'An employee cannot be their own manager');
-      if (!db.find(input.managerId)) return error(404, 'Manager not found');
+      if (input.managerId === id)
+        return fieldError(400, 'managerId', "An employee can't be their own manager");
+      if (!db.find(input.managerId))
+        return fieldError(404, 'managerId', 'That manager no longer exists');
       if (wouldCreateCycle(id, input.managerId, managerOf)) {
-        return error(
+        return fieldError(
           400,
-          'This person reports to the employee you are editing, so they cannot be their manager',
+          'managerId',
+          "This person reports to the employee you're editing, so they can't be their manager",
         );
       }
     }
-    if (duplicateOf(input, id))
-      return error(409, 'Another employee already has that email or employee number');
+    const duplicate = duplicateProblem(input, id);
+    if (duplicate) return duplicate;
 
-    return HttpResponse.json(db.update(id, input));
+    const row = db.update(id, input);
+    return HttpResponse.json(row, { headers: { ETag: etagFor(row) } });
   }),
 
-  http.delete(`${API}/employees/:id`, async ({ params }) => {
+  http.delete(`${API}/employees/:id`, async ({ params, request }) => {
     await delay();
     const id = String(params.id);
     const row = db.find(id);
+    const versionCheck = versionProblem(request.headers.get('If-Match'), row);
+    if (versionCheck) return versionCheck;
     if (!row) return error(404, 'Employee not found');
-    // BR-04: direct reports move up to the deleted employee's manager.
+    // br-04: direct reports move up to the deleted employee's manager
     for (const report of db.all().filter((e) => e.managerId === id)) {
       db.update(report.id, { managerId: row.managerId });
     }

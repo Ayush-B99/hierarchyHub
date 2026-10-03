@@ -29,3 +29,7 @@ Use MSW. The handlers in `apps/web/src/mocks` implement the API contract (`docs/
 - The handlers act as a working example of the API contract for building the real API.
 - The deployed app never contains mock data, so C-01 is respected.
 - The mock and real API must be kept in step. The handler tests help catch differences.
+
+## Update, 3 October 2026
+
+The real API now exists (Parts 4 and 5). Development uses it by default, and the mock is opt-in with `task web:mock`. The mock stays as the backbone of the frontend tests. Shared contract examples (`packages/shared/src/testing`) run against both the mock and the real API, so they can't drift apart.

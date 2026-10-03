@@ -61,7 +61,12 @@ describe('adding an employee', () => {
     await fill('Salary (R)', '1000');
     await userEvent.click(within(dialog()).getByRole('button', { name: 'Add employee' }));
 
-    expect(await within(dialog()).findByRole('alert')).toHaveTextContent(/already has that email/);
+    // the api says which field the problem is on, so it shows right under email
+    expect(
+      await within(dialog()).findByText('Another employee already has that email address'),
+    ).toBeInTheDocument();
+    expect(within(dialog()).getByLabelText('Email')).toHaveAttribute('aria-invalid', 'true');
+    expect(within(dialog()).getByLabelText('Email')).toHaveFocus();
   });
 
   it('closes with cancel and keeps nothing', async () => {
