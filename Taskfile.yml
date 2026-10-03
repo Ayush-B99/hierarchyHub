@@ -22,6 +22,7 @@ tasks:
       - corepack enable
       - pnpm install
       - task: env
+      - task: db:migrate
 
   env:
     desc: Create local .env files from the examples (keeps existing ones)
@@ -98,11 +99,59 @@ tasks:
       - pnpm --filter {{.API}} test:e2e
 
   integration:
-    desc: Run integration tests against a real database (added in Part 4)
+    desc: Run integration tests against the real test database
     aliases: [test:integration]
-    silent: true
     cmds:
-      - echo "No integration tests yet. They arrive with the database in Part 4."
+      - task: db:up
+      - pnpm --filter {{.API}} db:migrate:test
+      - pnpm --filter {{.API}} test:integration
+
+  # ---------- Database ----------
+
+  db:up:
+    desc: Start the local PostgreSQL in Docker (first start sets up users and databases)
+    cmds:
+      - docker compose up -d --wait postgres
+
+  db:down:
+    desc: Stop the local database (your data is kept)
+    cmds:
+      - docker compose down
+
+  db:reset:
+    desc: Delete the local database completely and start fresh
+    prompt: This deletes all local database data. Continue?
+    cmds:
+      - docker compose down -v
+      - task: db:up
+      - task: db:migrate
+
+  db:migrate:
+    desc: Apply migrations to the local and test databases
+    cmds:
+      - task: db:up
+      - pnpm --filter {{.API}} db:migrate
+      - pnpm --filter {{.API}} db:migrate:test
+
+  db:new-migration:
+    desc: 'Create a migration after editing schema.prisma, eg: task db:new-migration -- add_department'
+    cmds:
+      - pnpm --filter {{.API}} db:new-migration --name {{.CLI_ARGS}}
+
+  db:check:
+    desc: Check schema.prisma still matches the real database (ci runs this too)
+    cmds:
+      - pnpm --filter {{.API}} db:check
+
+  db:studio:
+    desc: Browse the local data in Prisma Studio
+    cmds:
+      - pnpm --filter {{.API}} db:studio
+
+  db:psql:
+    desc: Open a SQL prompt on the local database, as the app user
+    cmds:
+      - docker compose exec postgres psql -U hh_app -d hierarchy_hub
 
   # ---------- Quality ----------
 
@@ -130,6 +179,7 @@ tasks:
       - pnpm lint
       - pnpm typecheck
       - task: test
+      - task: integration
       - pnpm build
 
   # ---------- Build and clean ----------

@@ -23,6 +23,10 @@ Keep comments short and casual, like you're explaining the code to a teammate. L
 // the url holds the selected person so the back button just works
 ```
 
+## Database changes
+
+Follow the steps in [the database guide](apps/api/prisma/README.md). In short: edit `schema.prisma`, run `task db:new-migration -- name`, add any extra rules to the SQL, and add integration tests. Never edit a migration that's already on `main`.
+
 ## Adding dependencies
 
 ```bash

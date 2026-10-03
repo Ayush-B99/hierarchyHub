@@ -1,0 +1,28 @@
+# local development database only. production uses amazon rds (part 6)
+# start it with `task db:up`, the first start creates the users and databases
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: hierarchy-hub-db
+    environment:
+      POSTGRES_USER: postgres
+      # local only passwords, they must match apps/api/.env. never reuse them anywhere real
+      POSTGRES_PASSWORD: postgres_local
+      HH_MIGRATOR_PASSWORD: migrator_local
+      HH_APP_PASSWORD: app_local
+    ports:
+      # bound to 127.0.0.1 so only this machine can reach it, not everyone on your wifi
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./apps/api/prisma/setup:/setup:ro
+      - ./apps/api/prisma/setup/docker-init.sh:/docker-entrypoint-initdb.d/10-setup.sh:ro
+    healthcheck:
+      # only healthy once the first-start setup has created our database
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d hierarchy_hub']
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  pgdata:

@@ -12,7 +12,13 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:e2e": "jest --config test/jest-e2e.config.js",
-    "clean": "rm -rf dist coverage .turbo"
+    "clean": "rm -rf dist coverage .turbo",
+    "test:integration": "jest --config test/jest-integration.config.js",
+    "db:migrate": "node scripts/prisma-as.mjs migrator migrate deploy",
+    "db:migrate:test": "node scripts/prisma-as.mjs test-migrator migrate deploy",
+    "db:new-migration": "node scripts/prisma-as.mjs migrator migrate dev --create-only",
+    "db:check": "node scripts/prisma-as.mjs migrator migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma --exit-code",
+    "db:studio": "prisma studio"
   },
   "dependencies": {
     "@hierarchy-hub/shared": "workspace:*",
@@ -27,17 +33,20 @@
   "devDependencies": {
     "@hierarchy-hub/eslint-config": "workspace:*",
     "@hierarchy-hub/tsconfig": "workspace:*",
-    "eslint": "catalog:",
-    "typescript": "catalog:",
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.1.0",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.0",
     "@types/node": "catalog:",
+    "@types/pg": "^8.23.1",
     "@types/supertest": "^6.0.0",
+    "eslint": "catalog:",
     "jest": "^29.7.0",
+    "pg": "^8.23.1",
+    "prisma": "^6.19.3",
     "supertest": "^7.1.0",
-    "ts-jest": "^29.4.0"
+    "ts-jest": "^29.4.0",
+    "typescript": "catalog:"
   }
 }

@@ -17,6 +17,9 @@ describe('createEmployeeSchema', () => {
     const result = createEmployeeSchema.parse(valid);
     expect(result.email).toBe('thandi.nkosi@example.com');
     expect(result.salary).toBe(125000.5);
+    expect(
+      createEmployeeSchema.parse({ ...valid, employeeNumber: 'emp-0100' }).employeeNumber,
+    ).toBe('EMP-0100');
   });
 
   it('rejects a birth date in the future', () => {
