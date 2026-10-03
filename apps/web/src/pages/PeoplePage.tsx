@@ -9,6 +9,7 @@ import { buildOrgIndex } from '../features/explore/orgIndex';
 import { downloadCsv, toCsv } from '../features/people/csv';
 import { PAGE_SIZE, toApiQuery } from '../features/people/filters';
 import { Pagination } from '../features/people/Pagination';
+import { PeopleSkeleton } from '../features/people/PeopleSkeleton';
 import { PeopleTable } from '../features/people/PeopleTable';
 import { SentenceFilters } from '../features/people/SentenceFilters';
 import { usePeopleParams } from '../features/people/usePeopleParams';
@@ -81,7 +82,7 @@ export function PeoplePage() {
     }
   }, [apiQuery, org]);
 
-  if (hierarchy.isPending) return <LoadingState label="Loading people" />;
+  if (hierarchy.isPending) return <PeopleSkeleton />;
   if (hierarchy.error || !org) {
     return (
       <ErrorState

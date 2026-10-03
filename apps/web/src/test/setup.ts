@@ -22,10 +22,26 @@ Object.defineProperty(window, 'matchMedia', {
   }),
 });
 
+// jsdom has no PointerEvent, so pointer events would arrive without a button or position
+if (!('PointerEvent' in window)) {
+  class PointerEventPolyfill extends MouseEvent {
+    pointerType: string;
+    pointerId: number;
+    constructor(type: string, init: PointerEventInit = {}) {
+      super(type, init);
+      this.pointerType = init.pointerType ?? 'mouse';
+      this.pointerId = init.pointerId ?? 1;
+    }
+  }
+  Object.defineProperty(window, 'PointerEvent', { value: PointerEventPolyfill, writable: true });
+}
+
 // jsdom doesn't do <dialog> popups yet, so give it just enough to open and close
 if (!HTMLDialogElement.prototype.showModal) {
   HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
     this.open = true;
+    // real browsers focus the first focusable thing inside, copy that so tests catch focus bugs
+    this.querySelector<HTMLElement>('input, select, textarea, button, [tabindex]')?.focus();
   };
   HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
     this.open = false;

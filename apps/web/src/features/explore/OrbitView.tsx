@@ -1,10 +1,14 @@
 import type { Employee } from '@hierarchy-hub/shared';
-import { useEffect, useRef, useState } from 'react';
+import { descendantsOf } from '@hierarchy-hub/shared';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Avatar } from '../../components/ui/Avatar';
 import { fullName } from '../../lib/format';
 import type { OrgIndex } from './orgIndex';
 import styles from './OrbitView.module.css';
-import { MoreNode, PersonNode } from './PersonNode';
+import { MoveEmployeeDialog } from './MoveEmployeeDialog';
+import { DragGhost, MoreNode, PersonNode, type DropLook } from './PersonNode';
+import { useOrbitDrag } from './useOrbitDrag';
 
 interface OrbitViewProps {
   person: Employee;
@@ -115,11 +119,64 @@ export function OrbitView({ person, org, onSelect, onShowAll }: OrbitViewProps) 
     onSelect(id);
   };
 
+  // drag and drop: you can't drop someone on themselves, on anyone below them
+  // (that would be a loop) or on the manager they already have
+  const [pending, setPending] = useState<{ id: string; to: string } | null>(null);
+  const everyone = useMemo(() => [...org.byId.values()], [org]);
+  const canDrop = (draggedId: string, targetId: string) => {
+    if (draggedId === targetId) return false;
+    if (org.byId.get(draggedId)?.managerId === targetId) return false;
+    return !descendantsOf(draggedId, everyone).some((e) => e.id === targetId);
+  };
+  const { drag, handlesFor } = useOrbitDrag({
+    canDrop,
+    onDrop: (id, to) => setPending({ id, to }),
+  });
+
+  const lookFor = (id: string): DropLook => {
+    if (!drag) return undefined;
+    if (drag.id === id) return 'dragging';
+    if (drag.overId === id) return 'over';
+    return canDrop(drag.id, id) ? 'target' : 'blocked';
+  };
+  const dragged = drag ? org.byId.get(drag.id) : undefined;
+  const pendingPerson = pending ? org.byId.get(pending.id) : undefined;
+  const pendingTarget = pending ? org.byId.get(pending.to) : undefined;
+
+  const extras = (
+    <>
+      {drag &&
+        dragged &&
+        createPortal(
+          <DragGhost employee={dragged} x={drag.x} y={drag.y} over={Boolean(drag.overId)} />,
+          document.body,
+        )}
+      {pendingPerson && pendingTarget && (
+        <MoveEmployeeDialog
+          employee={pendingPerson}
+          from={pendingPerson.managerId ? org.byId.get(pendingPerson.managerId) : undefined}
+          to={pendingTarget}
+          onClose={() => setPending(null)}
+        />
+      )}
+      <p className={styles.hint}>
+        Tip: drag someone onto another card to change who they report to.
+      </p>
+    </>
+  );
+
   const centre = (
     <div
       ref={centreRef}
       tabIndex={-1}
-      className={stacked ? `${styles.focus} ${styles.focusStacked}` : styles.focus}
+      data-drop-id={person.id}
+      className={[
+        styles.focus,
+        stacked && styles.focusStacked,
+        lookFor(person.id) && styles[`centre-${lookFor(person.id)}`],
+      ]
+        .filter(Boolean)
+        .join(' ')}
       aria-label={`${fullName(person)}, ${person.role}`}
     >
       <span className={styles.ring}>
@@ -150,6 +207,8 @@ export function OrbitView({ person, org, onSelect, onShowAll }: OrbitViewProps) 
                 teamSize={org.reportsOf(manager.id).length}
                 onSelect={select}
                 label="Reports to"
+                dropLook={lookFor(manager.id)}
+                dragHandles={handlesFor(manager.id)}
               />
               <span className={styles.stem} aria-hidden="true" />
             </>
@@ -166,6 +225,8 @@ export function OrbitView({ person, org, onSelect, onShowAll }: OrbitViewProps) 
                     teamSize={org.reportsOf(report.id).length}
                     onSelect={select}
                     style={{ animationDelay: `${60 + i * 50}ms` }}
+                    dropLook={lookFor(report.id)}
+                    dragHandles={handlesFor(report.id)}
                   />
                 ))}
                 {overflow && <MoreNode count={reports.length - shown.length} onClick={onShowAll} />}
@@ -175,6 +236,7 @@ export function OrbitView({ person, org, onSelect, onShowAll }: OrbitViewProps) 
             <p className={styles.emptyStacked}>Nobody reports to {person.firstName} yet.</p>
           )}
         </div>
+        {extras}
       </section>
     );
   }
@@ -206,6 +268,8 @@ export function OrbitView({ person, org, onSelect, onShowAll }: OrbitViewProps) 
               onSelect={select}
               label="Reports to"
               style={{ position: 'absolute', left: CX - NODE_WIDTH / 2, top: 4 }}
+              dropLook={lookFor(manager.id)}
+              dragHandles={handlesFor(manager.id)}
             />
           )}
 
@@ -226,6 +290,8 @@ export function OrbitView({ person, org, onSelect, onShowAll }: OrbitViewProps) 
                   top: slot.y,
                   animationDelay: `${60 + i * 50}ms`,
                 }}
+                dropLook={lookFor(report.id)}
+                dragHandles={handlesFor(report.id)}
               />
             );
           })}
@@ -243,6 +309,7 @@ export function OrbitView({ person, org, onSelect, onShowAll }: OrbitViewProps) 
           )}
         </div>
       </div>
+      {extras}
     </section>
   );
 }

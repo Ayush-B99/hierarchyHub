@@ -57,7 +57,7 @@ export function DeleteEmployeeDialog({
         </p>
       )}
       <DialogActions>
-        <Button onClick={onClose} autoFocus>
+        <Button onClick={onClose} data-autofocus>
           Cancel
         </Button>
         <Button variant="danger" onClick={confirm} disabled={remove.isPending}>

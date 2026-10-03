@@ -1,4 +1,5 @@
 import type { Employee } from '@hierarchy-hub/shared';
+import { Magnet } from '../../components/motion/Magnet';
 import { SplitText } from '../../components/motion/SplitText';
 import { Panel } from '../../components/ui/Panel';
 import { Puck } from '../../components/ui/Puck';
@@ -59,25 +60,29 @@ export function Hero({ person, view, onViewChange }: HeroProps) {
       </Panel>
       <div className={styles.views} role="group" aria-label="Choose a view">
         <span className={styles.view}>
-          <Puck
-            size="lg"
-            aria-label="Orbit view"
-            pressed={view === 'orbit'}
-            onClick={() => onViewChange('orbit')}
-          >
-            {ORBIT_ICON}
-          </Puck>
+          <Magnet>
+            <Puck
+              size="lg"
+              aria-label="Orbit view"
+              pressed={view === 'orbit'}
+              onClick={() => onViewChange('orbit')}
+            >
+              {ORBIT_ICON}
+            </Puck>
+          </Magnet>
           <span aria-hidden="true">Orbit</span>
         </span>
         <span className={styles.view}>
-          <Puck
-            size="lg"
-            aria-label="Levels view"
-            pressed={view === 'levels'}
-            onClick={() => onViewChange('levels')}
-          >
-            {LEVELS_ICON}
-          </Puck>
+          <Magnet>
+            <Puck
+              size="lg"
+              aria-label="Levels view"
+              pressed={view === 'levels'}
+              onClick={() => onViewChange('levels')}
+            >
+              {LEVELS_ICON}
+            </Puck>
+          </Magnet>
           <span aria-hidden="true">Levels</span>
         </span>
       </div>
