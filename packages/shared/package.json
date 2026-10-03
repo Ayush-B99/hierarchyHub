@@ -17,6 +17,16 @@
         "types": "./dist/index.d.cts",
         "default": "./dist/index.cjs"
       }
+    },
+    "./testing": {
+      "import": {
+        "types": "./dist/testing/index.d.ts",
+        "default": "./dist/testing/index.js"
+      },
+      "require": {
+        "types": "./dist/testing/index.d.cts",
+        "default": "./dist/testing/index.cjs"
+      }
     }
   },
   "type": "module",
@@ -42,5 +52,12 @@
     "typescript": "catalog:",
     "tsup": "^8.5.0",
     "vitest": "catalog:"
+  },
+  "typesVersions": {
+    "*": {
+      "testing": [
+        "./dist/testing/index.d.ts"
+      ]
+    }
   }
 }
