@@ -8,5 +8,6 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   "files.exclude": {
     "**/.turbo": true
-  }
+  },
+  "js/ts.tsdk.path": "node_modules/typescript/lib"
 }
