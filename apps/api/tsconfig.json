@@ -4,7 +4,8 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "types": ["node", "jest"],
-    "tsBuildInfoFile": "./dist/.tsbuildinfo"
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
+    "ignoreDeprecations": "6.0"
   },
   "include": ["src", "test"]
 }
