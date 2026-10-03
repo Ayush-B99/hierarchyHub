@@ -22,6 +22,16 @@ Object.defineProperty(window, 'matchMedia', {
   }),
 });
 
+// jsdom doesn't do <dialog> popups yet, so give it just enough to open and close
+if (!HTMLDialogElement.prototype.showModal) {
+  HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
+    this.open = true;
+  };
+  HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
+    this.open = false;
+  };
+}
+
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 beforeEach(() => db.reset());
 afterEach(() => {
