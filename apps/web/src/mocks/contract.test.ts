@@ -1,4 +1,4 @@
-import { LIST_SCENARIOS } from '@hierarchy-hub/shared/testing';
+import { LIST_SCENARIOS, WRITE_SCENARIOS } from '@hierarchy-hub/shared/testing';
 import { describe, expect, it } from 'vitest';
 import { api } from '../lib/api';
 
@@ -9,5 +9,20 @@ describe('mock api follows the shared contract', () => {
     const page = await api.listEmployees(query);
     expect(page.items.map((e) => e.lastName)).toEqual(lastNames);
     expect(page.total).toBe(total);
+  });
+});
+
+describe('mock api follows the shared contract for changes', () => {
+  it.each(WRITE_SCENARIOS)('$name', async ({ method, path, ifMatch, body, status, field }) => {
+    const res = await fetch(`${window.location.origin}/api${path}`, {
+      method,
+      headers: { 'Content-Type': 'application/json', ...(ifMatch ? { 'If-Match': ifMatch } : {}) },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    expect(res.status).toBe(status);
+    if (field) {
+      const json = (await res.json()) as { errors?: Record<string, string[]> };
+      expect(Object.keys(json.errors ?? {})).toContain(field);
+    }
   });
 });
