@@ -15,19 +15,41 @@ The round button on the right of the top bar switches between light and dark mod
 
 ## 2. Adding an employee
 
-_To do: step by step, with a screenshot of the form._
+1. Select **Add employee** in the top bar.
+2. Fill in the first name, surname, email, employee number, birth date, role and salary. Every field is needed.
+3. Under **Reports to**, pick their manager. Leave it as **No manager** only for someone at the very top, like the CEO.
+4. Select **Add employee**.
+
+If something is missing or doesn't look right, a short message appears under that field and the cursor jumps to the first one to fix. Employee numbers and email addresses must be unique, so you'll be told if someone already has them.
+
+When the employee is saved, a confirmation appears at the bottom of the screen and the Explore page opens on the new person, so you can see where they sit.
+
+_(Screenshot to add: Add employee form)_
 
 ## 3. Viewing and editing an employee
 
-_To do._
+Open someone on the Explore page (or click their name on the People page) to see all their details in the panel on the right.
+
+To change anything, select **Edit details**, update the fields and select **Save changes**. Press **Cancel** or the Escape key to close without saving.
 
 ## 4. Changing someone's manager
 
-_To do: include the two rules (nobody can manage themselves, and you cannot pick someone from the employee's own team)._
+Open the person on the Explore page and select **Change manager**. The form opens with **Reports to** ready to change.
+
+Some people are greyed out in the list and can't be picked:
+
+- the person themselves, because nobody can be their own manager
+- anyone in their team, at any level below them, because that would create a reporting loop
+
+Pick the new manager and select **Save changes**. The org chart updates straight away.
 
 ## 5. Deleting an employee
 
-_To do: explain what happens to the people they manage._
+Open the person on the Explore page and select **Delete**.
+
+Before anything happens, a message tells you exactly who will be affected. For example: "4 people report to Johan. They'll move to Sipho Dlamini." The people who reported to the deleted employee move up to the deleted employee's own manager, so nobody is left without one.
+
+Select **Delete employee** to confirm, or **Cancel** to keep them. **Cancel** is selected by default so a stray key press can't delete anyone. This can't be undone.
 
 ## 6. Exploring the organisation
 
@@ -61,7 +83,7 @@ The panel on the right shows the selected person's details:
 - their employee number, salary, birth date, manager and email
 - **Works alongside**: other people with the same manager. Click one to jump to them.
 
-The Edit, Change manager and Delete buttons are coming in a later update.
+The **Edit details**, **Change manager** and **Delete** buttons at the bottom of this panel are explained in sections 3 to 5.
 
 ### Sharing and going back
 
