@@ -1,5 +1,8 @@
 import { NavLink, Outlet } from 'react-router';
+import { EmployeeDialogsProvider } from '../../features/employees/EmployeeDialogsProvider';
+import { useEmployeeDialogs } from '../../features/employees/useEmployeeDialogs';
 import { ClayBackground } from '../background/ClayBackground';
+import { Button } from '../ui/Button';
 import { Panel } from '../ui/Panel';
 import styles from './AppShell.module.css';
 import { ThemeToggle } from './ThemeToggle';
@@ -7,7 +10,7 @@ import { ThemeToggle } from './ThemeToggle';
 /** Moving background, floating glass navigation and the current page. */
 export function AppShell() {
   return (
-    <>
+    <EmployeeDialogsProvider>
       <ClayBackground />
       <div className={styles.app}>
         <a className={styles.skip} href="#main">
@@ -34,6 +37,7 @@ export function AppShell() {
               </NavLink>
             </nav>
             <div className={styles.end}>
+              <AddEmployeeButton />
               <ThemeToggle />
             </div>
           </Panel>
@@ -42,6 +46,15 @@ export function AppShell() {
           <Outlet />
         </main>
       </div>
-    </>
+    </EmployeeDialogsProvider>
+  );
+}
+
+function AddEmployeeButton() {
+  const { openAdd } = useEmployeeDialogs();
+  return (
+    <Button variant="primary" onClick={openAdd}>
+      Add employee
+    </Button>
   );
 }

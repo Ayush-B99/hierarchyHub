@@ -8,8 +8,8 @@ The project is built in parts. Each part is one branch and one pull request, mad
 | 2    | Initial documentation                                                                       | `docs/initial-documentation` | Done        |
 | 3a   | Frontend foundation: design tokens, themes, UI components, 3D background, routing, mock API | `feat/web-foundation`        | Done        |
 | 3b   | Explore page: Orbit and Levels views, path to the top, details panel                        | `feat/web-explore`           | Done        |
-| 3c   | People page: sentence filters and sortable table                                            | `feat/web-people`            | In progress |
-| 3d   | Add and edit forms, manager rules, delete confirmation                                      | `feat/web-forms`             | Not started |
+| 3c   | People page: sentence filters and sortable table                                            | `feat/web-people`            | Done        |
+| 3d   | Add and edit forms, manager rules, delete confirmation                                      | `feat/web-forms`             | In progress |
 | 3e   | Search, React Bits effects and polish                                                       | `feat/web-polish`            | Not started |
 | 4    | Database and Prisma                                                                         | `feat/database`              | Not started |
 | 5    | Employee API                                                                                | `feat/employee-api`          | Not started |
