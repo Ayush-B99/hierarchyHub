@@ -42,12 +42,14 @@ tasks:
     desc: Start only the frontend (http://localhost:5173)
     aliases: [frontend, dev:web]
     cmds:
+      - pnpm turbo run build --filter={{.SHARED}}
       - pnpm --filter {{.WEB}} dev
 
   api:
     desc: Start only the backend (http://localhost:3000/api)
     aliases: [backend, dev:api]
     cmds:
+      - pnpm turbo run build --filter={{.SHARED}}
       - pnpm --filter {{.API}} dev
 
   preview:
@@ -92,9 +94,11 @@ tasks:
       - pnpm --filter {{.WEB}} test:watch
 
   e2e:
-    desc: Run end-to-end tests (boots the API and calls it over HTTP)
+    desc: Run end-to-end tests (boots the whole API against the test database)
     aliases: [test:e2e]
     cmds:
+      - task: db:up
+      - pnpm --filter {{.API}} db:migrate:test
       - pnpm turbo run build --filter={{.SHARED}}
       - pnpm --filter {{.API}} test:e2e
 
@@ -137,6 +141,13 @@ tasks:
     desc: 'Create a migration after editing schema.prisma, eg: task db:new-migration -- add_department'
     cmds:
       - pnpm --filter {{.API}} db:new-migration --name {{.CLI_ARGS}}
+
+  db:seed:
+    desc: Load the sample employees into your local database (replaces what's there)
+    prompt: This replaces all employees in your local database with sample data. Continue?
+    cmds:
+      - task: db:up
+      - pnpm --filter {{.API}} db:seed
 
   db:check:
     desc: Check schema.prisma still matches the real database (ci runs this too)

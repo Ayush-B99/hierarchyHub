@@ -5,9 +5,11 @@
 // ci compares this file to the real database after migrating, so the two can't drift apart
 
 generator client {
-  provider      = "prisma-client-js"
-  // native for your machine, debian for the docker image the api runs in on aws
-  binaryTargets = ["native", "debian-openssl-3.0.x"]
+  provider   = "prisma-client-js"
+  // the "rust-free" client: queries are built by a small wasm module and sent through
+  // node-postgres (pg). no engine binary to download or ship in the docker image, and we
+  // control the connection pool and tls settings ourselves (see src/database)
+  engineType = "client"
 }
 
 datasource db {

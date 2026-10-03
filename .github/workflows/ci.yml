@@ -40,8 +40,6 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
-      - name: API end-to-end tests
-        run: pnpm --filter @hierarchy-hub/api test:e2e
 
   database:
     name: Database migrations and integration tests
@@ -93,3 +91,9 @@ jobs:
 
       - name: Integration tests
         run: pnpm --filter @hierarchy-hub/api test:integration
+
+      # boots the whole api against the real database
+      - name: API end-to-end tests
+        run: |
+          pnpm turbo run build --filter=@hierarchy-hub/shared
+          pnpm --filter @hierarchy-hub/api test:e2e

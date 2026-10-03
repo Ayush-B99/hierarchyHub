@@ -11,15 +11,16 @@ This is the agreement between the web app and the API. It is written before the 
 
 ## Endpoints
 
-| Method | Path                   | What it does                                                                      | Success code |
-| ------ | ---------------------- | --------------------------------------------------------------------------------- | ------------ |
-| GET    | `/health`              | Checks the API and database are working.                                          | 200          |
-| GET    | `/employees`           | Lists employees one page at a time, with sorting and filters.                     | 200          |
-| GET    | `/employees/hierarchy` | Returns every employee in one flat list, used to build the org chart.             | 200          |
-| GET    | `/employees/{id}`      | Returns one employee.                                                             | 200          |
-| POST   | `/employees`           | Adds an employee.                                                                 | 201          |
-| PATCH  | `/employees/{id}`      | Changes some or all of an employee's details, including their manager.            | 200          |
-| DELETE | `/employees/{id}`      | Deletes an employee. Their direct reports move to the deleted employee's manager. | 204          |
+| Method | Path                   | What it does                                                                         | Success code |
+| ------ | ---------------------- | ------------------------------------------------------------------------------------ | ------------ |
+| GET    | `/health`              | Checks the API process is up (used by the load balancer).                            | 200          |
+| GET    | `/health/ready`        | Checks the API can reach the database. Returns 503 with `"database": "down"` if not. | 200          |
+| GET    | `/employees`           | Lists employees one page at a time, with sorting and filters.                        | 200          |
+| GET    | `/employees/hierarchy` | Returns every employee in one flat list, used to build the org chart.                | 200          |
+| GET    | `/employees/{id}`      | Returns one employee.                                                                | 200          |
+| POST   | `/employees`           | Adds an employee.                                                                    | 201          |
+| PATCH  | `/employees/{id}`      | Changes some or all of an employee's details, including their manager.               | 200          |
+| DELETE | `/employees/{id}`      | Deletes an employee. Their direct reports move to the deleted employee's manager.    | 204          |
 
 ## List parameters
 

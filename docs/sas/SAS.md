@@ -292,7 +292,7 @@ flowchart TB
 Key points:
 
 - The web app is a set of static files served by Amplify over HTTPS.
-- The API runs as a Docker container on ECS Fargate, so there are no servers to manage. The load balancer checks `/api/health` and restarts the container if it fails.
+- The API runs as a Docker container on ECS Fargate, so there are no servers to manage. The load balancer checks `/api/health` (is the process up) and replaces the container if it fails. `/api/health/ready` also checks the database, for monitoring.
 - CloudFront sits in front of the load balancer to give the API an HTTPS address. Without it, the HTTPS website could not call the API.
 - The database is in private subnets with no internet access. Only the API container can connect to it.
 - We do not use a NAT gateway. It is the most expensive part of a typical small AWS setup and we do not need it.

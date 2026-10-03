@@ -43,3 +43,29 @@ Never edit a migration that has already been merged to `main`. Make a new one in
 | `hh_app`      | Read, add, change and delete rows, nothing else | The API                                |
 
 The local passwords in `docker-compose.yml` and `.env.example` are for your machine only.
+
+## How the API connects
+
+The API talks to the database through one shared connection pool ([ADR 0012](../../../docs/adr/0012-prisma-client-with-pg-pool.md)). It's set up from these environment variables, which are checked when the API starts:
+
+| Variable               | Local                 | Production                                |
+| ---------------------- | --------------------- | ----------------------------------------- |
+| `DATABASE_URL`         | `hh_app` on localhost | `hh_app` on RDS. Never add `sslmode` here |
+| `DATABASE_SSL`         | `disable`             | `verify-full` (required)                  |
+| `DATABASE_SSL_CA_FILE` | not needed            | The AWS RDS certificate bundle            |
+| `DATABASE_POOL_MAX`    | 10                    | 10 per API instance                       |
+
+If the database can't be reached, the API refuses to start and says so, without printing the password.
+
+### Errors
+
+Every database rule has a friendly message. For example, a reporting loop becomes a 400 with "This person reports to the employee you're editing...", and a duplicate email becomes a 409. The mapping lives in `src/database/database-errors.ts`, and integration tests check every rule against the real database.
+
+Unexpected errors return a generic 500. The logs record only the route, status and error code, never the error's message, because PostgreSQL error messages can contain a whole row of personal data.
+
+### Health checks
+
+| Endpoint                | Checks                                                 | Used by                                                                            |
+| ----------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| `GET /api/health`       | The API process is up                                  | The AWS load balancer, so a short database blip doesn't restart healthy containers |
+| `GET /api/health/ready` | The API and the database (503 if the database is down) | Monitoring                                                                         |

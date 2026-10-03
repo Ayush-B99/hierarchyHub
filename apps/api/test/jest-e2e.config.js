@@ -1,4 +1,7 @@
-/** End-to-end tests boot the whole Nest app and call it over HTTP with supertest. */
+/**
+ * end-to-end tests boot the whole nest app and call it over http with supertest
+ * they use the real test database, so start it first: `task e2e` does that for you
+ */
 module.exports = {
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: '.',
@@ -9,5 +12,8 @@ module.exports = {
       { tsconfig: '<rootDir>/../tsconfig.json', diagnostics: { ignoreCodes: [151002] } },
     ],
   },
+  setupFiles: ['<rootDir>/integration/load-env.js'],
   testEnvironment: 'node',
+  maxWorkers: 1,
+  testTimeout: 15000,
 };
