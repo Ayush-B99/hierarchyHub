@@ -2,10 +2,8 @@
   "extends": "@hierarchy-hub/tsconfig/nestjs.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "baseUrl": "./",
     "types": ["node", "jest"],
-    "tsBuildInfoFile": "./dist/.tsbuildinfo",
-    "ignoreDeprecations": "6.0"
+    "tsBuildInfoFile": "./dist/.tsbuildinfo"
   },
   "include": ["src", "test"]
 }
