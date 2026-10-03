@@ -20,7 +20,13 @@ export const db = {
   update(id: string, patch: Partial<Employee>): Employee {
     const current = db.find(id);
     if (!current) throw new Error(`No employee ${id}`);
-    const next = { ...current, ...patch, updatedAt: new Date().toISOString() };
+    // same as the real database: every change bumps the version
+    const next = {
+      ...current,
+      ...patch,
+      version: current.version + 1,
+      updatedAt: new Date().toISOString(),
+    };
     rows = rows.map((row) => (row.id === id ? next : row));
     return next;
   },
