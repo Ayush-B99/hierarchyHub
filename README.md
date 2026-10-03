@@ -42,11 +42,12 @@ hierarchyHub/
 - Node.js 22.12 or newer (`nvm use` reads `.nvmrc`)
 - pnpm 10 (`corepack enable` installs the version pinned in `package.json`)
 - [Task](https://taskfile.dev) for the short commands below (`brew install go-task` on macOS)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) for the local database
 
 ## Getting started
 
 ```bash
-task setup   # install dependencies and create .env files
+task setup   # install dependencies, create .env files, start and migrate the database
 task dev     # start the frontend and backend
 ```
 

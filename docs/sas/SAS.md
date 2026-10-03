@@ -240,13 +240,15 @@ erDiagram
 
 ### 8.2 Rules enforced by the database
 
-| Rule                                     | How                                                                                               |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Not their own manager (BR-01)            | A check constraint: `manager_id` must not equal `id`.                                             |
-| Manager must exist                       | A foreign key from `manager_id` to `id`.                                                          |
-| Unique employee number and email (BR-05) | Unique indexes.                                                                                   |
-| Salary not negative (BR-06)              | A check constraint and a decimal type with 2 places.                                              |
-| No reporting loops (BR-02)               | Checked by the API before saving, using a recursive SQL query that walks up the management chain. |
+| Rule                                                                 | How                                                                                                                                              |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Not their own manager (BR-01)                                        | A check constraint: `manager_id` must not equal `id`.                                                                                            |
+| Manager must exist, and can't be deleted while people report to them | A foreign key from `manager_id` to `id`, with `ON DELETE NO ACTION`.                                                                             |
+| Unique employee number and email, ignoring capitals (BR-05)          | Unique indexes, with values always stored in one case.                                                                                           |
+| Birth date in the past (BR-07), names not blank                      | A trigger and check constraints.                                                                                                                 |
+| No lost updates when two people edit at once                         | A `version` on every row, increased by the database on every change.                                                                             |
+| Salary not negative (BR-06)                                          | A check constraint and a decimal type with 2 places.                                                                                             |
+| No reporting loops (BR-02)                                           | A database trigger walks up the management chain on every manager change, and takes a short lock so two clashing changes can't both get through. |
 
 ### 8.3 Indexes
 
@@ -314,25 +316,26 @@ Key points:
 
 ## 11. Cross-cutting concerns
 
-| Concern       | Approach                                                                                                                                                            |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Validation    | Zod rules in the shared package are used by the web forms and again by the API.                                                                                     |
-| Errors        | The API always returns errors in the same JSON shape. The web app shows them next to the right field or at the top of the page.                                     |
-| Configuration | Settings come from environment variables and are checked when the API starts. Each app has a `.env.example` file.                                                   |
-| Logging       | The API logs to the console. On AWS these logs go to CloudWatch. Personal data is not logged.                                                                       |
-| Security      | HTTPS everywhere, private database, secrets in Secrets Manager, CORS limited to the web app's address, Dependabot for updates.                                      |
-| Testing       | Unit tests (Jest for the API, Vitest for the web app and shared package). API tests against a real PostgreSQL database in CI. A browser smoke test with Playwright. |
-| CI/CD         | GitHub Actions checks formatting, linting, types, tests and builds on every pull request. Merges to `main` deploy automatically.                                    |
+| Concern       | Approach                                                                                                                                                                                                                        |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Validation    | Zod rules in the shared package are used by the web forms and again by the API.                                                                                                                                                 |
+| Errors        | The API always returns errors in the same JSON shape. The web app shows them next to the right field or at the top of the page.                                                                                                 |
+| Configuration | Settings come from environment variables and are checked when the API starts. Each app has a `.env.example` file.                                                                                                               |
+| Logging       | The API logs to the console. On AWS these logs go to CloudWatch. Personal data is not logged.                                                                                                                                   |
+| Security      | HTTPS everywhere, private database, secrets in Secrets Manager, CORS limited to the web app's address, Dependabot for updates. Two database users: the API's user can only read and write rows, never change tables (ADR 0010). |
+| Caching       | Browser cache (TanStack Query), HTTP ETags with 304 responses, and database indexes. No Redis yet (ADR 0011).                                                                                                                   |
+| Testing       | Unit tests (Jest for the API, Vitest for the web app and shared package). API tests against a real PostgreSQL database in CI. A browser smoke test with Playwright.                                                             |
+| CI/CD         | GitHub Actions checks formatting, linting, types, tests and builds on every pull request. Merges to `main` deploy automatically.                                                                                                |
 
 ## 12. Risks
 
-| Risk                                                                   | What we do about it                                                                     |
-| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| Two people change managers at the same moment and create a loop.       | Very unlikely for this app. If needed, we can add a database trigger that blocks loops. |
-| A very large org chart is slow to draw.                                | Collapse teams below a certain level by default and only draw what is on screen.        |
-| No login in the first version, so anyone with the URL can change data. | Acceptable for the assessment. Login is planned as an extra (FR-17).                    |
-| The Cape Town region is not enabled on the AWS account.                | Use Ireland (`eu-west-1`) instead.                                                      |
-| AWS free tier rules change.                                            | Use the smallest sizes and remove everything after the assessment.                      |
+| Risk                                                                   | What we do about it                                                                                 |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Two people change managers at the same moment and create a loop.       | Solved: the database trigger takes a lock, so manager changes are checked one at a time (ADR 0010). |
+| A very large org chart is slow to draw.                                | Collapse teams below a certain level by default and only draw what is on screen.                    |
+| No login in the first version, so anyone with the URL can change data. | Acceptable for the assessment. Login is planned as an extra (FR-17).                                |
+| The Cape Town region is not enabled on the AWS account.                | Use Ireland (`eu-west-1`) instead.                                                                  |
+| AWS free tier rules change.                                            | Use the smallest sizes and remove everything after the assessment.                                  |
 
 ## 13. Repository layout
 
