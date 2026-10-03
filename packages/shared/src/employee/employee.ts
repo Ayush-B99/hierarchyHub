@@ -5,6 +5,8 @@ import { z } from 'zod';
  * so all three always agree on what a valid employee is. See docs/srs/SRS.md section 6.
  */
 
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
 const name = z.string().trim().min(1, 'Required').max(100, 'Keep it under 100 characters');
 
 export const employeeInputSchema = z.object({
@@ -57,8 +59,8 @@ export const listEmployeesQuerySchema = z.object({
   managerId: z.string().uuid().optional(),
   salaryMin: z.coerce.number().nonnegative().optional(),
   salaryMax: z.coerce.number().nonnegative().optional(),
-  bornAfter: z.string().optional(),
-  bornBefore: z.string().optional(),
+  bornAfter: z.string().regex(ISO_DATE, 'Use YYYY-MM-DD').optional(),
+  bornBefore: z.string().regex(ISO_DATE, 'Use YYYY-MM-DD').optional(),
   sortBy: z.enum(EMPLOYEE_SORT_FIELDS).default('lastName'),
   sortOrder: z.enum(['asc', 'desc']).default('asc'),
   page: z.coerce.number().int().min(1).default(1),
@@ -81,6 +83,8 @@ export interface Employee {
   salary: number;
   role: string;
   managerId: string | null;
+  /** goes up by one on every change, sent back when saving so clashing edits are caught */
+  version: number;
   createdAt: string;
   updatedAt: string;
 }

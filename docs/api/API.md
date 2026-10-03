@@ -40,6 +40,13 @@ Used with `GET /employees`. All are optional.
 
 Example: `GET /api/employees?role=engineer&sortBy=salary&sortOrder=desc&page=1`
 
+Rules for the list:
+
+- Text searches and text sorts ignore capitals. `%` and `_` in a search are plain characters, not wildcards.
+- People with the same value are always ordered by surname, then first name, so paging is stable and nobody appears on two pages.
+- Unknown parameters are refused with a 400, so typos get noticed.
+- A page past the end returns no items, with the correct `total`.
+
 List response:
 
 ```json
@@ -64,12 +71,13 @@ List response:
   "salary": 125000,
   "role": "Chief Executive Officer",
   "managerId": null,
+  "version": 1,
   "createdAt": "2026-10-02T08:00:00.000Z",
   "updatedAt": "2026-10-02T08:00:00.000Z"
 }
 ```
 
-When adding an employee, send every field except `id`, `createdAt` and `updatedAt`. `managerId` can be left out or set to `null`. When editing, send only the fields that change.
+`version` goes up by one every time the employee changes. When adding an employee, send every field except `id`, `version`, `createdAt` and `updatedAt`. `managerId` can be left out or set to `null`. When editing, send only the fields that change.
 
 ## Errors
 
@@ -91,3 +99,14 @@ Errors always have this shape:
 | 404  | The employee or manager does not exist.                                                                   |
 | 409  | Another employee already has that employee number or email.                                               |
 | 503  | The database cannot be reached (health check only).                                                       |
+
+## Caching
+
+| Header                               | Meaning                                                                                    |
+| ------------------------------------ | ------------------------------------------------------------------------------------------ |
+| `Cache-Control: no-cache` on reads   | The browser may keep a copy but must check with the API every time, so data is never stale |
+| `Cache-Control: no-store` on changes | Never stored                                                                               |
+| `ETag`                               | A fingerprint of the response. For one employee it's their version, eg `"v3"`              |
+| `If-None-Match`                      | Send the ETag back. If nothing changed, the API answers `304 Not Modified` with no body    |
+
+See [ADR 0011](../adr/0011-caching.md).

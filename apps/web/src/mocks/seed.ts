@@ -42,6 +42,7 @@ export function seedEmployees(): Employee[] {
     salary,
     role,
     managerId: manager === null ? null : id(manager),
+    version: 1,
     createdAt: created,
     updatedAt: created,
   }));

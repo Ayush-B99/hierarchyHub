@@ -1,23 +1,15 @@
 import { type INestApplication } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
 import request from 'supertest';
-import { AppModule } from '../src/app.module';
+import { startApp } from './app';
 
-describe('the api (e2e)', () => {
+describe('health and errors (e2e)', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
-    // point the whole app at the test database, never your local one
-    process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
-    app = moduleRef.createNestApplication();
-    app.setGlobalPrefix('api');
-    await app.init();
+    ({ app } = await startApp());
   });
 
-  afterAll(async () => {
-    await app.close();
-  });
+  afterAll(() => app.close());
 
   it('GET /api/health says the process is up', async () => {
     const res = await request(app.getHttpServer()).get('/api/health').expect(200);
