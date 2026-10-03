@@ -4,6 +4,7 @@ import { Avatar } from '../../components/ui/Avatar';
 import { Button } from '../../components/ui/Button';
 import { Panel } from '../../components/ui/Panel';
 import { Waves } from '../../components/ui/Waves';
+import { useEmployeeDialogs } from '../employees/useEmployeeDialogs';
 import { formatDate, formatSalary, fullName, plural } from '../../lib/format';
 import styles from './DetailsPanel.module.css';
 import type { OrgIndex } from './orgIndex';
@@ -16,6 +17,7 @@ interface DetailsPanelProps {
 
 /** everything about the selected person, plus quick links to the people they work with */
 export function DetailsPanel({ person, org, onSelect }: DetailsPanelProps) {
+  const dialogs = useEmployeeDialogs();
   const manager = person.managerId ? org.byId.get(person.managerId) : undefined;
   const directReports = org.reportsOf(person.id).length;
   const levelsFromTop = org.chainOf(person.id).length - 1;
@@ -106,19 +108,20 @@ export function DetailsPanel({ person, org, onSelect }: DetailsPanelProps) {
         </div>
       </div>
 
-      {/* these get wired up with the forms in part 3d, for now they just explain that */}
       <div className={styles.actions}>
-        <Button variant="primary" disabled aria-describedby="actions-note">
+        <Button variant="primary" onClick={() => dialogs.openEdit(person.id)}>
           Edit details
         </Button>
-        <Button disabled aria-describedby="actions-note">
-          Change manager
-        </Button>
-        <Button variant="danger" disabled aria-describedby="actions-note">
+        <Button onClick={() => dialogs.openEdit(person.id, 'managerId')}>Change manager</Button>
+        <Button
+          variant="danger"
+          onClick={() => dialogs.openDelete(person.id)}
+          aria-describedby="delete-note"
+        >
           Delete
         </Button>
-        <p id="actions-note" className={styles.note}>
-          Editing, moving and deleting people is coming soon. {deleteNote}
+        <p id="delete-note" className={styles.note}>
+          {deleteNote}
         </p>
       </div>
     </Panel>
