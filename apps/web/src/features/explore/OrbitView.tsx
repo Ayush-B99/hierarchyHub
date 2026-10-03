@@ -31,16 +31,42 @@ function linkStyle(x1: number, y1: number, x2: number, y2: number) {
   return { left: x1, top: y1, width: length, transform: `rotate(${angle}deg)` };
 }
 
-/** spreads n cards along an arc under the centre card */
-function arcPositions(count: number) {
-  return Array.from({ length: count }, (_, i) => {
-    const degrees = count === 1 ? 90 : 18 + (144 * i) / (count - 1);
-    const radians = (degrees * Math.PI) / 180;
-    return {
-      x: Math.round(CX + RADIUS * Math.cos(radians)),
-      y: Math.round(CY + 70 + RADIUS * 0.72 * Math.sin(radians)),
-    };
-  });
+// how far apart cards need to be so they never overlap (card width plus a gap)
+const MIN_SPACING = 160;
+const ROW_ONE_Y = 440;
+const ROW_TWO_Y = 610;
+
+/**
+ * where each team card goes. up to four fit nicely on an arc under the centre card,
+ * bigger teams get two staggered rows instead so cards never sit on top of each other
+ */
+function teamLayout(count: number): { slots: { x: number; y: number }[]; height: number } {
+  if (count <= 4) {
+    const slots = Array.from({ length: count }, (_, i) => {
+      const degrees = count === 1 ? 90 : 18 + (144 * i) / (count - 1);
+      const radians = (degrees * Math.PI) / 180;
+      return {
+        x: Math.round(CX + RADIUS * Math.cos(radians)),
+        y: Math.round(CY + 70 + RADIUS * 0.72 * Math.sin(radians)),
+      };
+    });
+    return { slots, height: STAGE_HEIGHT };
+  }
+
+  // front row gets the extra card when the count is odd, back row sits in the gaps
+  const front = Math.ceil(count / 2);
+  const back = count - front;
+  const span = Math.max(MIN_SPACING * (front - 1), 0);
+  const left = CX - span / 2;
+  const step = front > 1 ? span / (front - 1) : 0;
+  const slots = [
+    ...Array.from({ length: front }, (_, i) => ({ x: Math.round(left + step * i), y: ROW_ONE_Y })),
+    ...Array.from({ length: back }, (_, i) => ({
+      x: Math.round(left + step * (i + 0.5)),
+      y: ROW_TWO_Y,
+    })),
+  ];
+  return { slots, height: ROW_TWO_Y + 170 };
 }
 
 /** watches how wide the orbit area is so it can shrink to fit or switch to the stacked layout */
@@ -153,17 +179,21 @@ export function OrbitView({ person, org, onSelect, onShowAll }: OrbitViewProps) 
     );
   }
 
-  const slots = arcPositions(shown.length + (overflow ? 1 : 0));
+  const { slots, height: stageHeight } = teamLayout(shown.length + (overflow ? 1 : 0));
   const moreSlot = overflow ? slots.at(-1) : undefined;
 
   return (
     <section ref={boxRef} className={styles.box} aria-label={label}>
       <div
         className={styles.fit}
-        style={{ width: STAGE_WIDTH * scale, height: STAGE_HEIGHT * scale }}
+        style={{ width: STAGE_WIDTH * scale, height: stageHeight * scale }}
       >
         {/* key on the person so everything animates in again when you move */}
-        <div className={styles.stage} key={person.id} style={{ transform: `scale(${scale})` }}>
+        <div
+          className={styles.stage}
+          key={person.id}
+          style={{ height: stageHeight, transform: `scale(${scale})` }}
+        >
           {manager && <div className={styles.link} style={linkStyle(CX, 110, CX, CY)} />}
           {slots.map((slot, i) => (
             <div key={i} className={styles.link} style={linkStyle(CX, CY, slot.x, slot.y + 30)} />
