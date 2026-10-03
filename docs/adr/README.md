@@ -18,3 +18,4 @@ To add one, copy [template.md](template.md) and give it the next number.
 | [0010](0010-database-design.md)            | Database design: rules in the database, two users, version numbers | Accepted |
 | [0011](0011-caching.md)                    | Caching: browser and HTTP caching, no server cache yet             | Accepted |
 | [0012](0012-prisma-client-with-pg-pool.md) | Run Prisma through our own node-postgres pool                      | Accepted |
+| [0013](0013-api-security-layer.md)         | API security layer                                                 | Accepted |

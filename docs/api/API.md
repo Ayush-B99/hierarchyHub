@@ -79,6 +79,23 @@ List response:
 
 `version` goes up by one every time the employee changes. When adding an employee, send every field except `id`, `version`, `createdAt` and `updatedAt`. `managerId` can be left out or set to `null`. When editing, send only the fields that change.
 
+## Changing an employee safely
+
+Every employee has a `version`, also sent as the `ETag` header (for example `"v3"`). To change or delete someone, send back the version you loaded:
+
+```http
+PATCH /api/employees/6b0c0d0e-5f1a-4c8e-9a3b-2d7e1f0c4a11
+If-Match: "v3"
+Content-Type: application/json
+
+{ "role": "Head of Engineering" }
+```
+
+- If nobody else changed them since, the change is saved and the response carries the new version (`"v4"`).
+- If someone else saved first, you get **412** and nothing is overwritten.
+- Without `If-Match` you get **428**. `If-Match: *` skips the check on purpose.
+- Only send the fields that change. Unknown fields (including `id` and `version`) are refused.
+
 ## Errors
 
 Errors always have this shape:
@@ -110,3 +127,9 @@ Errors always have this shape:
 | `If-None-Match`                      | Send the ETag back. If nothing changed, the API answers `304 Not Modified` with no body    |
 
 See [ADR 0011](../adr/0011-caching.md).
+
+## Security
+
+- Every response has an `X-Request-Id`. Include it when reporting a problem.
+- Only the web app's own address may call the API from a browser (CORS).
+- Requests are rate limited per IP address: 300 reads and 60 changes per minute. See [ADR 0013](../adr/0013-api-security-layer.md).
