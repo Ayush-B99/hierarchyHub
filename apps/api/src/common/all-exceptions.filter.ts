@@ -9,6 +9,7 @@ import {
 import { HttpAdapterHost } from '@nestjs/core';
 import type { ApiErrorBody } from '@hierarchy-hub/shared';
 import { mapDatabaseError } from '../database/database-errors';
+import { requestIdOf } from './request-id';
 
 /**
  * every error the api sends back goes through here, so they all have the same shape
@@ -23,8 +24,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const { httpAdapter } = this.adapterHost;
     const context = host.switchToHttp();
-    const request = context.getRequest<{ method?: string; url?: string }>();
-    const body = this.toBody(exception, `${request.method ?? ''} ${request.url ?? ''}`.trim());
+    const request = context.getRequest<{ method?: string; path?: string; url?: string }>();
+    // path only, never the query string, which can contain names people searched for
+    const where = `${request.method ?? ''} ${request.path ?? request.url?.split('?')[0] ?? ''} [${requestIdOf(request) ?? 'no id'}]`;
+    const body = this.toBody(exception, where);
     httpAdapter.reply(context.getResponse(), body, body.statusCode);
   }
 
@@ -43,6 +46,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
         message: Array.isArray(message) ? message.join(', ') : (message ?? exception.message),
         ...(errors ? { errors } : {}),
       };
+    }
+
+    // problems reading the request body itself, before it ever reaches our code
+    const bodyProblem = (exception as { type?: string } | null)?.type;
+    if (bodyProblem === 'entity.too.large') {
+      return { statusCode: HttpStatus.PAYLOAD_TOO_LARGE, message: 'That request is too large.' };
+    }
+    if (bodyProblem === 'entity.parse.failed') {
+      return { statusCode: HttpStatus.BAD_REQUEST, message: 'The request body is not valid JSON.' };
     }
 
     // a database rule the user broke, eg a duplicate email or a reporting loop

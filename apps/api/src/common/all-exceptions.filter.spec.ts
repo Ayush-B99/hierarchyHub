@@ -7,7 +7,7 @@ function run(exception: unknown) {
   const filter = new AllExceptionsFilter({ httpAdapter: { reply } } as unknown as HttpAdapterHost);
   const host = {
     switchToHttp: () => ({
-      getRequest: () => ({ method: 'PATCH', url: '/api/employees/1' }),
+      getRequest: () => ({ method: 'PATCH', path: '/api/employees/1', requestId: 'req-12345678' }),
       getResponse: () => ({}),
     }),
   };
@@ -48,6 +48,18 @@ describe('AllExceptionsFilter', () => {
     });
   });
 
+  it('handles bad request bodies before they reach our code', () => {
+    expect(
+      run(Object.assign(new Error('too big'), { type: 'entity.too.large', status: 413 })),
+    ).toMatchObject({ status: 413 });
+    expect(
+      run(Object.assign(new Error('bad json'), { type: 'entity.parse.failed', status: 400 })),
+    ).toMatchObject({
+      status: 400,
+      body: { statusCode: 400, message: 'The request body is not valid JSON.' },
+    });
+  });
+
   it('hides unexpected errors and logs them without their message', () => {
     const logged: string[] = [];
     jest.spyOn(Logger.prototype, 'error').mockImplementation((message: unknown) => {
@@ -63,7 +75,9 @@ describe('AllExceptionsFilter', () => {
     expect(status).toBe(500);
     expect(body.message).toBe('Something went wrong on our side. Please try again.');
     expect(JSON.stringify(body)).not.toMatch(/76000|Ruan/);
-    expect(logged.join('\n')).toContain('PATCH /api/employees/1 -> 500 unexpected Error (XX000)');
+    expect(logged.join('\n')).toContain(
+      'PATCH /api/employees/1 [req-12345678] -> 500 unexpected Error (XX000)',
+    );
     expect(logged.join('\n')).not.toMatch(/76000|Ruan|1990/);
   });
 });
