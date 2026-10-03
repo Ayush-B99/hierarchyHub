@@ -84,15 +84,18 @@ export const handlers = [
       return manager ? `${manager.lastName} ${manager.firstName}` : '';
     };
     const valueOf = (e: Employee) => (q.sortBy === 'managerName' ? managerName(e) : e[q.sortBy]);
-    items = [...items].sort((a, b) => {
-      const x = valueOf(a);
-      const y = valueOf(b);
-      const result =
-        typeof x === 'number' && typeof y === 'number'
-          ? x - y
-          : String(x).localeCompare(String(y), 'en', { sensitivity: 'base' });
-      return result * direction;
-    });
+    const compare = (x: unknown, y: unknown) =>
+      typeof x === 'number' && typeof y === 'number'
+        ? x - y
+        : String(x).localeCompare(String(y), 'en', { sensitivity: 'base' });
+    items = [...items].sort(
+      (a, b) =>
+        compare(valueOf(a), valueOf(b)) * direction ||
+        // ties always go by surname, first name then id, the same as the real api
+        compare(a.lastName, b.lastName) ||
+        compare(a.firstName, b.firstName) ||
+        compare(a.id, b.id),
+    );
 
     const start = (q.page - 1) * q.pageSize;
     return HttpResponse.json({
@@ -124,6 +127,7 @@ export const handlers = [
       ...input,
       managerId: input.managerId ?? null,
       id: crypto.randomUUID(),
+      version: 1,
       createdAt: now,
       updatedAt: now,
     };

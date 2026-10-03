@@ -16,8 +16,8 @@ describe('mock API rules', () => {
 
   it('sorts by manager name', async () => {
     const page = await api.listEmployees({ sortBy: 'managerName', sortOrder: 'asc', pageSize: 3 });
-    // thandi has no manager so she comes first, then sipho dlamini's team
-    expect(page.items.map((e) => e.lastName)).toEqual(['Nkosi', 'van der Merwe', 'Khumalo']);
+    // thandi has no manager so she comes first, then sipho dlamini's team, ties by surname
+    expect(page.items.map((e) => e.lastName)).toEqual(['Nkosi', 'Khumalo', 'van der Merwe']);
   });
 
   it('refuses to make someone their own manager (BR-01)', async () => {
