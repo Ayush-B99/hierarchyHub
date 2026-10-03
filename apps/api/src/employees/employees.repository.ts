@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import type { EmployeeSortField, ListEmployeesQuery } from '@hierarchy-hub/shared';
 import { DatabaseService } from '../database/database.service';
+import type { ExpectedVersion } from '../common/if-match';
 import type { EmployeeRecord } from './employee.mapper';
 
 // every column we're allowed to sort by, mapped to fixed sql. user input only ever picks a key
@@ -98,5 +99,54 @@ export class EmployeesRepository {
 
   findById(id: string): Promise<EmployeeRecord | null> {
     return this.db.employee.findUnique({ where: { id } });
+  }
+
+  create(data: Prisma.EmployeeUncheckedCreateInput): Promise<EmployeeRecord> {
+    return this.db.employee.create({ data });
+  }
+
+  /**
+   * saves a change only if the row is still at the version the user loaded. the check and
+   * the save are one statement, so there's no gap for someone else's edit to slip into
+   * returns null when nothing matched (gone, or changed by someone else)
+   */
+  async updateIfVersion(
+    id: string,
+    expected: ExpectedVersion,
+    data: Prisma.EmployeeUncheckedUpdateInput,
+  ): Promise<EmployeeRecord | null> {
+    try {
+      return await this.db.employee.update({
+        where: expected === 'any' ? { id } : { id, version: expected },
+        data,
+      });
+    } catch (error) {
+      if ((error as { code?: string }).code === 'P2025') return null;
+      throw error;
+    }
+  }
+
+  /**
+   * deletes someone and moves their direct reports up to their own manager (br-04),
+   * all in one transaction so it either fully happens or doesn't happen at all
+   */
+  deleteMovingTeamUp(
+    id: string,
+    expected: ExpectedVersion,
+  ): Promise<{ result: 'missing' } | { result: 'stale' } | { result: 'deleted'; moved: number }> {
+    return this.db.$transaction(async (tx) => {
+      // lock their row first, so nobody can edit them or give them a new report mid way
+      const [row] = await tx.$queryRaw<{ managerId: string | null; version: number }[]>`
+        SELECT manager_id AS "managerId", version FROM employees WHERE id = ${id}::uuid FOR UPDATE`;
+      if (!row) return { result: 'missing' as const };
+      if (expected !== 'any' && row.version !== expected) return { result: 'stale' as const };
+
+      const moved = await tx.employee.updateMany({
+        where: { managerId: id },
+        data: { managerId: row.managerId },
+      });
+      await tx.employee.delete({ where: { id } });
+      return { result: 'deleted' as const, moved: moved.count };
+    });
   }
 }
