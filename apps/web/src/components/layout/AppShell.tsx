@@ -1,7 +1,9 @@
 import { NavLink, Outlet } from 'react-router';
 import { EmployeeDialogsProvider } from '../../features/employees/EmployeeDialogsProvider';
 import { useEmployeeDialogs } from '../../features/employees/useEmployeeDialogs';
+import { GlobalSearch } from '../../features/search/GlobalSearch';
 import { ClayBackground } from '../background/ClayBackground';
+import { Magnet } from '../motion/Magnet';
 import { Button } from '../ui/Button';
 import { Panel } from '../ui/Panel';
 import styles from './AppShell.module.css';
@@ -17,7 +19,8 @@ export function AppShell() {
           Skip to content
         </a>
         <div className={styles.navWrap}>
-          <Panel as="header" spotlight className={styles.nav}>
+          {/* no spotlight here, it clips the overflow and would hide the search results dropdown */}
+          <Panel as="header" className={styles.nav}>
             <NavLink to="/" className={styles.brand}>
               <span className={styles.logo} aria-hidden="true">
                 <svg width="20" height="20" viewBox="0 0 20 20">
@@ -37,6 +40,7 @@ export function AppShell() {
               </NavLink>
             </nav>
             <div className={styles.end}>
+              <GlobalSearch />
               <AddEmployeeButton />
               <ThemeToggle />
             </div>
@@ -53,8 +57,10 @@ export function AppShell() {
 function AddEmployeeButton() {
   const { openAdd } = useEmployeeDialogs();
   return (
-    <Button variant="primary" onClick={openAdd}>
-      Add employee
-    </Button>
+    <Magnet>
+      <Button variant="primary" onClick={openAdd}>
+        Add employee
+      </Button>
+    </Magnet>
   );
 }
