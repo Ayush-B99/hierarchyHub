@@ -51,7 +51,7 @@ Pick the new manager and select **Save changes**. The org chart updates straight
 
 With a mouse, you can also drag someone in the Orbit view onto their new manager:
 
-1. Press and hold on a person's card and start moving.
+1. Press and hold on a person's card and start moving. The orbit stops turning while you drag.
 2. Cards you can drop on get a dashed outline. Cards you can't (the person's own team, or their current manager) fade out.
 3. Let go over the new manager. The card under the pointer gets a solid outline and the label says "Move ... here".
 4. Confirm with **Move**, or press **Cancel**. Nothing changes until you confirm.
@@ -76,13 +76,18 @@ The Explore page always focuses on one person. When you first open it, that's th
 
 ### Orbit view
 
-The selected person sits in the middle. Their manager is above them and the people who report to them are spread out below.
+The Orbit view works like a small solar system. The selected person sits in the middle, their manager is above them, and the people who report to them circle slowly around them on a tilted ring. People at the front of the ring look bigger and brighter. People at the back look smaller and pass behind the person in the middle.
 
 - **Click anyone** to move to them. They become the person in the middle.
-- Each card shows how many people report to that person, or "No team".
+- **Spin the ring yourself** by dragging the empty space around it, left or right. Let go with a flick and it glides on before settling back to its own pace. On a touch screen, swipe sideways across it.
+- The ring stops while your pointer is over someone, so you're never clicking a moving card. It also stops while you drag someone or confirm a move.
+- With the keyboard, press Tab to go from person to person. The ring turns until the person you're on faces you.
+- Each card shows how many people report to that person, or "No team". People with a team also have small moons circling their picture, one for each person in their team (up to six).
 - If someone has a very large team, the last card says **+N more**. Click it to see everyone in the Levels view.
 
-![Orbit view, with Johan in the middle, Sipho above and his team below](images/explore-orbit.jpg)
+If you've asked your device for less motion (for example "Reduce motion" on a Mac or iPhone, or "Show animations" turned off in Windows), the ring stays still. You can still drag it round. On narrow screens such as phones, the Orbit view shows the manager, the person and their team stacked in a list instead.
+
+![Orbit view, with Johan in the middle, Sipho above and his team circling him](images/explore-orbit.jpg)
 
 ### Levels view
 
