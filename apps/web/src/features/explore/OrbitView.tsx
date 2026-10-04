@@ -1,14 +1,17 @@
 import type { Employee } from '@hierarchy-hub/shared';
 import { descendantsOf } from '@hierarchy-hub/shared';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type FocusEvent, type PointerEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { Avatar } from '../../components/ui/Avatar';
+import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
 import { fullName } from '../../lib/format';
 import type { OrgIndex } from './orgIndex';
 import styles from './OrbitView.module.css';
 import { MoveEmployeeDialog } from './MoveEmployeeDialog';
 import { DragGhost, MoreNode, PersonNode, type DropLook } from './PersonNode';
 import { useOrbitDrag } from './useOrbitDrag';
+import { CENTRE_Z, RING } from './orbitRing';
+import { useOrbitSpin } from './useOrbitSpin';
 
 interface OrbitViewProps {
   person: Employee;
@@ -17,60 +20,29 @@ interface OrbitViewProps {
   onShowAll: () => void;
 }
 
-// stage geometry, everything is placed around the centre card
-const CX = 390;
-const CY = 250;
-const RADIUS = 260;
-const NODE_WIDTH = 140;
+// stage geometry. the ring itself is described in orbitRing.ts
+const CX = RING.cx;
 const STAGE_WIDTH = 780;
-const STAGE_HEIGHT = 680;
-// more than this and the arc gets crowded, so the rest go behind a "+n more" card
+const STAGE_HEIGHT = 660;
+// the middle of the centre card
+const SUN_Y = 380;
+// the centre card's size, so it sits exactly in the middle of the ring
+const CENTRE_WIDTH = 260;
+const CENTRE_HALF_HEIGHT = 118;
+// where the manager card ends and the centre card starts, for the line between them
+const MANAGER_BOTTOM = 182;
+// more than this and the ring gets crowded, so the rest go behind a "+n more" card
 const MAX_SHOWN = 7;
-// below this width the arc gets too small to read, so we stack everything instead
+// below this width the ring gets too small to read, so we stack everything instead
 const STACK_BELOW = 620;
 
-function linkStyle(x1: number, y1: number, x2: number, y2: number) {
-  const length = Math.hypot(x2 - x1, y2 - y1);
-  const angle = (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
-  return { left: x1, top: y1, width: length, transform: `rotate(${angle}deg)` };
-}
-
-// how far apart cards need to be so they never overlap (card width plus a gap)
-const MIN_SPACING = 160;
-const ROW_ONE_Y = 440;
-const ROW_TWO_Y = 610;
-
-/**
- * where each team card goes. up to four fit nicely on an arc under the centre card,
- * bigger teams get two staggered rows instead so cards never sit on top of each other
- */
-function teamLayout(count: number): { slots: { x: number; y: number }[]; height: number } {
-  if (count <= 4) {
-    const slots = Array.from({ length: count }, (_, i) => {
-      const degrees = count === 1 ? 90 : 18 + (144 * i) / (count - 1);
-      const radians = (degrees * Math.PI) / 180;
-      return {
-        x: Math.round(CX + RADIUS * Math.cos(radians)),
-        y: Math.round(CY + 70 + RADIUS * 0.72 * Math.sin(radians)),
-      };
-    });
-    return { slots, height: STAGE_HEIGHT };
+/** is this element showing a keyboard focus ring (not focus from a click) */
+function hasKeyboardFocus(el: Element): boolean {
+  try {
+    return el.matches(':focus-visible');
+  } catch {
+    return false;
   }
-
-  // front row gets the extra card when the count is odd, back row sits in the gaps
-  const front = Math.ceil(count / 2);
-  const back = count - front;
-  const span = Math.max(MIN_SPACING * (front - 1), 0);
-  const left = CX - span / 2;
-  const step = front > 1 ? span / (front - 1) : 0;
-  const slots = [
-    ...Array.from({ length: front }, (_, i) => ({ x: Math.round(left + step * i), y: ROW_ONE_Y })),
-    ...Array.from({ length: back }, (_, i) => ({
-      x: Math.round(left + step * (i + 0.5)),
-      y: ROW_TWO_Y,
-    })),
-  ];
-  return { slots, height: ROW_TWO_Y + 170 };
 }
 
 /** watches how wide the orbit area is so it can shrink to fit or switch to the stacked layout */
@@ -133,6 +105,42 @@ export function OrbitView({ person, org, onSelect, onShowAll }: OrbitViewProps) 
     onDrop: (id, to) => setPending({ id, to }),
   });
 
+  // the ring stops turning while you point at a card, tab through them, drag someone or confirm a move
+  const [hovering, setHovering] = useState(false);
+  const [keyboardFocus, setKeyboardFocus] = useState(false);
+  const reduced = usePrefersReducedMotion();
+  const ringCount = shown.length + (overflow ? 1 : 0);
+  const { itemRef, spinHandlers, spinning, bringToFront } = useOrbitSpin({
+    count: ringCount,
+    resetKey: person.id,
+    paused: hovering || keyboardFocus || Boolean(drag) || Boolean(pending),
+    reduced,
+    scale,
+  });
+
+  // a new centre person means the old cards are gone, so nothing is hovered any more
+  useEffect(() => {
+    setHovering(false);
+    setKeyboardFocus(false);
+  }, [person.id]);
+
+  const ringItemProps = (index: number) => ({
+    ref: itemRef(index),
+    className: styles.planetSlot,
+    onPointerEnter: (event: PointerEvent) => {
+      if (event.pointerType !== 'touch') setHovering(true);
+    },
+    onPointerLeave: () => setHovering(false),
+    // tabbing to a card behind the centre turns the ring until it faces you
+    onFocus: (event: FocusEvent<HTMLElement>) => {
+      if (hasKeyboardFocus(event.target)) {
+        setKeyboardFocus(true);
+        bringToFront(index);
+      }
+    },
+    onBlur: () => setKeyboardFocus(false),
+  });
+
   const lookFor = (id: string): DropLook => {
     if (!drag) return undefined;
     if (drag.id === id) return 'dragging';
@@ -160,7 +168,9 @@ export function OrbitView({ person, org, onSelect, onShowAll }: OrbitViewProps) 
         />
       )}
       <p className={styles.hint}>
-        Tip: drag someone onto another card to change who they report to.
+        {stacked || reports.length === 0
+          ? 'Tip: drag someone onto another card to change who they report to.'
+          : 'Tip: drag the space around the orbit to spin it, or drag someone onto another card to change who they report to.'}
       </p>
     </>
   );
@@ -241,25 +251,48 @@ export function OrbitView({ person, org, onSelect, onShowAll }: OrbitViewProps) 
     );
   }
 
-  const { slots, height: stageHeight } = teamLayout(shown.length + (overflow ? 1 : 0));
-  const moreSlot = overflow ? slots.at(-1) : undefined;
+  // the top of the org has no manager card above, so slide everything up into that space
+  const shift = manager ? 0 : MANAGER_BOTTOM - 20;
+  // and someone with no team has no ring below, so the stage can end under the message
+  const height = (reports.length > 0 ? STAGE_HEIGHT : SUN_Y + CENTRE_HALF_HEIGHT + 90) - shift;
 
   return (
     <section ref={boxRef} className={styles.box} aria-label={label}>
-      <div
-        className={styles.fit}
-        style={{ width: STAGE_WIDTH * scale, height: stageHeight * scale }}
-      >
+      <div className={styles.fit} style={{ width: STAGE_WIDTH * scale, height: height * scale }}>
         {/* key on the person so everything animates in again when you move */}
         <div
-          className={styles.stage}
+          className={[styles.stage, styles.space, spinning && styles.spinning]
+            .filter(Boolean)
+            .join(' ')}
           key={person.id}
-          style={{ height: stageHeight, transform: `scale(${scale})` }}
+          data-orbit-stage=""
+          style={{ height: STAGE_HEIGHT, transform: `scale(${scale}) translateY(${-shift}px)` }}
+          {...spinHandlers}
         >
-          {manager && <div className={styles.link} style={linkStyle(CX, 110, CX, CY)} />}
-          {slots.map((slot, i) => (
-            <div key={i} className={styles.link} style={linkStyle(CX, CY, slot.x, slot.y + 30)} />
-          ))}
+          {reports.length > 0 && (
+            <div
+              className={styles.orbitPath}
+              aria-hidden="true"
+              style={{
+                left: RING.cx - RING.rx,
+                top: RING.cy - RING.ry,
+                width: RING.rx * 2,
+                height: RING.ry * 2,
+              }}
+            />
+          )}
+
+          {manager && (
+            <div
+              className={styles.link}
+              style={{
+                left: CX - 3,
+                top: MANAGER_BOTTOM,
+                width: 6,
+                height: SUN_Y - CENTRE_HALF_HEIGHT - MANAGER_BOTTOM,
+              }}
+            />
+          )}
 
           {manager && (
             <PersonNode
@@ -267,45 +300,53 @@ export function OrbitView({ person, org, onSelect, onShowAll }: OrbitViewProps) 
               teamSize={org.reportsOf(manager.id).length}
               onSelect={select}
               label="Reports to"
-              style={{ position: 'absolute', left: CX - NODE_WIDTH / 2, top: 4 }}
+              style={{
+                position: 'absolute',
+                left: CX - 70,
+                top: 4,
+                zIndex: CENTRE_Z + 200,
+              }}
               dropLook={lookFor(manager.id)}
               dragHandles={handlesFor(manager.id)}
             />
           )}
 
-          {centre}
+          <div
+            className={styles.sun}
+            style={{
+              left: CX - CENTRE_WIDTH / 2,
+              top: SUN_Y - CENTRE_HALF_HEIGHT,
+              width: CENTRE_WIDTH,
+              zIndex: CENTRE_Z,
+            }}
+          >
+            {centre}
+          </div>
 
-          {shown.map((report, i) => {
-            const slot = slots[i];
-            if (!slot) return null;
-            return (
+          {shown.map((report, i) => (
+            <div key={report.id} {...ringItemProps(i)}>
               <PersonNode
-                key={report.id}
                 employee={report}
                 teamSize={org.reportsOf(report.id).length}
                 onSelect={select}
-                style={{
-                  position: 'absolute',
-                  left: slot.x - NODE_WIDTH / 2,
-                  top: slot.y,
-                  animationDelay: `${60 + i * 50}ms`,
-                }}
+                style={{ animationDelay: `${60 + i * 50}ms` }}
                 dropLook={lookFor(report.id)}
                 dragHandles={handlesFor(report.id)}
+                moons
               />
-            );
-          })}
+            </div>
+          ))}
 
-          {moreSlot && (
-            <MoreNode
-              count={reports.length - shown.length}
-              onClick={onShowAll}
-              style={{ position: 'absolute', left: moreSlot.x - NODE_WIDTH / 2, top: moreSlot.y }}
-            />
+          {overflow && (
+            <div {...ringItemProps(shown.length)}>
+              <MoreNode count={reports.length - shown.length} onClick={onShowAll} />
+            </div>
           )}
 
           {reports.length === 0 && (
-            <p className={styles.empty}>Nobody reports to {person.firstName} yet.</p>
+            <p className={styles.empty} style={{ top: SUN_Y + CENTRE_HALF_HEIGHT + 32 }}>
+              Nobody reports to {person.firstName} yet.
+            </p>
           )}
         </div>
       </div>

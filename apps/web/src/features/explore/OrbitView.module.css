@@ -30,6 +30,52 @@
   animation: fade 0.5s ease both;
 }
 
+/* the 3d orbit: drag empty space to spin it. pan-y keeps vertical swipes scrolling the page */
+.space {
+  cursor: grab;
+  touch-action: pan-y;
+}
+
+.spinning {
+  cursor: grabbing;
+  user-select: none;
+}
+
+/* the groove the team travels along, a tilted ring pressed into the clay */
+.orbitPath {
+  position: absolute;
+  border-radius: 50%;
+  border: 6px solid var(--surface-2);
+  box-shadow: var(--well);
+  pointer-events: none;
+  animation: fade 0.6s ease both;
+}
+
+.sun {
+  position: absolute;
+}
+
+.sun > .focus {
+  position: relative;
+  left: auto;
+  top: auto;
+  width: 100%;
+  cursor: default;
+}
+
+/* each card on the ring, moved every frame by useOrbitSpin */
+.planetSlot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 140px;
+  will-change: transform, opacity;
+}
+
+.planetSlot > button {
+  cursor: pointer;
+}
+
 @keyframes fade {
   from {
     opacity: 0;
