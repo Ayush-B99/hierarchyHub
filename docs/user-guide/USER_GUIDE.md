@@ -1,6 +1,6 @@
 # User Guide
 
-This guide shows how to use Hierarchy Hub. The screenshots use sample employees. It is an outline for now. Each section is filled in, with screenshots, as the feature is built.
+This guide shows how to use Hierarchy Hub to manage EPI-USE Africa's employees and who they report to. The screenshots use sample employees.
 
 Live app: _link added after deployment_
 
@@ -33,6 +33,15 @@ When the employee is saved, a confirmation appears at the bottom of the screen a
 Open someone on the Explore page (or click their name on the People page) to see all their details in the panel on the right.
 
 To change anything, select **Edit details**, update the fields and select **Save changes**. Press **Cancel** or the Escape key to close without saving.
+
+### If someone else changed them first
+
+Several people can use Hierarchy Hub at the same time. If someone else saves a change to the same employee while you have the form open, your save is stopped so their work isn't overwritten. You'll see a message like "Someone else changed Johan while you were editing, so your changes weren't saved".
+
+1. Select **Load the latest version**. The form fills in with their changes.
+2. Make your change again and select **Save changes**.
+
+The same check protects deleting and dragging. If the person changed since you opened the dialog, nothing is deleted or moved, and you're asked to check their latest details first.
 
 ## 4. Changing someone's manager
 
@@ -175,27 +184,32 @@ For privacy, the email address is turned into a code (a hash) in your browser be
 
 ## 9. Troubleshooting
 
-| What you see                                                 | What to do                                                                                         |
-| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| "We couldn't load the organisation"                          | Check your connection and select **Try again**.                                                    |
-| "Another employee already has that email or employee number" | Use a different value, or search for the existing person and edit them instead.                    |
-| A person is greyed out in **Reports to**                     | They're the person you're editing or in their team. Picking them would create a reporting loop.    |
-| A picture shows initials instead of a photo                  | That email has no Gravatar picture yet. See section 8.                                             |
-| "We couldn't find that person"                               | The link points to someone who has been deleted. You're shown the top of the organisation instead. |
+| What you see                                                 | What to do                                                                                                                       |
+| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| "We couldn't load the organisation"                          | Check your connection and select **Try again**.                                                                                  |
+| "Another employee already has that email or employee number" | Use a different value, or search for the existing person and edit them instead.                                                  |
+| A person is greyed out in **Reports to**                     | They're the person you're editing or in their team. Picking them would create a reporting loop.                                  |
+| A picture shows initials instead of a photo                  | That email has no Gravatar picture yet. See section 8.                                                                           |
+| "We couldn't find that person"                               | The link points to someone who has been deleted. You're shown the top of the organisation instead.                               |
+| "Someone else changed ... while you were editing"            | Select **Load the latest version**, then make your change again. See section 3.                                                  |
+| The Orbit view isn't turning                                 | It stops while your pointer is over a card. If it never turns, your device is set to reduce motion. You can still drag it round. |
 
 ## 10. Extra features
 
-These go beyond what the brief asked for:
+These go beyond what the brief asked for. [Beyond the brief](../extras/EXTRAS.md) has the full list, including the work behind the scenes.
 
-| Feature                                         | Where                         |
-| ----------------------------------------------- | ----------------------------- |
-| Two ways to explore: Orbit and Levels           | Explore page, section 6       |
-| Path to the top and "Works alongside"           | Explore page, section 6       |
-| Drag a person onto a new manager                | Orbit view, section 4         |
-| Search from any page, with keyboard shortcuts   | Top bar, section 6            |
-| Filters written as a sentence                   | People page, section 7        |
-| Export to CSV                                   | People page, section 7        |
-| Shareable links for any person or filtered view | Address bar, sections 6 and 7 |
-| Light and dark mode                             | Top bar, section 1            |
-| Works on phones and tablets                     | Everywhere                    |
-| Keyboard and screen reader support              | Everywhere                    |
+| Feature                                                    | Where                         |
+| ---------------------------------------------------------- | ----------------------------- |
+| Two ways to explore: Orbit and Levels                      | Explore page, section 6       |
+| A rotating 3D Orbit you can spin, with moons for team size | Explore page, section 6       |
+| Path to the top and "Works alongside"                      | Explore page, section 6       |
+| Drag a person onto a new manager                           | Orbit view, section 4         |
+| Search from any page, with keyboard shortcuts              | Top bar, section 6            |
+| Filters written as a sentence                              | People page, section 7        |
+| Export to CSV                                              | People page, section 7        |
+| Shareable links for any person or filtered view            | Address bar, sections 6 and 7 |
+| Protection against overwriting someone else's changes      | Forms and dialogs, section 3  |
+| Light and dark mode                                        | Top bar, section 1            |
+| Works on phones and tablets                                | Everywhere                    |
+| Keyboard and screen reader support                         | Everywhere                    |
+| Respects your device's reduced motion setting              | Everywhere                    |

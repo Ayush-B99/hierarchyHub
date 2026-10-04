@@ -1,6 +1,6 @@
 # Design
 
-The agreed visual direction for Hierarchy Hub. Open [concept.html](concept.html) in any browser to see the clickable concept that the frontend is built from.
+The agreed visual direction for Hierarchy Hub. The [brand guide](BRAND.md) covers the logo, colours, typography, motion and voice and tone in detail. Open [concept.html](concept.html) in any browser to see the clickable concept that the frontend is built from.
 
 ## Look and feel
 

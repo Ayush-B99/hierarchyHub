@@ -1,6 +1,6 @@
 # 0002. Use TypeScript with React and NestJS
 
-- Status: Accepted
+- Status: Accepted. The React Flow and TanStack Table choices were replaced by [0014](0014-custom-org-chart-and-table.md)
 - Date: 2026-10-02
 
 ## Context

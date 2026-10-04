@@ -3,7 +3,7 @@
 |         |                                                                                                 |
 | ------- | ----------------------------------------------------------------------------------------------- |
 | Project | Hierarchy Hub                                                                                   |
-| Version | 0.1 (draft)                                                                                     |
+| Version | 1.0                                                                                             |
 | Date    | October 2026                                                                                    |
 | Related | [SRS](../srs/SRS.md), [ADRs](../adr/README.md), [Technical document](../technical/TECHNICAL.md) |
 
@@ -68,43 +68,72 @@ flowchart TB
     user -->|"profile pictures"| grav
 ```
 
-| Part           | Job                                                                                        | Built with                                                            |
-| -------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
-| Web app        | Screens: org chart, table, forms. Checks input before sending it. Shows Gravatar pictures. | React, Vite, TanStack Query, React Router, React Flow, TanStack Table |
-| CloudFront     | Gives the API a secure HTTPS address without buying a domain name.                         | Amazon CloudFront                                                     |
-| API            | Business rules, input checks, saving and reading data.                                     | NestJS, Prisma, Zod                                                   |
-| Database       | Stores employees and enforces key rules.                                                   | PostgreSQL 16 on Amazon RDS                                           |
-| Shared package | Types and validation rules used by both the web app and the API.                           | TypeScript, Zod. Not deployed on its own.                             |
+| Part           | Job                                                                                        | Built with                                                                                                |
+| -------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| Web app        | Screens: org chart, table, forms. Checks input before sending it. Shows Gravatar pictures. | React, Vite, TanStack Query, React Router, Three.js. The org chart and table are built by hand (ADR 0014) |
+| CloudFront     | Gives the API a secure HTTPS address without buying a domain name.                         | Amazon CloudFront                                                                                         |
+| API            | Business rules, input checks, saving and reading data.                                     | NestJS, Prisma, Zod                                                                                       |
+| Database       | Stores employees and enforces key rules.                                                   | PostgreSQL 16 on Amazon RDS                                                                               |
+| Shared package | Types and validation rules used by both the web app and the API.                           | TypeScript, Zod. Not deployed on its own.                                                                 |
 
 ## 5. Inside the API
 
-The API is split into modules. Each module has three layers, and each layer only talks to the one below it.
+Every request passes through the same pipeline before it reaches an endpoint, then down through three layers. Each layer only talks to the one below it.
 
 ```mermaid
 flowchart TB
-    subgraph api["API"]
+    req(["HTTPS request"])
+
+    subgraph api["API (NestJS)"]
+        subgraph pipeline["Request pipeline, in order"]
+            direction LR
+            helmet["<b>Helmet</b><br/>Security headers"]
+            cors["<b>CORS</b><br/>Only the web app's address"]
+            rid["<b>Request ID and access log</b><br/>No query strings or bodies"]
+            body["<b>JSON body parser</b><br/>16 KB limit"]
+            throttle["<b>Rate limit guard</b><br/>Reads and changes counted apart"]
+            helmet --> cors --> rid --> body --> throttle
+        end
+
         subgraph emp["Employees module"]
-            ctrl["<b>Controller</b><br/>Receives HTTP requests"]
-            pipe["<b>Validation pipe</b><br/>Checks input with shared rules"]
-            svc["<b>Service</b><br/>Business rules"]
-            repo["<b>Repository</b><br/>Database queries"]
+            ctrl["<b>Controller</b><br/>Routes, status codes, ETag and Location headers"]
+            pipe["<b>Validation pipe</b><br/>Strict Zod schemas from the shared package"]
+            ifm["<b>If-Match parser</b><br/>The version the client loaded"]
+            svc["<b>Service</b><br/>Business rules, transactions"]
+            repo["<b>Repository</b><br/>SQL and Prisma queries"]
+            map["<b>Mapper</b><br/>Database row to API response"]
         end
+
         subgraph health["Health module"]
-            hc["<b>Health controller</b><br/>GET /api/health"]
+            hc["<b>Health controller</b><br/>/api/health and /api/health/ready"]
         end
-        prisma["<b>Prisma service</b><br/>Database connection"]
+
+        subgraph dbm["Database module"]
+            dbs["<b>Database service</b><br/>Prisma client over a node-postgres pool"]
+            dberr["<b>Database error mapping</b><br/>Rule names to friendly messages"]
+        end
+
+        filter["<b>Exception filter</b><br/>One JSON error shape, no internal details"]
+        config["<b>Config</b><br/>Settings checked at start-up"]
     end
 
-    shared["Shared package<br/>Validation rules and types"]
+    shared["Shared package<br/>Schemas and types"]
     db[("PostgreSQL")]
 
+    req --> helmet
+    throttle --> ctrl
+    throttle --> hc
     ctrl --> pipe
+    ctrl --> ifm
     pipe -.-> shared
     ctrl --> svc
     svc --> repo
-    repo --> prisma
-    hc --> prisma
-    prisma --> db
+    repo --> map
+    repo --> dbs
+    hc --> dbs
+    dbs --> db
+    dberr -.-> filter
+    config -.-> dbs
 ```
 
 | Layer      | Does                                                  | Does not                                 |
@@ -118,26 +147,30 @@ flowchart TB
 ```mermaid
 flowchart TB
     subgraph web["Web app"]
-        layout["<b>Layout</b><br/>Top bar and navigation"]
+        layout["<b>App shell</b><br/>Top bar, search, theme, 3D background"]
         subgraph pages["Pages"]
-            chart["Org chart page"]
-            table["Employees table page"]
-            details["Employee details and form"]
+            explore["<b>Explore</b><br/>Orbit and Levels views,<br/>path to the top, details panel"]
+            people["<b>People</b><br/>Sentence filters, table,<br/>paging, CSV export"]
         end
-        avatar["<b>Avatar</b><br/>Gravatar picture"]
+        dialogs["<b>Employee dialogs</b><br/>Add, edit, change manager,<br/>delete, confirm a move"]
+        avatar["<b>Avatar</b><br/>Gravatar picture over initials"]
         query["<b>TanStack Query</b><br/>Loading, caching and refreshing data"]
-        client["<b>API client</b><br/>Typed calls to the API"]
+        client["<b>API client</b><br/>Typed calls, sends If-Match on changes"]
     end
     shared["Shared package"]
 
     layout --> pages
-    chart --> avatar
-    table --> avatar
+    pages --> dialogs
+    explore --> avatar
+    people --> avatar
     pages --> query
+    dialogs --> query
     query --> client
-    details -.->|"form validation"| shared
-    chart -.->|"builds the tree"| shared
+    dialogs -.->|"form validation"| shared
+    explore -.->|"builds the tree, finds teams"| shared
 ```
+
+The selected person, view, filters, sort and page are kept in the address bar, so the back button, bookmarks and shared links all work.
 
 ## 7. Main flows
 
@@ -206,11 +239,11 @@ sequenceDiagram
     D-->>A: Employees
     A-->>W: Flat list of employees
     W->>W: Build the tree from the list
-    W->>W: Lay out and draw the chart
+    W->>W: Show the selected person, their manager and their team
     loop For each person on screen
         W->>W: Hash the email address
         W->>G: Request picture by hash
-        G-->>W: Picture, or a generated pattern
+        G-->>W: Picture, or a transparent image so the initials show through
     end
 ```
 
@@ -254,50 +287,103 @@ erDiagram
 
 Indexes make sorting, filtering and tree lookups fast. We index `manager_id`, `last_name` with `first_name`, and `role`, plus the unique indexes above.
 
-## 9. Hosting
+## 9. Hosting and deployment
+
+The hosting design follows ADR 0004. Exact sizes and the region are confirmed during deployment.
+
+### 9.1 Deployment diagram
+
+What runs where in production, and how the pieces connect.
 
 ```mermaid
 flowchart TB
-    dev(["Developer"]) -->|"push"| gh["GitHub"]
-    gh -->|"run checks"| ci["GitHub Actions"]
-    gh -->|"build on merge to main"| amp
-    ci -->|"deploy backend"| cfn["CloudFormation via AWS CDK"]
-
-    subgraph aws["AWS, Cape Town region"]
-        amp["Amplify Hosting<br/>Web app"]
-        cdn["CloudFront"]
-        subgraph vpc["Private network (VPC)"]
-            subgraph public["Public subnets"]
-                alb["Load balancer"]
-                task["API container<br/>ECS Fargate"]
-            end
-            subgraph private["Private subnets"]
-                rds[("PostgreSQL<br/>RDS")]
-            end
-        end
-        sm["Secrets Manager"]
+    subgraph device["User's device"]
+        browser["<b>Web browser</b><br/>Runs the React app"]
     end
 
-    cfn --> cdn
-    cfn --> alb
-    cfn --> task
-    cfn --> rds
-    cfn --> sm
-    cdn --> alb
-    alb --> task
-    task --> rds
-    sm -.-> task
+    grav["<b>Gravatar</b><br/>gravatar.com"]
+
+    subgraph aws["AWS region (Cape Town, af-south-1, or Ireland, eu-west-1)"]
+        amplify["<b>AWS Amplify Hosting</b><br/>Static web app files<br/>HTTPS, served from a CDN"]
+        cf["<b>Amazon CloudFront</b><br/>HTTPS address for the API"]
+        ecr["<b>Amazon ECR</b><br/>API container images"]
+        sm["<b>AWS Secrets Manager</b><br/>Database passwords"]
+        logs["<b>Amazon CloudWatch</b><br/>Logs and health alarms"]
+
+        subgraph vpc["VPC (private network)"]
+            subgraph pub["Public subnets"]
+                alb["<b>Application Load Balancer</b><br/>Health check: /api/health"]
+                subgraph ecs["ECS Fargate service"]
+                    task["<b>API container</b><br/>Node.js 22, NestJS<br/>port 3000"]
+                end
+            end
+            subgraph priv["Private subnets, no internet access"]
+                rds[("<b>Amazon RDS</b><br/>PostgreSQL 16<br/>port 5432")]
+            end
+        end
+    end
+
+    browser -->|"HTTPS 443: page and assets"| amplify
+    browser -->|"HTTPS 443: /api"| cf
+    browser -->|"HTTPS 443: picture by email hash"| grav
+    cf -->|"HTTP 80"| alb
+    alb -->|"HTTP 3000"| task
+    task -->|"TLS 5432, app user only"| rds
+    sm -.->|"secrets at start-up"| task
+    ecr -.->|"image pulled at start-up"| task
+    task -.->|"logs"| logs
 ```
 
-Key points:
+| Node            | What it holds                                     | Why it's set up this way                                                                             |
+| --------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Amplify Hosting | The built web app: HTML, JavaScript, CSS, fonts   | Static files over HTTPS, cached close to users, rebuilt from GitHub on every merge.                  |
+| CloudFront      | Nothing, it forwards API calls                    | Gives the API an HTTPS address without buying a domain. Without HTTPS, the web app couldn't call it. |
+| Load balancer   | Nothing, it routes                                | Checks `/api/health` and replaces a container that stops answering.                                  |
+| ECS Fargate     | The API container                                 | Runs the same image as local Docker and CI, with no servers to patch.                                |
+| RDS             | The employees database                            | Managed backups and patches. In private subnets, so only the API's security group can reach it.      |
+| Secrets Manager | Database passwords for the app and migrator users | Secrets never sit in git, images or environment files.                                               |
+| CloudWatch      | API logs and alarms                               | Logs carry request IDs, never personal data (NFR-05).                                                |
 
-- The web app is a set of static files served by Amplify over HTTPS.
-- The API runs as a Docker container on ECS Fargate, so there are no servers to manage. The load balancer checks `/api/health` (is the process up) and replaces the container if it fails. `/api/health/ready` also checks the database, for monitoring.
-- CloudFront sits in front of the load balancer to give the API an HTTPS address. Without it, the HTTPS website could not call the API.
-- The database is in private subnets with no internet access. Only the API container can connect to it.
-- We do not use a NAT gateway. It is the most expensive part of a typical small AWS setup and we do not need it.
-- The Cape Town region (`af-south-1`) keeps employee data in South Africa. If that region is not enabled on the account, we use Ireland (`eu-west-1`).
-- Database changes (migrations) run automatically when the API container starts.
+Other points:
+
+- There is no NAT gateway. It is the most expensive part of a typical small AWS setup, and nothing in the private subnets needs the internet.
+- The API connects to the database with the `hh_app` user, which can only read and write rows. Migrations use the separate `hh_migrator` user (ADR 0010).
+- `TRUST_PROXY` is 2 (CloudFront and the load balancer), so rate limits see each visitor's real address (ADR 0013).
+- The Cape Town region keeps employee data in South Africa. If it isn't enabled on the account, Ireland is used instead.
+
+### 9.2 Delivery pipeline
+
+How a change gets from a developer's machine to production.
+
+```mermaid
+flowchart LR
+    dev(["Developer"]) -->|"push a branch"| gh["GitHub"]
+    gh -->|"pull request"| ci
+
+    subgraph ci["GitHub Actions: CI"]
+        direction TB
+        verify["<b>verify</b><br/>Format, lint, types,<br/>unit tests, build"]
+        dbjob["<b>database</b><br/>PostgreSQL service, migrations,<br/>integration and end-to-end tests"]
+    end
+
+    ci -->|"both green, merge to main"| main["main branch"]
+    main -->|"build and push image"| ecr["Amazon ECR"]
+    ecr -->|"run migrations, then roll out"| ecs["ECS Fargate"]
+    main -->|"build web app"| amp["Amplify Hosting"]
+    iac["AWS setup written as code"] -.->|"creates and updates"| aws["AWS resources"]
+```
+
+- Nothing reaches `main` unless both CI jobs pass.
+- The database job builds a fresh PostgreSQL from the same setup scripts used locally and on AWS, so all three environments match.
+- New API containers only receive traffic once they pass the health check, so a broken release never replaces a working one.
+
+### 9.3 Environments
+
+| Environment | Web app                    | API                           | Database                                                          | Used for                    |
+| ----------- | -------------------------- | ----------------------------- | ----------------------------------------------------------------- | --------------------------- |
+| Local       | Vite dev server, port 5173 | Node.js, port 3000            | PostgreSQL 16 in Docker: `hierarchy_hub` and `hierarchy_hub_test` | Building and testing        |
+| CI          | Built, not served          | Booted inside the test runner | PostgreSQL 16 service container: `hierarchy_hub_test` only        | Checking every pull request |
+| Production  | Amplify Hosting            | ECS Fargate                   | Amazon RDS                                                        | The live app                |
 
 ## 10. Design patterns
 
@@ -309,7 +395,8 @@ Key points:
 | Repository             | `EmployeesRepository`                | Keeps database code in one place, away from business rules.                |
 | DTO and mapper         | API responses                        | The API's response shape does not change when the database changes.        |
 | Shared kernel          | `packages/shared`                    | One set of types and validation rules for both web app and API.            |
-| Composite              | Org chart tree                       | Every node in the tree is handled the same way, so drawing it is simple.   |
+| Optimistic concurrency | `version` column, ETag and If-Match  | A second save made from an old copy is refused instead of overwriting.     |
+| Contract testing       | `packages/shared/src/testing`        | The same examples run against the mock API and the real API.               |
 | Adapter                | Gravatar helper, API client          | Wraps outside services in small, typed functions.                          |
 | Unit of work           | Delete with reassignment             | Several database changes succeed or fail together.                         |
 | Infrastructure as code | AWS CDK                              | The cloud setup can be rebuilt from code at any time.                      |
@@ -332,7 +419,7 @@ Key points:
 | Risk                                                                   | What we do about it                                                                                 |
 | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | Two people change managers at the same moment and create a loop.       | Solved: the database trigger takes a lock, so manager changes are checked one at a time (ADR 0010). |
-| A very large org chart is slow to draw.                                | Collapse teams below a certain level by default and only draw what is on screen.                    |
+| A very large org chart is slow to draw.                                | Solved: the Orbit and Levels views only draw one person's surroundings (ADR 0014).                  |
 | No login in the first version, so anyone with the URL can change data. | Acceptable for the assessment. Login is planned as an extra (FR-17).                                |
 | The Cape Town region is not enabled on the AWS account.                | Use Ireland (`eu-west-1`) instead.                                                                  |
 | AWS free tier rules change.                                            | Use the smallest sizes and remove everything after the assessment.                                  |
@@ -342,13 +429,16 @@ Key points:
 ```text
 hierarchyHub/
 ├── apps/
-│   ├── api/              NestJS API
-│   └── web/              React web app
+│   ├── api/              NestJS API, Prisma schema, migrations and tests
+│   └── web/              React web app and its tests
 ├── packages/
-│   ├── shared/           Shared types and validation rules
+│   ├── shared/           Shared types, validation rules and contract examples
 │   ├── tsconfig/         Shared TypeScript settings
 │   └── eslint-config/    Shared lint rules
-├── infra/                AWS CDK code (added in a later part)
 ├── docs/                 This documentation
-└── .github/              CI workflows and templates
+├── .github/              CI workflow and templates
+├── docker-compose.yml    Local PostgreSQL, set up the same way as on AWS
+└── Taskfile.yml          Short commands for setup, development and checks
 ```
+
+The AWS infrastructure code is added with the deployment (ADR 0004).
