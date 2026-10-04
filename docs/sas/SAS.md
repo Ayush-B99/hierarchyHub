@@ -401,6 +401,8 @@ flowchart LR
 | Unit of work           | Delete with reassignment             | Several database changes succeed or fail together.                         |
 | Infrastructure as code | AWS CDK                              | The cloud setup can be rebuilt from code at any time.                      |
 
+The Gang of Four patterns used inside the code (Singleton, Factory, Builder, Adapter, Facade, Chain of Responsibility, Template Method, Strategy, Observer and Mediator) are listed with their locations in the [technical document, section 4.2](../technical/TECHNICAL.md#42-gang-of-four-patterns).
+
 ## 11. Cross-cutting concerns
 
 | Concern       | Approach                                                                                                                                                                                                                                                                                                                                   |
