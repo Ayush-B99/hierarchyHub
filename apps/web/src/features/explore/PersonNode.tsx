@@ -20,7 +20,11 @@ interface PersonNodeProps {
     onPointerDown: (event: PointerEvent) => void;
     onClickCapture: (event: MouseEvent) => void;
   };
+  /** show little moons circling the picture, one per person in their team (up to six) */
+  moons?: boolean;
 }
+
+const MAX_MOONS = 6;
 
 /** one clickable person card in the orbit */
 export function PersonNode({
@@ -31,8 +35,10 @@ export function PersonNode({
   style,
   dropLook,
   dragHandles,
+  moons = false,
 }: PersonNodeProps) {
   const spotlight = useSpotlight();
+  const moonCount = moons ? Math.min(teamSize, MAX_MOONS) : 0;
   return (
     <button
       type="button"
@@ -44,12 +50,26 @@ export function PersonNode({
       {...dragHandles}
     >
       {label && <span className={styles.label}>{label}</span>}
-      <Avatar
-        email={employee.email}
-        firstName={employee.firstName}
-        lastName={employee.lastName}
-        size={48}
-      />
+      <span className={styles.planet}>
+        <Avatar
+          email={employee.email}
+          firstName={employee.firstName}
+          lastName={employee.lastName}
+          size={48}
+        />
+        {moonCount > 0 && (
+          // decoration only, the team size is written on the card too
+          <span className={styles.moons} aria-hidden="true">
+            {Array.from({ length: moonCount }, (_, i) => (
+              <span
+                key={i}
+                className={styles.moon}
+                style={{ transform: `rotate(${(360 * i) / moonCount}deg) translateX(31px)` }}
+              />
+            ))}
+          </span>
+        )}
+      </span>
       <span className={styles.name}>{fullName(employee)}</span>
       <span className={styles.role}>{employee.role}</span>
       <span className={[styles.tag, teamSize > 0 && styles.tagOn].filter(Boolean).join(' ')}>
