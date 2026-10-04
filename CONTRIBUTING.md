@@ -15,6 +15,18 @@ Installed automatically by `pnpm install`:
 
 - **pre-commit:** formats staged files with Prettier, so formatting never fails CI.
 
+## Code comments
+
+Keep comments short and casual, like you're explaining the code to a teammate. Lowercase is fine and full stops aren't needed. Explain why something is done, not what the code already says.
+
+```ts
+// the url holds the selected person so the back button just works
+```
+
+## Database changes
+
+Follow the steps in [the database guide](apps/api/prisma/README.md). In short: edit `schema.prisma`, run `task db:new-migration -- name`, add any extra rules to the SQL, and add integration tests. Never edit a migration that's already on `main`.
+
 ## Adding dependencies
 
 ```bash
@@ -26,6 +38,6 @@ Tools used by several packages (TypeScript, ESLint, Vitest, Zod) are pinned once
 
 ## Definition of done
 
-- `pnpm lint && pnpm typecheck && pnpm test && pnpm build` pass
+- `task check` passes (it runs the same checks as CI)
 - New behaviour has tests
 - Docs updated where behaviour changed
