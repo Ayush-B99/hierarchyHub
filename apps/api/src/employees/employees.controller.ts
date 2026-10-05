@@ -26,7 +26,8 @@ import type { Response } from 'express';
 import { z } from 'zod';
 import { expectedVersion } from '../common/if-match';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
-import { AdminOnly } from '../auth/decorators';
+import type { SignedInAccount } from '../auth/auth.types';
+import { AdminOnly, CurrentAccount } from '../auth/decorators';
 import { EmployeesService } from './employees.service';
 
 // unknown query parameters and body fields are refused rather than ignored, so typos get
@@ -49,36 +50,41 @@ export class EmployeesController {
   constructor(private readonly employees: EmployeesService) {}
 
   @Get()
-  list(@Query(listQuery) query: ListEmployeesQuery): Promise<Paginated<Employee>> {
-    return this.employees.list(query);
+  list(
+    @CurrentAccount() viewer: SignedInAccount,
+    @Query(listQuery) query: ListEmployeesQuery,
+  ): Promise<Paginated<Employee>> {
+    return this.employees.list(viewer, query);
   }
 
   /** everyone in one list, the web app builds the org chart from it */
   @Get('hierarchy')
-  hierarchy(): Promise<Employee[]> {
-    return this.employees.hierarchy();
+  hierarchy(@CurrentAccount() viewer: SignedInAccount): Promise<Employee[]> {
+    return this.employees.hierarchy(viewer);
   }
 
   @Get(':id')
   async get(
+    @CurrentAccount() viewer: SignedInAccount,
     @Param('id', idParam) id: string,
     @Res({ passthrough: true }) res: Response,
   ): Promise<Employee> {
-    const employee = await this.employees.get(id);
+    const employee = await this.employees.get(viewer, id);
     // the version as an etag: lets browsers revalidate cheaply, and guards edits below
     res.setHeader('ETag', etagFor(employee));
     return employee;
   }
 
   @Post()
-  // for now only admins can change anyone. who can change whom comes with the permissions (adr 0017)
+  // admins only, and only within their part of the organisation (adr 0017)
   @AdminOnly()
   @HttpCode(HttpStatus.CREATED)
   async create(
+    @CurrentAccount() viewer: SignedInAccount,
     @Body(createBody) body: CreateEmployeeInput,
     @Res({ passthrough: true }) res: Response,
   ): Promise<Employee> {
-    const employee = await this.employees.create(body);
+    const employee = await this.employees.create(viewer, body);
     res.setHeader('ETag', etagFor(employee));
     res.setHeader('Location', `/api/employees/${employee.id}`);
     return employee;
@@ -86,28 +92,29 @@ export class EmployeesController {
 
   /** a partial change. If-Match must carry the version you loaded, or it's refused (412 or 428) */
   @Patch(':id')
-  // for now only admins can change anyone. who can change whom comes with the permissions (adr 0017)
-  @AdminOnly()
+  // anyone signed in, the service decides who may change whom (adr 0017)
   async update(
+    @CurrentAccount() viewer: SignedInAccount,
     @Param('id', idParam) id: string,
     @Headers('if-match') ifMatch: string | undefined,
     @Body(updateBody) body: UpdateEmployeeInput,
     @Res({ passthrough: true }) res: Response,
   ): Promise<Employee> {
-    const employee = await this.employees.update(id, body, expectedVersion(ifMatch));
+    const employee = await this.employees.update(viewer, id, body, expectedVersion(ifMatch));
     res.setHeader('ETag', etagFor(employee));
     return employee;
   }
 
   /** their direct reports move up to their manager (br-04). needs If-Match too */
   @Delete(':id')
-  // for now only admins can change anyone. who can change whom comes with the permissions (adr 0017)
+  // admins only, and only within their part of the organisation (adr 0017)
   @AdminOnly()
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(
+    @CurrentAccount() viewer: SignedInAccount,
     @Param('id', idParam) id: string,
     @Headers('if-match') ifMatch: string | undefined,
   ): Promise<void> {
-    await this.employees.remove(id, expectedVersion(ifMatch));
+    await this.employees.remove(viewer, id, expectedVersion(ifMatch));
   }
 }

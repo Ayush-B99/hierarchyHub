@@ -31,4 +31,22 @@ export class HierarchyService {
       SELECT id FROM team`);
     return new Set(rows.map((row) => row.id));
   }
+
+  /** has no manager, like the ceo */
+  async isAtTop(employeeId: string, tx: Prisma.TransactionClient = this.db): Promise<boolean> {
+    const row = await tx.employee.findUnique({
+      where: { id: employeeId },
+      select: { managerId: true },
+    });
+    return row !== null && row.managerId === null;
+  }
+
+  /**
+   * holds the same lock the database trigger takes for manager changes, until the transaction
+   * ends. while we hold it nobody can move anyone, so "is this person below me" stays true
+   * between checking it and saving the change
+   */
+  async lockReportingLines(tx: Prisma.TransactionClient) {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext('hierarchy_hub.employees.reporting_lines'))`;
+  }
 }

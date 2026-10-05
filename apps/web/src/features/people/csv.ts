@@ -31,9 +31,10 @@ export function toCsv(employees: readonly Employee[], byId: ReadonlyMap<string, 
       e.firstName,
       e.lastName,
       e.email,
-      e.birthDate,
+      e.birthDate ?? '',
       e.role,
-      e.salary.toFixed(2),
+      // left blank when you aren't allowed to see it
+      e.salary === null ? '' : e.salary.toFixed(2),
       manager ? `${manager.firstName} ${manager.lastName}` : '',
       manager?.employeeNumber ?? '',
     ]

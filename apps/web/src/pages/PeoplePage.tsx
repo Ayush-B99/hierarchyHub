@@ -1,4 +1,4 @@
-import type { Employee, EmployeeSortField } from '@hierarchy-hub/shared';
+import { descendantsOf, type Employee, type EmployeeSortField } from '@hierarchy-hub/shared';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ErrorState } from '../components/feedback/ErrorState';
 import { LoadingState } from '../components/feedback/LoadingState';
@@ -13,6 +13,7 @@ import { PeopleSkeleton } from '../features/people/PeopleSkeleton';
 import { PeopleTable } from '../features/people/PeopleTable';
 import { SentenceFilters } from '../features/people/SentenceFilters';
 import { usePeopleParams } from '../features/people/usePeopleParams';
+import { useAuth } from '../features/auth/useAuth';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { api } from '../lib/api';
 import styles from './PeoplePage.module.css';
@@ -20,6 +21,7 @@ import styles from './PeoplePage.module.css';
 /** the reporting table: filter with the sentence, sort by any column, page through, export */
 export function PeoplePage() {
   useDocumentTitle('People · Hierarchy Hub');
+  const { me } = useAuth();
   const { filters, update, reset } = usePeopleParams();
   const apiQuery = useMemo(() => toApiQuery(filters), [filters]);
 
@@ -82,6 +84,20 @@ export function PeoplePage() {
     }
   }, [apiQuery, org]);
 
+  // salaries and birth dates you can't see aren't used to filter or sort (adr 0017), so say
+  // so whenever that leaves people out
+  const usesPrivate =
+    apiQuery.salaryMin !== undefined ||
+    apiQuery.salaryMax !== undefined ||
+    apiQuery.bornAfter !== undefined ||
+    apiQuery.bornBefore !== undefined ||
+    apiQuery.sortBy === 'salary' ||
+    apiQuery.sortBy === 'birthDate';
+  const seesEveryone =
+    !!me &&
+    !!hierarchy.data &&
+    descendantsOf(me.employeeId, hierarchy.data).length + 1 >= hierarchy.data.length;
+
   if (hierarchy.isPending) return <PeopleSkeleton />;
   if (hierarchy.error || !org) {
     return (
@@ -110,6 +126,13 @@ export function PeoplePage() {
         <Panel className={styles.exportError} role="alert">
           {exportError}
         </Panel>
+      )}
+
+      {usesPrivate && !seesEveryone && (
+        <p className={styles.privateNote} role="note">
+          Salary and birth date filters and sorting only include you and the people below you,
+          because those are the only salaries and birth dates you can see.
+        </p>
       )}
 
       <Panel variant="solid" aria-label="Employees">

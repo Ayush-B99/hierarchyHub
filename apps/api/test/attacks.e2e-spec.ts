@@ -1,6 +1,6 @@
 import { type INestApplication } from '@nestjs/common';
 import type { DatabaseService } from '../src/database/database.service';
-import { client, loadSamplePeople, startApp } from './app';
+import { client, loadSamplePeople, signInAs, startApp } from './app';
 
 /**
  * every way we found to break the api when we went looking (docs/security/ATTACKS.md),
@@ -9,6 +9,7 @@ import { client, loadSamplePeople, startApp } from './app';
  */
 
 const THANDI = '00000000-0000-4000-8000-000000000001';
+const SIPHO = '00000000-0000-4000-8000-000000000002';
 const JOHAN = '00000000-0000-4000-8000-000000000005';
 const NALEDI = '00000000-0000-4000-8000-000000000006';
 const RUAN = '00000000-0000-4000-8000-000000000007';
@@ -123,12 +124,25 @@ describe('the clash check can not be skipped', () => {
 });
 
 describe('the hierarchy can not be bent out of shape', () => {
-  it('a junior can not become their own boss’s manager', async () => {
+  it('a junior can not make their boss report to them', async () => {
+    const ruan = await signInAs(db, RUAN);
     const version = await versionOf(THANDI);
-    const res = await http()
+    await client(app, ruan)
       .patch(`/api/employees/${THANDI}`)
       .set('If-Match', version)
       .send({ managerId: RUAN })
+      .expect(403);
+    const thandi = await db.employee.findUniqueOrThrow({ where: { id: THANDI } });
+    expect(thandi.managerId).toBeNull();
+  });
+
+  it('even someone allowed to move people can not create a reporting loop', async () => {
+    // johan is in sipho's team, so putting sipho under johan would be a loop
+    const version = await versionOf(SIPHO);
+    const res = await http()
+      .patch(`/api/employees/${SIPHO}`)
+      .set('If-Match', version)
+      .send({ managerId: JOHAN })
       .expect(400);
     expect(res.body.errors.managerId).toBeDefined();
   });

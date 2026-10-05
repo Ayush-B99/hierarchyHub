@@ -133,6 +133,13 @@ export const accounts = {
     );
     return summary(rows.find((row) => row.id === id)!);
   },
+  update(
+    id: string,
+    changes: { isAdmin?: boolean; status?: 'active' | 'disabled' },
+  ): AccountSummary {
+    rows = rows.map((row) => (row.id === id ? { ...row, ...changes } : row));
+    return summary(rows.find((row) => row.id === id)!);
+  },
   remove(id: string) {
     rows = rows.filter((row) => row.id !== id);
   },

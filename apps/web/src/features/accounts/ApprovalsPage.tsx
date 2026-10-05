@@ -75,6 +75,9 @@ export function ApprovalsPage() {
                 <th scope="col">Employee</th>
                 <th scope="col">Access</th>
                 <th scope="col">Last signed in</th>
+                <th scope="col">
+                  <span className="sr-only">Actions</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -98,6 +101,12 @@ export function ApprovalsPage() {
                     </td>
                     <td>
                       {account.lastLoginAt ? formatDate(account.lastLoginAt.slice(0, 10)) : 'Never'}
+                    </td>
+                    <td>
+                      {/* nobody changes their own access (adr 0017) */}
+                      {account.employeeId !== me?.employeeId && (
+                        <AccountActions account={account} />
+                      )}
                     </td>
                   </tr>
                 );
@@ -196,5 +205,47 @@ function WaitingAccount({ account, choices }: { account: AccountSummary; choices
         </Button>
       </div>
     </li>
+  );
+}
+
+/** make someone an admin or not, and turn their account off or back on */
+function AccountActions({ account }: { account: AccountSummary }) {
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+  const change = useMutation({
+    mutationFn: (changes: { isAdmin?: boolean; status?: 'active' | 'disabled' }) =>
+      api.updateAccount(account.id, changes),
+    onSuccess: async (updated) => {
+      showToast(
+        updated.status === 'disabled'
+          ? `${updated.name}'s account is turned off`
+          : `${updated.name} is ${updated.isAdmin ? 'now an admin' : 'no longer an admin'}`,
+      );
+      await queryClient.invalidateQueries({ queryKey: ACCOUNTS });
+    },
+    onError: (error) =>
+      showToast(error instanceof ApiError ? error.message : 'Something went wrong. Try again.'),
+  });
+  const turnedOff = account.status === 'disabled';
+  return (
+    <div className={styles.rowActions}>
+      {!turnedOff && (
+        <Button
+          disabled={change.isPending}
+          onClick={() => change.mutate({ isAdmin: !account.isAdmin })}
+        >
+          {account.isAdmin ? 'Remove admin' : 'Make admin'}
+          <span className="sr-only"> for {account.name}</span>
+        </Button>
+      )}
+      <Button
+        variant={turnedOff ? 'default' : 'danger'}
+        disabled={change.isPending}
+        onClick={() => change.mutate({ status: turnedOff ? 'active' : 'disabled' })}
+      >
+        {turnedOff ? 'Turn on' : 'Turn off'}
+        <span className="sr-only"> {account.name}&apos;s account</span>
+      </Button>
+    </div>
   );
 }
