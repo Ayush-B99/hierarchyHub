@@ -26,6 +26,7 @@ import type { Response } from 'express';
 import { z } from 'zod';
 import { expectedVersion } from '../common/if-match';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
+import { AdminOnly } from '../auth/decorators';
 import { EmployeesService } from './employees.service';
 
 // unknown query parameters and body fields are refused rather than ignored, so typos get
@@ -70,6 +71,8 @@ export class EmployeesController {
   }
 
   @Post()
+  // for now only admins can change anyone. who can change whom comes with the permissions (adr 0017)
+  @AdminOnly()
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Body(createBody) body: CreateEmployeeInput,
@@ -83,6 +86,8 @@ export class EmployeesController {
 
   /** a partial change. If-Match must carry the version you loaded, or it's refused (412 or 428) */
   @Patch(':id')
+  // for now only admins can change anyone. who can change whom comes with the permissions (adr 0017)
+  @AdminOnly()
   async update(
     @Param('id', idParam) id: string,
     @Headers('if-match') ifMatch: string | undefined,
@@ -96,6 +101,8 @@ export class EmployeesController {
 
   /** their direct reports move up to their manager (br-04). needs If-Match too */
   @Delete(':id')
+  // for now only admins can change anyone. who can change whom comes with the permissions (adr 0017)
+  @AdminOnly()
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(
     @Param('id', idParam) id: string,
