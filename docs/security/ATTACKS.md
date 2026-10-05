@@ -63,10 +63,29 @@ Once accounts arrived (ADR 0016), we attacked those too. All of these are tests 
 | Another website making changes with a signed in person's cookie       | 403, from the `Origin` and `Sec-Fetch-Site` checks, on top of the same-site cookie                 |
 | A sign in link like `?next=https://evil.example`                      | Ignored: after signing in you only ever go to a page inside the app                                |
 
-## Still open, fixed in the next parts
+## Attacks on permissions
 
-These need accounts, so they're covered by the next steps of the build:
+With permissions based on the hierarchy (ADR 0017), we tried every rule from every position in the sample organisation. All of these are tests in `apps/api/test/permissions.e2e-spec.ts`.
 
-- **Any admin can change anyone.** Everyone now signs in, and only admins can make changes, but an admin can still change people above or beside them. Permissions based on the hierarchy (ADR 0017) fix this.
-- **Everyone sees every salary and birth date.** These will only be shown to the person themselves and the people above them, filtered by the API. Filtering and sorting by salary or birth date will only use the people you're allowed to see, so the filters can't be used to guess someone's salary.
+| Attack                                                                              | Result                                                                             |
+| ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| A junior making their manager, or the CEO, report to them                           | 403. Nobody can change anyone above them                                           |
+| Giving yourself a raise, promoting yourself, or choosing your own manager           | 403, naming each field you can't change. About yourself, only your name and email  |
+| Changing your own employee number or birth date                                     | 403                                                                                |
+| Changing someone beside you, or in a colleague's team                               | 403, even as an admin                                                              |
+| Moving someone in your team out of your reach, or under someone senior              | 403 on the manager field                                                           |
+| Putting someone at the top of the organisation without being at the top             | 403                                                                                |
+| A manager who isn't an admin adding or deleting people                              | 403                                                                                |
+| An admin adding people outside their part of the organisation                       | 403                                                                                |
+| Deleting the CEO, or yourself                                                       | 403                                                                                |
+| Making yourself an admin, or removing the admin role from someone senior            | 403. Admins can only manage the accounts of people below them                      |
+| Reading colleagues' or your boss's salary and birth date                            | Sent back as `null`, in the org chart, the list and when opening one person        |
+| Guessing salaries with `salaryMin`, `salaryMax` or sorting by salary                | Those filters only ever include you and the people below you                       |
+| Guessing birth dates with date filters or sorting by birth date                     | The same                                                                           |
+| Moving someone out of a manager's reach at the same moment the manager changes them | Only one change wins. Checks run under the same lock as the reporting loop trigger |
+| A shared cache serving one person's view to someone else                            | Reads are `Cache-Control: private` with `Vary: Cookie`                             |
+| A turned off account carrying on with an open session                               | Signed out straight away                                                           |
+
+## Still open, fixed in the next part
+
 - **Nobody can see who changed what.** An audit trail fixes this.

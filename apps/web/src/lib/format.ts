@@ -4,15 +4,20 @@ export function fullName(person: { firstName: string; lastName: string }): strin
   return `${person.firstName} ${person.lastName}`;
 }
 
+/** what's shown instead of a salary or birth date you aren't allowed to see (adr 0017) */
+export const PRIVATE = 'Private';
+
 /** 125000 -> "R 125 000" */
-export function formatSalary(amount: number): string {
+export function formatSalary(amount: number | null): string {
+  if (amount === null) return PRIVATE;
   const [whole = '0', cents] = amount.toFixed(2).split('.');
   const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
   return cents === '00' ? `R ${grouped}` : `R ${grouped},${cents}`;
 }
 
 /** "1985-04-12" -> "12 Apr 1985" */
-export function formatDate(isoDate: string): string {
+export function formatDate(isoDate: string | null): string {
+  if (isoDate === null) return PRIVATE;
   const [year, month, day] = isoDate.slice(0, 10).split('-');
   return `${Number(day)} ${MONTHS[Number(month) - 1] ?? ''} ${year}`;
 }

@@ -1,6 +1,6 @@
 import { useAuth } from '../auth/useAuth';
 import type { Employee } from '@hierarchy-hub/shared';
-import { descendantsOf } from '@hierarchy-hub/shared';
+import { canBeTheirManager, descendantsOf, permissionsFor } from '@hierarchy-hub/shared';
 import { useEffect, useMemo, useRef, useState, type FocusEvent, type PointerEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { Avatar } from '../../components/ui/Avatar';
@@ -96,18 +96,21 @@ export function OrbitView({ person, org, onSelect, onShowAll }: OrbitViewProps) 
   // (that would be a loop) or on the manager they already have
   const [pending, setPending] = useState<{ id: string; to: string } | null>(null);
   const everyone = useMemo(() => [...org.byId.values()], [org]);
+  const { me } = useAuth();
   const canDrop = (draggedId: string, targetId: string) => {
     if (draggedId === targetId) return false;
+    // only onto you or someone below you (adr 0017)
+    if (!me || !canBeTheirManager(me, targetId, org.byId)) return false;
     if (org.byId.get(draggedId)?.managerId === targetId) return false;
     return !descendantsOf(draggedId, everyone).some((e) => e.id === targetId);
   };
-  const canChange = useAuth().me?.isAdmin ?? false;
   const { drag, handlesFor: dragHandlesFor } = useOrbitDrag({
     canDrop,
     onDrop: (id, to) => setPending({ id, to }),
   });
-  // only people who can change managers get to drag them
-  const handlesFor = (id: string) => (canChange ? dragHandlesFor(id) : undefined);
+  // you can only drag people you're allowed to move: those below you
+  const handlesFor = (id: string) =>
+    me && permissionsFor(me, id, org.byId).move ? dragHandlesFor(id) : undefined;
 
   // the ring stops turning while you point at a card, tab through them, drag someone or confirm a move
   const [hovering, setHovering] = useState(false);

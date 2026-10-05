@@ -11,25 +11,41 @@ This is the agreement between the web app and the API. It is written before the 
 
 ## Endpoints
 
-| Method | Path                     | What it does                                                                         | Success code |
-| ------ | ------------------------ | ------------------------------------------------------------------------------------ | ------------ |
-| GET    | `/health`                | Checks the API process is up (used by the load balancer).                            | 200          |
-| GET    | `/health/ready`          | Checks the API can reach the database. Returns 503 with `"database": "down"` if not. | 200          |
-| GET    | `/employees`             | Lists employees one page at a time, with sorting and filters.                        | 200          |
-| GET    | `/employees/hierarchy`   | Returns every employee in one flat list, used to build the org chart.                | 200          |
-| GET    | `/employees/{id}`        | Returns one employee.                                                                | 200          |
-| POST   | `/employees`             | Adds an employee.                                                                    | 201          |
-| PATCH  | `/employees/{id}`        | Changes some or all of an employee's details, including their manager.               | 200          |
-| DELETE | `/employees/{id}`        | Deletes an employee. Their direct reports move to the deleted employee's manager.    | 204          |
-| POST   | `/auth/signup`           | Asks for an account. Always the same answer, whether or not the email is taken.      | 202          |
-| POST   | `/auth/login`            | Signs in and sets the session cookie.                                                | 200          |
-| POST   | `/auth/logout`           | Ends the session and clears the cookie.                                              | 204          |
-| GET    | `/auth/me`               | Who is signed in.                                                                    | 200          |
-| GET    | `/accounts`              | Admins: accounts waiting for approval, and the accounts of people below you.         | 200          |
-| POST   | `/accounts/{id}/approve` | Admins: links a waiting account to an employee below you, so they can sign in.       | 200          |
-| POST   | `/accounts/{id}/reject`  | Admins: removes a request for an account.                                            | 204          |
+| Method | Path                     | What it does                                                                               | Success code |
+| ------ | ------------------------ | ------------------------------------------------------------------------------------------ | ------------ |
+| GET    | `/health`                | Checks the API process is up (used by the load balancer).                                  | 200          |
+| GET    | `/health/ready`          | Checks the API can reach the database. Returns 503 with `"database": "down"` if not.       | 200          |
+| GET    | `/employees`             | Lists employees one page at a time, with sorting and filters.                              | 200          |
+| GET    | `/employees/hierarchy`   | Returns every employee in one flat list, used to build the org chart.                      | 200          |
+| GET    | `/employees/{id}`        | Returns one employee.                                                                      | 200          |
+| POST   | `/employees`             | Adds an employee.                                                                          | 201          |
+| PATCH  | `/employees/{id}`        | Changes some or all of an employee's details, including their manager.                     | 200          |
+| DELETE | `/employees/{id}`        | Deletes an employee. Their direct reports move to the deleted employee's manager.          | 204          |
+| POST   | `/auth/signup`           | Asks for an account. Always the same answer, whether or not the email is taken.            | 202          |
+| POST   | `/auth/login`            | Signs in and sets the session cookie.                                                      | 200          |
+| POST   | `/auth/logout`           | Ends the session and clears the cookie.                                                    | 204          |
+| GET    | `/auth/me`               | Who is signed in.                                                                          | 200          |
+| GET    | `/accounts`              | Admins: accounts waiting for approval, and the accounts of people below you.               | 200          |
+| POST   | `/accounts/{id}/approve` | Admins: links a waiting account to an employee below you, so they can sign in.             | 200          |
+| POST   | `/accounts/{id}/reject`  | Admins: removes a request for an account.                                                  | 204          |
+| PATCH  | `/accounts/{id}`         | Admins: `{ "isAdmin": true }` or `{ "status": "disabled" }`, for an account in your reach. | 200          |
 
-For now only admins can add, change or delete employees. Anyone else gets **403**. Who can change whom, based on where you sit in the organisation, is described in ADR 0017.
+## Who can do what
+
+Everything depends on where you sit in the organisation (ADR 0017). Your reach is everyone below you.
+
+| Request                | Allowed when                                                                                                     |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Reading anything       | You're signed in. Salaries and birth dates of people outside your reach (and not you) come back as `null`.       |
+| `PATCH` yourself       | Only `firstName`, `lastName` and `email`. Anything else gets **403**, with the fields listed in `errors`.        |
+| `PATCH` someone else   | They're in your reach. A new `managerId` must be you or someone in your reach. `null` only if you're at the top. |
+| `POST` an employee     | You're an admin, and their manager is you or someone in your reach.                                              |
+| `DELETE` an employee   | You're an admin, and they're in your reach.                                                                      |
+| `PATCH /accounts/{id}` | You're an admin, and the account's employee is in your reach.                                                    |
+
+Anything else gets **403**. Filtering or sorting by `salary` or `birthDate` only includes you and your reach, so the filters can't reveal anyone else's.
+
+Reads are sent with `Cache-Control: private, no-cache` and `Vary: Cookie`, because what you see depends on who you are.
 
 ## Signing in
 

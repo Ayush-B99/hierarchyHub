@@ -1,8 +1,12 @@
 import { http, HttpResponse, delay } from 'msw';
 import {
   approveAccountSchema,
+  canBeTheirManager,
   createEmployeeSchema,
   descendantsOf,
+  fieldsYouCantChangeAboutYourself,
+  isBelow,
+  updateAccountSchema,
   signInSchema,
   signUpSchema,
   SIGN_UP_RECEIVED,
@@ -72,7 +76,36 @@ function versionProblem(ifMatch: string | null, row: Employee | undefined) {
 const managerOf = (id: string) => db.find(id)?.managerId;
 
 /** Mock implementation of docs/api/API.md, including business rules BR-01 to BR-05. */
-const SAFE = new Set(['GET', 'HEAD']);
+// adding and deleting people is for admins. everyone can send changes, then the same rules
+// as the real api decide who may change whom (apps/api/src/employees/employees.service.ts)
+const ADMIN_ONLY = new Set(['POST', 'DELETE']);
+
+/** the signed in person. the guard in front of every employee route makes sure there is one */
+const viewer = () => accounts.me()!;
+const everyoneById = () => new Map(db.all().map((e) => [e.id, e]));
+
+/** you see your own salary and birth date, and those of everyone below you (adr 0017) */
+function visibleTo(employeeId: string): Set<string> {
+  return new Set([employeeId, ...descendantsOf(employeeId, db.all()).map((e) => e.id)]);
+}
+const shown = (e: Employee, visible: Set<string>): Employee =>
+  visible.has(e.id) ? e : { ...e, salary: null, birthDate: null };
+
+function managerProblem(managerId: string | null) {
+  if (managerId !== null && !db.find(managerId)) {
+    return fieldError(404, 'managerId', 'That manager no longer exists');
+  }
+  if (!canBeTheirManager(viewer(), managerId, everyoneById())) {
+    return fieldError(
+      403,
+      'managerId',
+      managerId === null
+        ? 'Only someone at the top of the organisation can put people at the top'
+        : 'You can only choose yourself or someone below you as their manager',
+    );
+  }
+  return null;
+}
 
 /** the same sign in rules as the real api (apps/api/src/auth/session.guard.ts) */
 function signInProblem(adminOnly: boolean) {
@@ -85,7 +118,7 @@ function signInProblem(adminOnly: boolean) {
 const authHandlers = [
   // every employee route needs a signed in account, and for now only admins change anyone.
   // returning nothing passes the request on to the handlers below
-  http.all(`${API}/employees*`, ({ request }) => signInProblem(!SAFE.has(request.method))),
+  http.all(`${API}/employees*`, ({ request }) => signInProblem(ADMIN_ONLY.has(request.method))),
   http.all(`${API}/accounts*`, () => signInProblem(true)),
 
   http.get(`${API}/auth/me`, () => {
@@ -159,6 +192,17 @@ const authHandlers = [
     return HttpResponse.json(accounts.approve(row.id, employeeId));
   }),
 
+  http.patch(`${API}/accounts/:id`, async ({ params, request }) => {
+    const parsed = updateAccountSchema.safeParse(await request.json());
+    if (!parsed.success) return validationError(parsed.error);
+    const row = accounts.find(String(params.id));
+    if (!row || row.status === 'pending' || !row.employeeId) return error(404, 'Account not found');
+    if (!isBelow(viewer().employeeId, row.employeeId, everyoneById())) {
+      return error(403, 'You can only change the accounts of people below you');
+    }
+    return HttpResponse.json(accounts.update(row.id, parsed.data));
+  }),
+
   http.post(`${API}/accounts/:id/reject`, ({ params }) => {
     const row = accounts.find(String(params.id));
     if (!row) return error(404, 'Account not found');
@@ -182,7 +226,8 @@ export const handlers = [
 
   http.get(`${API}/employees/hierarchy`, async () => {
     await delay();
-    return HttpResponse.json(db.all());
+    const visible = visibleTo(viewer().employeeId);
+    return HttpResponse.json(db.all().map((e) => shown(e, visible)));
   }),
 
   http.get(`${API}/employees`, async ({ request }) => {
@@ -192,18 +237,28 @@ export const handlers = [
     if (!parsed.success) return validationError(parsed.error);
     const q = parsed.data;
 
+    const visible = visibleTo(viewer().employeeId);
+    // filtering or sorting by salary or birth date only looks at people you're allowed to see
+    const usesPrivate =
+      q.salaryMin !== undefined ||
+      q.salaryMax !== undefined ||
+      q.bornAfter !== undefined ||
+      q.bornBefore !== undefined ||
+      q.sortBy === 'salary' ||
+      q.sortBy === 'birthDate';
     const term = q.search?.toLowerCase();
     let items = db.all().filter((e) => {
+      if (usesPrivate && !visible.has(e.id)) return false;
       if (term) {
         const haystack = `${e.firstName} ${e.lastName} ${e.email} ${e.employeeNumber} ${e.role}`;
         if (!haystack.toLowerCase().includes(term)) return false;
       }
       if (q.role && e.role.toLowerCase() !== q.role.toLowerCase()) return false;
       if (q.managerId && e.managerId !== q.managerId) return false;
-      if (q.salaryMin !== undefined && e.salary < q.salaryMin) return false;
-      if (q.salaryMax !== undefined && e.salary > q.salaryMax) return false;
-      if (q.bornAfter && e.birthDate < q.bornAfter) return false;
-      if (q.bornBefore && e.birthDate > q.bornBefore) return false;
+      if (q.salaryMin !== undefined && (e.salary ?? 0) < q.salaryMin) return false;
+      if (q.salaryMax !== undefined && (e.salary ?? 0) > q.salaryMax) return false;
+      if (q.bornAfter && (e.birthDate ?? '') < q.bornAfter) return false;
+      if (q.bornBefore && (e.birthDate ?? '') > q.bornBefore) return false;
       return true;
     });
 
@@ -229,7 +284,7 @@ export const handlers = [
 
     const start = (q.page - 1) * q.pageSize;
     return HttpResponse.json({
-      items: items.slice(start, start + q.pageSize),
+      items: items.slice(start, start + q.pageSize).map((e) => shown(e, visible)),
       total: items.length,
       page: q.page,
       pageSize: q.pageSize,
@@ -240,7 +295,9 @@ export const handlers = [
     await delay();
     const row = db.find(String(params.id));
     if (!row) return error(404, 'Employee not found');
-    return HttpResponse.json(row, { headers: { ETag: etagFor(row) } });
+    return HttpResponse.json(shown(row, visibleTo(viewer().employeeId)), {
+      headers: { ETag: etagFor(row) },
+    });
   }),
 
   http.post(`${API}/employees`, async ({ request }) => {
@@ -250,11 +307,10 @@ export const handlers = [
     if (!parsed.success) return validationError(parsed.error);
     const input = parsed.data;
 
+    const outOfReach = managerProblem(input.managerId ?? null);
+    if (outOfReach) return outOfReach;
     const duplicate = duplicateProblem(input);
     if (duplicate) return duplicate;
-    if (input.managerId && !db.find(input.managerId)) {
-      return fieldError(404, 'managerId', 'That manager no longer exists');
-    }
 
     const now = new Date().toISOString();
     const row: Employee = {
@@ -289,6 +345,22 @@ export const handlers = [
     if (versionCheck) return versionCheck;
     if (!current) return error(404, 'Employee not found');
 
+    // about yourself, only your name and email. anyone else, only if they're below you
+    const me = viewer();
+    if (id === me.employeeId) {
+      const blocked = fieldsYouCantChangeAboutYourself(input);
+      if (blocked.length > 0) {
+        const message = 'You can only change your own name and email';
+        return error(403, message, Object.fromEntries(blocked.map((f) => [f, [message]])));
+      }
+    } else if (!isBelow(me.employeeId, id, everyoneById())) {
+      return error(403, 'You can only change people below you in the organisation');
+    }
+    if (input.managerId !== undefined) {
+      const outOfReach = managerProblem(input.managerId);
+      if (outOfReach) return outOfReach;
+    }
+
     if (input.managerId) {
       if (input.managerId === id)
         return fieldError(400, 'managerId', "An employee can't be their own manager");
@@ -316,6 +388,9 @@ export const handlers = [
     const versionCheck = versionProblem(request.headers.get('If-Match'), row);
     if (versionCheck) return versionCheck;
     if (!row) return error(404, 'Employee not found');
+    if (!isBelow(viewer().employeeId, id, everyoneById())) {
+      return error(403, 'You can only change people below you in the organisation');
+    }
     // br-04: direct reports move up to the deleted employee's manager
     for (const report of db.all().filter((e) => e.managerId === id)) {
       db.update(report.id, { managerId: row.managerId });

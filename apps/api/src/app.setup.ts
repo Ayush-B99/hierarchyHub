@@ -58,7 +58,10 @@ export function configureApp(app: INestApplication, options: AppSetupOptions) {
     // caching (adr 0011): reads may be stored but must be checked with the server every time,
     // using the etag, so nobody ever sees stale data. a 304 costs almost nothing.
     // anything else, like a save, must never be stored at all
-    res.setHeader('Cache-Control', req.method === 'GET' ? 'no-cache' : 'no-store');
+    // private, because what you see depends on who you are (adr 0017), so a shared cache
+    // like a cdn must never keep one person's answer and hand it to someone else
+    res.setHeader('Cache-Control', req.method === 'GET' ? 'private, no-cache' : 'no-store');
+    res.setHeader('Vary', 'Cookie');
     next();
   });
 }

@@ -4,6 +4,7 @@ import type {
   Me,
   SignInInput,
   SignUpInput,
+  UpdateAccountInput,
   CreateEmployeeInput,
   Employee,
   HealthResponse,
@@ -103,4 +104,6 @@ export const api = {
       body: JSON.stringify({ employeeId }),
     }),
   rejectAccount: (id: string) => request<void>(`/accounts/${id}/reject`, { method: 'POST' }),
+  updateAccount: (id: string, changes: UpdateAccountInput) =>
+    request<AccountSummary>(`/accounts/${id}`, { method: 'PATCH', body: JSON.stringify(changes) }),
 };

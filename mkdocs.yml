@@ -107,6 +107,7 @@ nav:
       - 0014 Custom org chart and table: adr/0014-custom-org-chart-and-table.md
       - 0015 Docs site: adr/0015-docs-site.md
       - 0016 Accounts and sessions: adr/0016-accounts-and-sessions.md
+      - 0017 Permissions follow the hierarchy: adr/0017-permissions-follow-the-hierarchy.md
   - Design:
       - Brand guide: design/BRAND.md
       - Design: design/README.md

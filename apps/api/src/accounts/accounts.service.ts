@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import type { AccountSummary } from '@hierarchy-hub/shared';
+import type { AccountSummary, UpdateAccountInput } from '@hierarchy-hub/shared';
 import type { Account } from '@prisma/client';
 import type { SignedInAccount } from '../auth/auth.types';
 import { DatabaseService } from '../database/database.service';
@@ -83,6 +83,33 @@ export class AccountsService {
       throw error;
     }
     return summary(await this.db.account.findUniqueOrThrow({ where: { id: accountId } }));
+  }
+
+  /**
+   * makes someone an admin or not, or turns their account off or back on. only for accounts
+   * of people below you, so nobody can change their own access or anyone senior's, and the
+   * person at the top always keeps theirs
+   */
+  async update(
+    admin: SignedInAccount,
+    accountId: string,
+    input: UpdateAccountInput,
+  ): Promise<AccountSummary> {
+    const account = await this.db.account.findUnique({ where: { id: accountId } });
+    if (!account || account.status === 'pending' || !account.employeeId) {
+      throw new NotFoundException('Account not found');
+    }
+    if (!(await this.hierarchy.isBelow(admin.employeeId, account.employeeId))) {
+      throw new ForbiddenException('You can only change the accounts of people below you');
+    }
+    const [updated] = await this.db.$transaction([
+      this.db.account.update({ where: { id: accountId }, data: input }),
+      // turning an account off signs it out everywhere straight away
+      ...(input.status === 'disabled'
+        ? [this.db.session.deleteMany({ where: { accountId } })]
+        : []),
+    ]);
+    return summary(updated);
   }
 
   /** removes a request for an account. only waiting accounts can be rejected */

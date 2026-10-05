@@ -114,7 +114,9 @@ describe('GET /api/employees/:id', () => {
 describe('caching (adr 0011)', () => {
   it('reads must be revalidated every time, nothing is served stale', async () => {
     const res = await http().get('/api/employees').expect(200);
-    expect(res.headers['cache-control']).toBe('no-cache');
+    expect(res.headers['cache-control']).toBe('private, no-cache');
+    // what you see depends on who you are, so caches must keep each person's copy apart
+    expect(res.headers.vary).toMatch(/Cookie/);
     expect(res.headers.etag).toBeDefined();
   });
 

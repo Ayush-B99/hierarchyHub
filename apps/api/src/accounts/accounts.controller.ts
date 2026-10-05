@@ -1,8 +1,20 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Res,
+} from '@nestjs/common';
 import {
   approveAccountSchema,
   type AccountSummary,
   type ApproveAccountInput,
+  type UpdateAccountInput,
+  updateAccountSchema,
 } from '@hierarchy-hub/shared';
 import type { Response } from 'express';
 import { z } from 'zod';
@@ -35,6 +47,15 @@ export class AccountsController {
     @Body(new ZodValidationPipe(approveAccountSchema)) input: ApproveAccountInput,
   ): Promise<AccountSummary> {
     return this.accounts.approve(admin, accountId, input.employeeId);
+  }
+
+  @Patch(':id')
+  update(
+    @CurrentAccount() admin: SignedInAccount,
+    @Param('id', id) accountId: string,
+    @Body(new ZodValidationPipe(updateAccountSchema)) input: UpdateAccountInput,
+  ): Promise<AccountSummary> {
+    return this.accounts.update(admin, accountId, input);
   }
 
   @Post(':id/reject')

@@ -126,6 +126,13 @@
   padding-top: 22px;
 }
 
+.rowActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
 .tableWrap {
   overflow-x: auto;
 }

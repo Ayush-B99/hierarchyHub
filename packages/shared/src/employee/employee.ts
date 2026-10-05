@@ -165,8 +165,10 @@ export interface Employee {
   firstName: string;
   lastName: string;
   email: string;
-  birthDate: string;
-  salary: number;
+  /** null when you aren't allowed to see it: only the person and those above them can (adr 0017) */
+  birthDate: string | null;
+  /** null when you aren't allowed to see it, as above */
+  salary: number | null;
   role: string;
   managerId: string | null;
   /** goes up by one on every change, sent back when saving so clashing edits are caught */

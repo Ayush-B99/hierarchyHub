@@ -211,12 +211,10 @@ describe('DELETE /api/employees/:id', () => {
     );
   });
 
-  it('makes the team top level when the person deleted was at the top', async () => {
-    await http().delete(`/api/employees/${THANDI}`).set('If-Match', '"v1"').expect(204);
-    // read straight from the database: thandi was the one signed in, so her session ended
-    // with her record, which is exactly what should happen
-    const roots = await db.employee.findMany({ where: { managerId: null } });
-    expect(roots.map((e) => e.lastName).sort()).toEqual(['Dlamini', 'Mokoena', 'Patel']);
+  it('refuses to delete the person at the top, even for themselves', async () => {
+    // nobody is above the ceo, and nobody can delete themselves (adr 0017)
+    await http().delete(`/api/employees/${THANDI}`).set('If-Match', '"v1"').expect(403);
+    expect(await db.employee.findUnique({ where: { id: THANDI } })).not.toBeNull();
   });
 
   it('refuses with 412 when they changed since you loaded them', async () => {

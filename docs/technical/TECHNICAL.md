@@ -114,6 +114,7 @@ The patterns are in two groups: architectural patterns that shape the whole solu
 | Repository                        | `employees.repository.ts`                                                                                                                      | All database code in one place. The rest of the API never writes SQL.                             |
 | DTO and mapper                    | `employee.mapper.ts` turns database rows into API responses                                                                                    | The API's shape doesn't change when the table does, and internal columns never leak out.          |
 | Pipeline (pipes, guards, filters) | `ZodValidationPipe` checks input, `ThrottlerGuard` limits requests, `AllExceptionsFilter` turns every error into one consistent JSON shape     | Cross-cutting rules live in one place instead of in every endpoint.                               |
+| Policy (shared permission rules)  | `packages/shared/src/permissions`, used by the API, the mock API and every screen                                                              | One definition of who can do what, so the buttons, the mock and the real API can't disagree.      |
 | Shared kernel                     | `packages/shared`: types, Zod schemas and hierarchy helpers                                                                                    | The web app and API can't disagree about the rules.                                               |
 | Optimistic concurrency            | Every employee has a `version`. The API sends it as an `ETag`, and every change must send it back in `If-Match`                                | If two people edit the same employee, the second save is refused instead of silently overwriting. |
 | Unit of work (transactions)       | Deleting a manager moves their team up and deletes them in one locked transaction                                                              | Nobody can end up reporting to a deleted person.                                                  |
@@ -153,16 +154,18 @@ Patterns from the book we did not need include Abstract Factory, Prototype, Brid
 
 ## 5. How the rules are protected
 
-| Rule                                                               | Form                              | API                           | Database                                              |
-| ------------------------------------------------------------------ | --------------------------------- | ----------------------------- | ----------------------------------------------------- |
-| Nobody manages themselves (BR-01)                                  | Yes                               | Yes                           | Check constraint                                      |
-| No reporting loops (BR-02)                                         | Yes                               | Yes                           | Trigger, with a lock so changes queue safely          |
-| Someone can have no manager, like the CEO (BR-03)                  | Yes                               | Yes                           | The manager column is optional                        |
-| Deleting a manager moves their team up to the next manager (BR-04) | Explains who moves                | Yes, in one transaction       | Foreign key stops anyone pointing at a deleted person |
-| Employee number and email are unique (BR-05)                       | Shows the error on the field      | Yes                           | Unique indexes                                        |
-| Salary is not negative (BR-06)                                     | Yes                               | Yes                           | Check constraint                                      |
-| Employees are at least 15 years old (BR-07)                        | Yes                               | Yes                           | Trigger                                               |
-| Two people don't overwrite each other's changes                    | Offers to load the latest version | Version check on every change | Version column                                        |
+| Rule                                                                                  | Form                              | API                                    | Database                                              |
+| ------------------------------------------------------------------------------------- | --------------------------------- | -------------------------------------- | ----------------------------------------------------- |
+| Nobody manages themselves (BR-01)                                                     | Yes                               | Yes                                    | Check constraint                                      |
+| No reporting loops (BR-02)                                                            | Yes                               | Yes                                    | Trigger, with a lock so changes queue safely          |
+| Someone can have no manager, like the CEO (BR-03)                                     | Yes                               | Yes                                    | The manager column is optional                        |
+| Deleting a manager moves their team up to the next manager (BR-04)                    | Explains who moves                | Yes, in one transaction                | Foreign key stops anyone pointing at a deleted person |
+| Employee number and email are unique (BR-05)                                          | Shows the error on the field      | Yes                                    | Unique indexes                                        |
+| Salary is not negative (BR-06)                                                        | Yes                               | Yes                                    | Check constraint                                      |
+| Employees are at least 15 years old (BR-07)                                           | Yes                               | Yes                                    | Trigger                                               |
+| You only change people below you, and only your name and email about yourself (FR-25) | Only shows what you can do        | Checked under the reporting lines lock | The same lock the loop trigger uses                   |
+| Salaries and birth dates only for the person and those above them (FR-26)             | Shows **Private**                 | Hidden and left out of filters         |                                                       |
+| Two people don't overwrite each other's changes                                       | Offers to load the latest version | Version check on every change          | Version column                                        |
 
 The form gives instant, friendly feedback. The API is the real gatekeeper. The database is the last line of defence, so the data stays correct even if a bug slips through the code.
 
@@ -183,6 +186,9 @@ Everyone signs in (ADR 0016), and the API protects itself in several more ways (
 - sessions in the database with an `httpOnly`, same-site cookie. Only a hash of the cookie is stored, and every request checks the account, so signing out or turning an account off works straight away
 - passwords hashed with Argon2id, five wrong guesses lock the account for 15 minutes, and neither the errors nor the timing reveal which emails have accounts
 - new accounts do nothing until an admin above the person approves them
+- what you can change follows the hierarchy: people below you only, never yourself beyond your name and email, never anyone above or beside you (ADR 0017)
+- salaries and birth dates are hidden by the API from everyone but the person and those above them, and salary filters only look at people you can see
+- reads are `Cache-Control: private` with `Vary: Cookie`, so caches never mix up two people's views
 - changes sent from other websites are refused, on top of the same-site cookie
 - two database users: the API's user can only read and write rows, and only a separate migration user can change the tables (ADR 0010)
 - security headers, and the API only accepts calls from the web app's own address (CORS)
@@ -195,11 +201,11 @@ Everyone signs in (ADR 0016), and the API protects itself in several more ways (
 
 | Kind                 | What it covers                                                                                             | Tool                                       | Count |
 | -------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ----- |
-| Shared unit tests    | Validation rules and hierarchy helpers                                                                     | Vitest                                     | 32    |
-| Web tests            | Screens, forms, search, drag and drop, the orbit, clashes, accessibility (axe), CSV export                 | Vitest, Testing Library, MSW               | 139   |
+| Shared unit tests    | Validation rules and hierarchy helpers                                                                     | Vitest                                     | 42    |
+| Web tests            | Screens, forms, search, drag and drop, the orbit, clashes, accessibility (axe), CSV export                 | Vitest, Testing Library, MSW               | 148   |
 | API unit tests       | Services, mappers, settings, error handling, version checks, the seed guard                                | Jest                                       | 37    |
 | Database integration | Constraints, the loop trigger, clashing changes made at the same moment                                    | Jest against real PostgreSQL               | 37    |
-| API end to end       | Every endpoint and rule over HTTP, clashing saves, security headers, rate limits, speed with 10,000 people | Jest and Supertest against real PostgreSQL | 147   |
+| API end to end       | Every endpoint and rule over HTTP, clashing saves, security headers, rate limits, speed with 10,000 people | Jest and Supertest against real PostgreSQL | 189   |
 
 All of these run on every pull request in GitHub Actions, together with formatting, linting, type checks and the build. The end-to-end tests can only ever run against a database whose name ends in `_test`.
 

@@ -1,3 +1,4 @@
+import { permissionsFor } from '@hierarchy-hub/shared';
 import { useAuth } from '../auth/useAuth';
 import type { Employee } from '@hierarchy-hub/shared';
 import { CountUp } from '../../components/motion/CountUp';
@@ -19,7 +20,11 @@ interface DetailsPanelProps {
 /** everything about the selected person, plus quick links to the people they work with */
 export function DetailsPanel({ person, org, onSelect }: DetailsPanelProps) {
   const dialogs = useEmployeeDialogs();
-  const canChange = useAuth().me?.isAdmin ?? false;
+  const { me } = useAuth();
+  // what you can do to this person depends on where they sit relative to you (adr 0017)
+  const can = me
+    ? permissionsFor(me, person.id, org.byId)
+    : { editContact: false, move: false, remove: false };
   const manager = person.managerId ? org.byId.get(person.managerId) : undefined;
   const directReports = org.reportsOf(person.id).length;
   const levelsFromTop = org.chainOf(person.id).length - 1;
@@ -110,23 +115,30 @@ export function DetailsPanel({ person, org, onSelect }: DetailsPanelProps) {
         </div>
       </div>
 
-      {/* for now only admins change people. who can change whom comes with the permissions */}
-      {canChange && (
+      {(can.editContact || can.move || can.remove) && (
         <div className={styles.actions}>
-          <Button variant="primary" onClick={() => dialogs.openEdit(person.id)}>
-            Edit details
-          </Button>
-          <Button onClick={() => dialogs.openEdit(person.id, 'managerId')}>Change manager</Button>
-          <Button
-            variant="danger"
-            onClick={() => dialogs.openDelete(person.id)}
-            aria-describedby="delete-note"
-          >
-            Delete
-          </Button>
-          <p id="delete-note" className={styles.note}>
-            {deleteNote}
-          </p>
+          {can.editContact && (
+            <Button variant="primary" onClick={() => dialogs.openEdit(person.id)}>
+              Edit details
+            </Button>
+          )}
+          {can.move && (
+            <Button onClick={() => dialogs.openEdit(person.id, 'managerId')}>Change manager</Button>
+          )}
+          {can.remove && (
+            <>
+              <Button
+                variant="danger"
+                onClick={() => dialogs.openDelete(person.id)}
+                aria-describedby="delete-note"
+              >
+                Delete
+              </Button>
+              <p id="delete-note" className={styles.note}>
+                {deleteNote}
+              </p>
+            </>
+          )}
         </div>
       )}
     </Panel>

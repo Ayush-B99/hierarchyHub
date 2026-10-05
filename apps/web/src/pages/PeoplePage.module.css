@@ -18,3 +18,13 @@
   font-weight: 600;
   color: var(--danger);
 }
+
+.privateNote {
+  margin: 0 0 16px;
+  padding: 12px 18px;
+  border-radius: 18px;
+  background: var(--surface-2);
+  box-shadow: var(--well);
+  color: var(--muted);
+  font-size: 14px;
+}

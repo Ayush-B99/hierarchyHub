@@ -1,3 +1,5 @@
+import { canBeTheirManager } from '@hierarchy-hub/shared';
+import { useAuth } from '../auth/useAuth';
 import { descendantsOf, type Employee, latestBirthDate } from '@hierarchy-hub/shared';
 import {
   useId,
@@ -65,10 +67,19 @@ export function EmployeeFormDialog({
     return new Set([employee.id, ...descendantsOf(employee.id, everyone).map((e) => e.id)]);
   }, [employee, everyone]);
 
+  const { me } = useAuth();
+  const byId = useMemo(() => new Map(everyone.map((e) => [e.id, e])), [everyone]);
+  // editing yourself is only ever your name and email (adr 0017)
+  const contactOnly = Boolean(employee && me && employee.id === me.employeeId);
+  // you can only choose yourself or someone below you as a manager, so only they're listed
   const managerOptions = useMemo(
-    () => [...everyone].sort((a, b) => fullName(a).localeCompare(fullName(b))),
-    [everyone],
+    () =>
+      [...everyone]
+        .filter((e) => me && canBeTheirManager(me, e.id, byId))
+        .sort((a, b) => fullName(a).localeCompare(fullName(b))),
+    [everyone, me, byId],
   );
+  const canBeTop = Boolean(me && canBeTheirManager(me, null, byId));
   const roles = useMemo(() => [...new Set(everyone.map((e) => e.role))].sort(), [everyone]);
 
   const set = (field: FieldName) => (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -242,64 +253,79 @@ export function EmployeeFormDialog({
           <input {...inputProps('email')} type="email" autoComplete="off" />,
           { full: true },
         )}
-        {field(
-          'employeeNumber',
-          'Employee number',
-          <input {...inputProps('employeeNumber')} autoComplete="off" />,
-        )}
-        {field(
-          'birthDate',
-          'Birth date',
-          <input
-            {...inputProps('birthDate')}
-            type="date"
-            min="1900-01-01"
-            // the date picker won't offer anyone under the minimum age (br-07)
-            max={latestBirthDate()}
-          />,
-        )}
-        {field(
-          'role',
-          'Role',
+        {/* about yourself you can only change your name and email (adr 0017) */}
+        {!contactOnly && (
           <>
-            <input {...inputProps('role')} list={`${idBase}-roles`} autoComplete="off" />
-            <datalist id={`${idBase}-roles`}>
-              {roles.map((role) => (
-                <option key={role} value={role} />
-              ))}
-            </datalist>
-          </>,
-        )}
-        {field(
-          'salary',
-          'Salary (R)',
-          <input {...inputProps('salary')} type="number" min="0" step="0.01" inputMode="decimal" />,
-        )}
-        {field(
-          'managerId',
-          'Reports to',
-          <select {...inputProps('managerId', true)}>
-            <option value="">No manager (top of the organisation)</option>
-            {managerOptions.map((option) => {
-              const why =
-                option.id === employee?.id
-                  ? ' (this person)'
-                  : blocked.has(option.id)
-                    ? ' (in their team)'
-                    : '';
-              return (
-                <option key={option.id} value={option.id} disabled={blocked.has(option.id)}>
-                  {`${fullName(option)}, ${option.role}${why}`}
-                </option>
-              );
-            })}
-          </select>,
-          {
-            full: true,
-            help: employee
-              ? `Greyed out people are ${employee.firstName} or someone in their team. Picking them would create a reporting loop.`
-              : 'Leave as "No manager" for someone at the very top, like the CEO.',
-          },
+            {field(
+              'employeeNumber',
+              'Employee number',
+              <input {...inputProps('employeeNumber')} autoComplete="off" />,
+            )}
+            {field(
+              'birthDate',
+              'Birth date',
+              <input
+                {...inputProps('birthDate')}
+                type="date"
+                min="1900-01-01"
+                // the date picker won't offer anyone under the minimum age (br-07)
+                max={latestBirthDate()}
+              />,
+            )}
+            {field(
+              'role',
+              'Role',
+              <>
+                <input {...inputProps('role')} list={`${idBase}-roles`} autoComplete="off" />
+                <datalist id={`${idBase}-roles`}>
+                  {roles.map((role) => (
+                    <option key={role} value={role} />
+                  ))}
+                </datalist>
+              </>,
+            )}
+            {field(
+              'salary',
+              'Salary (R)',
+              <input
+                {...inputProps('salary')}
+                type="number"
+                min="0"
+                step="0.01"
+                inputMode="decimal"
+              />,
+            )}
+            {field(
+              'managerId',
+              'Reports to',
+              <select {...inputProps('managerId', true)}>
+                {(canBeTop || values.managerId === '') && (
+                  <option value="" disabled={!canBeTop}>
+                    No manager (top of the organisation)
+                  </option>
+                )}
+                {managerOptions.map((option) => {
+                  const why =
+                    option.id === employee?.id
+                      ? ' (this person)'
+                      : blocked.has(option.id)
+                        ? ' (in their team)'
+                        : '';
+                  return (
+                    <option key={option.id} value={option.id} disabled={blocked.has(option.id)}>
+                      {`${fullName(option)}, ${option.role}${why}`}
+                    </option>
+                  );
+                })}
+              </select>,
+              {
+                full: true,
+                help: employee
+                  ? `Greyed out people are ${employee.firstName} or someone in their team. Picking them would create a reporting loop.`
+                  : 'Leave as "No manager" for someone at the very top, like the CEO.',
+              },
+            )}
+          </>
         )}
       </form>
       <DialogActions>

@@ -61,8 +61,8 @@ export function valuesFrom(employee: Employee): FormValues {
     lastName: employee.lastName,
     email: employee.email,
     employeeNumber: employee.employeeNumber,
-    birthDate: employee.birthDate.slice(0, 10),
-    salary: String(employee.salary),
+    birthDate: employee.birthDate?.slice(0, 10) ?? '',
+    salary: employee.salary === null ? '' : String(employee.salary),
     role: employee.role,
     managerId: employee.managerId ?? '',
   };
@@ -98,7 +98,7 @@ export function changedFields(original: Employee, data: CreateEmployeeInput): Up
   if (data.lastName !== original.lastName) changes.lastName = data.lastName;
   if (data.email !== original.email) changes.email = data.email;
   if (data.employeeNumber !== original.employeeNumber) changes.employeeNumber = data.employeeNumber;
-  if (data.birthDate !== original.birthDate.slice(0, 10)) changes.birthDate = data.birthDate;
+  if (data.birthDate !== original.birthDate?.slice(0, 10)) changes.birthDate = data.birthDate;
   if (data.salary !== original.salary) changes.salary = data.salary;
   if (data.role !== original.role) changes.role = data.role;
   if ((data.managerId ?? null) !== original.managerId) changes.managerId = data.managerId ?? null;

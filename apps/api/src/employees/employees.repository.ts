@@ -38,8 +38,14 @@ export class EmployeesRepository {
    * written as sql (always through Prisma.sql, so every value is a parameter) because prisma
    * can't sort by the manager's name with "no manager first", or ignore capitals when sorting
    */
-  async list(q: ListEmployeesQuery): Promise<{ rows: EmployeeRecord[]; total: number }> {
+  async list(
+    q: ListEmployeesQuery,
+    onlyIds?: readonly string[],
+  ): Promise<{ rows: EmployeeRecord[]; total: number }> {
     const where: Prisma.Sql[] = [];
+    // filtering or sorting by salary or birth date only looks at the people whose salary and
+    // birth date you're allowed to see, so the filters can't be used to guess anyone else's
+    if (onlyIds) where.push(Prisma.sql`e.id = ANY(${[...onlyIds]}::uuid[])`);
     if (q.search) {
       const term = `%${escapeLike(q.search)}%`;
       where.push(Prisma.sql`(
@@ -97,12 +103,15 @@ export class EmployeesRepository {
     });
   }
 
-  findById(id: string): Promise<EmployeeRecord | null> {
-    return this.db.employee.findUnique({ where: { id } });
+  findById(id: string, tx: Prisma.TransactionClient = this.db): Promise<EmployeeRecord | null> {
+    return tx.employee.findUnique({ where: { id } });
   }
 
-  create(data: Prisma.EmployeeUncheckedCreateInput): Promise<EmployeeRecord> {
-    return this.db.employee.create({ data });
+  create(
+    data: Prisma.EmployeeUncheckedCreateInput,
+    tx: Prisma.TransactionClient = this.db,
+  ): Promise<EmployeeRecord> {
+    return tx.employee.create({ data });
   }
 
   /**
@@ -114,9 +123,10 @@ export class EmployeesRepository {
     id: string,
     expected: ExpectedVersion,
     data: Prisma.EmployeeUncheckedUpdateInput,
+    tx: Prisma.TransactionClient = this.db,
   ): Promise<EmployeeRecord | null> {
     try {
-      return await this.db.employee.update({
+      return await tx.employee.update({
         where: { id, version: expected },
         data,
       });
@@ -133,8 +143,11 @@ export class EmployeesRepository {
   deleteMovingTeamUp(
     id: string,
     expected: ExpectedVersion,
+    allowed: (tx: Prisma.TransactionClient) => Promise<void> = async () => undefined,
   ): Promise<{ result: 'missing' } | { result: 'stale' } | { result: 'deleted'; moved: number }> {
     return this.db.$transaction(async (tx) => {
+      // checked inside the transaction, so nothing can change who's allowed in between
+      await allowed(tx);
       // lock their row first, so nobody can edit them or give them a new report mid way
       const [row] = await tx.$queryRaw<{ managerId: string | null; version: number }[]>`
         SELECT manager_id AS "managerId", version FROM employees WHERE id = ${id}::uuid FOR UPDATE`;

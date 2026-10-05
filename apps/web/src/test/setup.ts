@@ -5,7 +5,11 @@ import { accounts } from '../mocks/accounts';
 import { db } from '../mocks/db';
 import { server } from '../mocks/node';
 
+// findBy and waitFor give up after 1 second by default. every page now waits for the
+// "who's signed in" check before loading, and a busy laptop running every test file at once
+// can take longer than that while still working fine
 configure({ asyncUtilTimeout: 5000 });
+
 // jsdom has no WebGL, so skip the 3D background in tests.
 vi.mock('../components/background/ClayBackground', () => ({ ClayBackground: () => null }));
 
