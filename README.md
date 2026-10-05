@@ -15,6 +15,8 @@ Add, edit and delete employees, set reporting lines, explore the organisation in
 
 **Live app:** _link added after deployment_ &nbsp;&nbsp;|&nbsp;&nbsp; [User guide](docs/user-guide/USER_GUIDE.md) &nbsp;&nbsp;|&nbsp;&nbsp; [Technical document](docs/technical/TECHNICAL.md) &nbsp;&nbsp;|&nbsp;&nbsp; [Beyond the brief](docs/extras/EXTRAS.md)
 
+**Docs site:** [ayush-b99.github.io/hierarchyHub](https://ayush-b99.github.io/hierarchyHub/)
+
 ![The Explore page: Johan in the middle, his manager above and his team circling him](docs/user-guide/images/explore-orbit.jpg)
 
 </div>
@@ -111,7 +113,7 @@ hierarchyHub/
 ├── docs/
 │   ├── srs/                        What the system must do, and the checklist against the brief
 │   ├── sas/                        How it is built: diagrams, data, flows and hosting
-│   ├── adr/                        14 architecture decision records
+│   ├── adr/                        15 architecture decision records
 │   ├── technical/                  The technical document
 │   ├── user-guide/                 The user guide, with screenshots
 │   ├── api/                        The REST API contract
@@ -119,7 +121,9 @@ hierarchyHub/
 │   ├── extras/                     Everything built beyond the brief
 │   └── planning/                   The roadmap
 ├── .github/                        CI workflow, Dependabot, CODEOWNERS and templates
+├── docs-site/                      MkDocs build hook and pinned Python requirements for the docs site
 ├── docker-compose.yml              Local PostgreSQL, set up exactly as on AWS
+├── mkdocs.yml                      The docs site: theme, navigation and plugins
 ├── Taskfile.yml                    Short commands for setup, development and checks
 ├── turbo.json                      Build and test pipeline, with caching
 └── pnpm-workspace.yaml             Workspace packages and shared dependency versions
@@ -153,17 +157,18 @@ The sample people can only be loaded into a database on your own machine. The se
 
 Run `task` on its own to see every command. The main ones:
 
-| Command                                         | What it does                                                     |
-| ----------------------------------------------- | ---------------------------------------------------------------- |
-| `task dev`                                      | Start the web app and the API together                           |
-| `task web`, `task api`                          | Start just one of them                                           |
-| `task web:mock`                                 | Start just the web app, against the mock API (no backend needed) |
-| `task check`                                    | Run everything CI runs: format, lint, types, every test, build   |
-| `task unit`                                     | Run all unit tests                                               |
-| `task integration`                              | Run the database integration tests                               |
-| `task e2e`                                      | Run the API end-to-end tests against the test database           |
-| `task db:seed`, `task db:reset`, `task db:psql` | Load sample people, start the database fresh, open a SQL prompt  |
-| `task build`, `task clean`                      | Build everything, or remove build output and caches              |
+| Command                                         | What it does                                                                    |
+| ----------------------------------------------- | ------------------------------------------------------------------------------- |
+| `task dev`                                      | Start the web app and the API together                                          |
+| `task web`, `task api`                          | Start just one of them                                                          |
+| `task web:mock`                                 | Start just the web app, against the mock API (no backend needed)                |
+| `task check`                                    | Run everything CI runs: format, lint, types, every test, build                  |
+| `task unit`                                     | Run all unit tests                                                              |
+| `task integration`                              | Run the database integration tests                                              |
+| `task e2e`                                      | Run the API end-to-end tests against the test database                          |
+| `task db:seed`, `task db:reset`, `task db:psql` | Load sample people, start the database fresh, open a SQL prompt                 |
+| `task build`, `task clean`                      | Build everything, or remove build output and caches                             |
+| `task docs`, `task docs:build`                  | Preview the docs site at http://localhost:8000, or build it strictly as CI does |
 
 Every command is a shortcut for a pnpm script, so `pnpm dev`, `pnpm test` or `pnpm --filter @hierarchy-hub/api test:e2e` work too. The full list is in `Taskfile.yml`.
 

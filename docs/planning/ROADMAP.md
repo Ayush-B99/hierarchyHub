@@ -18,6 +18,7 @@ The project is built in parts. Each part is one branch and one pull request, mad
 | 5c   | Switch the frontend from the mock to the real API                                           | `feat/web-real-api`          | Done        |
 | 5d   | Rotating 3D Orbit view, drag to spin, moons for team size                                   | `feat/orbit-3d`              | Done        |
 | 5e   | Bring every document in line with the brief and the built app                               | `docs/match-the-brief`       | Done        |
+| 5f   | Docs website on GitHub Pages                                                                | `docs/site`                  | Done        |
 | 6    | AWS setup and deployment                                                                    | `feat/aws-deployment`        | Not started |
 | 7    | Final pass: live URL, deployment details and fresh screenshots                              | `docs/final-documentation`   | Not started |
 

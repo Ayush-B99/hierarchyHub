@@ -203,6 +203,28 @@ tasks:
 
   # ---------- Build and clean ----------
 
+  # ---------- Docs site (adr 0015) ----------
+
+  docs:setup:
+    desc: Install MkDocs into .venv (needs Python 3)
+    status:
+      - test -x .venv/bin/mkdocs
+    cmds:
+      - python3 -m venv .venv
+      - .venv/bin/pip install -q -r docs-site/requirements.txt
+
+  docs:
+    desc: Preview the docs site at http://localhost:8000, reloading as you edit
+    deps: [docs:setup]
+    cmds:
+      - .venv/bin/mkdocs serve --dev-addr localhost:8000
+
+  docs:build:
+    desc: Build the docs site into site/ exactly as CI does (strict, so broken links fail)
+    deps: [docs:setup]
+    cmds:
+      - .venv/bin/mkdocs build --strict
+
   build:
     desc: Build every package
     cmds:

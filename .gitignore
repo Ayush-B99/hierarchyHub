@@ -3,6 +3,7 @@ node_modules/
 
 # Build output
 dist/
+site/
 coverage/
 *.tsbuildinfo
 
@@ -30,3 +31,7 @@ Thumbs.db
 
 # Task runner cache
 .task/
+
+# Python, for the docs site
+.venv/
+__pycache__/

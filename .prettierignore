@@ -4,3 +4,4 @@ coverage
 .turbo
 apps/web/public/mockServiceWorker.js
 docs/design/concept.html
+site

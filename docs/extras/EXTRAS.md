@@ -91,7 +91,8 @@ More detail in [ADR 0013](../adr/0013-api-security-layer.md).
 | One shared source of rules       | Types and validation live in one package used by both the web app and the API.                                                                                                                     |
 | Same setup everywhere            | Local Docker, CI and AWS build the database from the same scripts.                                                                                                                                 |
 | One-word commands                | `task setup`, `task dev` and `task check` cover the whole workflow.                                                                                                                                |
-| 14 architecture decision records | Every major choice, the options considered and why ([ADRs](../adr/README.md)).                                                                                                                     |
+| 15 architecture decision records | Every major choice, the options considered and why ([ADRs](../adr/README.md)).                                                                                                                     |
+| Documentation website            | All the docs as a searchable site with diagrams, light and dark mode, published automatically from `main` ([ADR 0015](../adr/0015-docs-site.md)).                                                  |
 | Full specification set           | Requirements with use case diagrams ([SRS](../srs/SRS.md)), architecture and deployment diagrams ([SAS](../sas/SAS.md)), an [API contract](../api/API.md) and a [brand guide](../design/BRAND.md). |
 | Built in reviewed parts          | Each part was a branch and pull request of small commits ([roadmap](../planning/ROADMAP.md)).                                                                                                      |
 

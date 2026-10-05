@@ -376,6 +376,7 @@ flowchart LR
 - Nothing reaches `main` unless both CI jobs pass.
 - The database job builds a fresh PostgreSQL from the same setup scripts used locally and on AWS, so all three environments match.
 - New API containers only receive traffic once they pass the health check, so a broken release never replaces a working one.
+- A separate Docs workflow builds the documentation site on every pull request, in strict mode, and publishes it to GitHub Pages from `main` (ADR 0015).
 
 ### 9.3 Environments
 
