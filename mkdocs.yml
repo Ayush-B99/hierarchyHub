@@ -1,0 +1,111 @@
+# the documentation site, published to github pages (adr 0015)
+# preview locally with `task docs`, build exactly as ci does with `task docs:build`
+site_name: Hierarchy Hub
+site_description: Employee hierarchy management for EPI-USE Africa
+site_url: https://ayush-b99.github.io/hierarchyHub/
+repo_url: https://github.com/Ayush-B99/hierarchyHub
+repo_name: Ayush-B99/hierarchyHub
+edit_uri: edit/main/docs/
+copyright: Hierarchy Hub, built for EPI-USE Africa
+
+docs_dir: docs
+site_dir: site
+strict: true
+
+not_in_nav: |
+  adr/template.md
+
+hooks:
+  - docs-site/hooks.py
+
+theme:
+  name: material
+  logo: assets/logo.svg
+  favicon: assets/logo.svg
+  font:
+    text: Manrope
+    code: JetBrains Mono
+  palette:
+    - media: '(prefers-color-scheme: light)'
+      scheme: default
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: '(prefers-color-scheme: dark)'
+      scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - navigation.indexes
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.action.edit
+
+extra_css:
+  - assets/extra.css
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+validation:
+  links:
+    not_found: warn
+    anchors: warn
+    absolute_links: info
+    unrecognized_links: warn
+
+nav:
+  - Home: README.md
+  - Deliverables:
+      - User guide: user-guide/USER_GUIDE.md
+      - Technical document: technical/TECHNICAL.md
+      - Beyond the brief: extras/EXTRAS.md
+  - API contract: api/API.md
+  - Specification:
+      - Requirements (SRS): srs/SRS.md
+      - Architecture (SAS): sas/SAS.md
+  - Decisions:
+      - adr/README.md
+      - 0001 Monorepo: adr/0001-monorepo.md
+      - 0002 React and NestJS: adr/0002-react-and-nestjs.md
+      - 0003 PostgreSQL adjacency list: adr/0003-postgresql-adjacency-list.md
+      - 0004 AWS hosting: adr/0004-aws-hosting.md
+      - 0005 Shared validation: adr/0005-shared-validation.md
+      - 0006 Gravatar: adr/0006-gravatar.md
+      - 0007 Git workflow: adr/0007-git-workflow.md
+      - 0008 Frontend first with MSW: adr/0008-frontend-first-with-msw.md
+      - 0009 Visual design system: adr/0009-visual-design-system.md
+      - 0010 Database design: adr/0010-database-design.md
+      - 0011 Caching: adr/0011-caching.md
+      - 0012 Prisma with a pg pool: adr/0012-prisma-client-with-pg-pool.md
+      - 0013 API security layer: adr/0013-api-security-layer.md
+      - 0014 Custom org chart and table: adr/0014-custom-org-chart-and-table.md
+      - 0015 Docs site: adr/0015-docs-site.md
+  - Design:
+      - Brand guide: design/BRAND.md
+      - Design: design/README.md
+  - Roadmap: planning/ROADMAP.md
