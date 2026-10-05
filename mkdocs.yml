@@ -85,6 +85,7 @@ nav:
       - Technical document: technical/TECHNICAL.md
       - Beyond the brief: extras/EXTRAS.md
   - API contract: api/API.md
+  - Security testing: security/ATTACKS.md
   - Specification:
       - Requirements (SRS): srs/SRS.md
       - Architecture (SAS): sas/SAS.md

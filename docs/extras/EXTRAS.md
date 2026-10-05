@@ -74,15 +74,16 @@ More detail in [ADR 0013](../adr/0013-api-security-layer.md).
 
 ## 5. Quality and testing
 
-| Extra                         | What it does                                                                                                                                  |
-| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| 290 automated tests           | Web, shared, API unit, database integration and API end-to-end suites ([technical document, section 7](../technical/TECHNICAL.md#7-testing)). |
-| Tests against real PostgreSQL | Integration and end-to-end tests run against a real database, in CI as well as locally.                                                       |
-| Contract tests                | The same examples run against the mock API and the real API, so the two can never drift apart.                                                |
-| Performance tests             | 10,000 extra employees are loaded, and the table and org chart must answer within half a second and one second.                               |
-| Concurrency tests             | Two saves are fired at the same moment, and exactly one must win.                                                                             |
-| Safe test runs                | End-to-end tests refuse to run against any database whose name doesn't end in `_test`.                                                        |
-| CI on every pull request      | Formatting, lint, type checks, every test suite and the build, with nothing merged unless all pass. Dependabot keeps dependencies current.    |
+| Extra                         | What it does                                                                                                                                                                  |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 340 automated tests           | Web, shared, API unit, database integration and API end-to-end suites ([technical document, section 7](../technical/TECHNICAL.md#7-testing)).                                 |
+| Tests against real PostgreSQL | Integration and end-to-end tests run against a real database, in CI as well as locally.                                                                                       |
+| Contract tests                | The same examples run against the mock API and the real API, so the two can never drift apart.                                                                                |
+| Performance tests             | 10,000 extra employees are loaded, and the table and org chart must answer within half a second and one second.                                                               |
+| Concurrency tests             | Two saves are fired at the same moment, and exactly one must win.                                                                                                             |
+| Attack tests                  | Every way we found to break the API, from impossible dates to skipping the clash check, is a test that must get a clear refusal ([security testing](../security/ATTACKS.md)). |
+| Safe test runs                | End-to-end tests refuse to run against any database whose name doesn't end in `_test`.                                                                                        |
+| CI on every pull request      | Formatting, lint, type checks, every test suite and the build, with nothing merged unless all pass. Dependabot keeps dependencies current.                                    |
 
 ## 6. Engineering and documentation
 

@@ -161,7 +161,7 @@ Patterns from the book we did not need include Abstract Factory, Prototype, Brid
 | Deleting a manager moves their team up to the next manager (BR-04) | Explains who moves                | Yes, in one transaction       | Foreign key stops anyone pointing at a deleted person |
 | Employee number and email are unique (BR-05)                       | Shows the error on the field      | Yes                           | Unique indexes                                        |
 | Salary is not negative (BR-06)                                     | Yes                               | Yes                           | Check constraint                                      |
-| Birth date is in the past (BR-07)                                  | Yes                               | Yes                           | Trigger                                               |
+| Employees are at least 15 years old (BR-07)                        | Yes                               | Yes                           | Trigger                                               |
 | Two people don't overwrite each other's changes                    | Offers to load the latest version | Version check on every change | Version column                                        |
 
 The form gives instant, friendly feedback. The API is the real gatekeeper. The database is the last line of defence, so the data stays correct even if a bug slips through the code.
@@ -191,11 +191,11 @@ The app has no login (an optional extra, FR-17), so the API protects itself in o
 
 | Kind                 | What it covers                                                                                             | Tool                                       | Count |
 | -------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ----- |
-| Shared unit tests    | Validation rules and hierarchy helpers                                                                     | Vitest                                     | 15    |
+| Shared unit tests    | Validation rules and hierarchy helpers                                                                     | Vitest                                     | 32    |
 | Web tests            | Screens, forms, search, drag and drop, the orbit, clashes, accessibility (axe), CSV export                 | Vitest, Testing Library, MSW               | 121   |
-| API unit tests       | Services, mappers, settings, error handling, version checks, the seed guard                                | Jest                                       | 36    |
+| API unit tests       | Services, mappers, settings, error handling, version checks, the seed guard                                | Jest                                       | 37    |
 | Database integration | Constraints, the loop trigger, clashing changes made at the same moment                                    | Jest against real PostgreSQL               | 37    |
-| API end to end       | Every endpoint and rule over HTTP, clashing saves, security headers, rate limits, speed with 10,000 people | Jest and Supertest against real PostgreSQL | 81    |
+| API end to end       | Every endpoint and rule over HTTP, clashing saves, security headers, rate limits, speed with 10,000 people | Jest and Supertest against real PostgreSQL | 113   |
 
 All of these run on every pull request in GitHub Actions, together with formatting, linting, type checks and the build. The end-to-end tests can only ever run against a database whose name ends in `_test`.
 

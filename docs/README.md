@@ -19,6 +19,7 @@ The [SRS](srs/SRS.md) ends with a checklist showing where every line of the brie
 | [Architecture Decision Records (ADRs)](adr/README.md)   | One short record per major decision, with the options we considered.                                               |
 | [Technical document](technical/TECHNICAL.md)            | Short summary of the architecture, patterns, technologies and reasons. This is a required deliverable.             |
 | [API contract](api/API.md)                              | The REST endpoints the frontend and backend agree on.                                                              |
+| [Security testing](security/ATTACKS.md)                 | Every attack we tried on the app, what broke, and how it's now protected.                                          |
 | [User guide](user-guide/USER_GUIDE.md)                  | How to use the app, with screenshots. This is a required deliverable.                                              |
 | [Beyond the brief](extras/EXTRAS.md)                    | Everything built beyond the brief, in the app and under the hood, with where to see each item.                     |
 | [Roadmap](planning/ROADMAP.md)                          | The order we build things in, and the status of each part.                                                         |

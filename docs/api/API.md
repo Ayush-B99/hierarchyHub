@@ -93,7 +93,7 @@ Content-Type: application/json
 
 - If nobody else changed them since, the change is saved and the response carries the new version (`"v4"`).
 - If someone else saved first, you get **412** and nothing is overwritten.
-- Without `If-Match` you get **428**. `If-Match: *` skips the check on purpose.
+- Without `If-Match` you get **428**. `If-Match: *` (any version) and weak tags like `W/"v3"` are refused with **400**, because they would let a change skip the check.
 - Only send the fields that change. Unknown fields (including `id` and `version`) are refused.
 
 ## Errors

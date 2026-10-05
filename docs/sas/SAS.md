@@ -278,7 +278,7 @@ erDiagram
 | Not their own manager (BR-01)                                        | A check constraint: `manager_id` must not equal `id`.                                                                                            |
 | Manager must exist, and can't be deleted while people report to them | A foreign key from `manager_id` to `id`, with `ON DELETE NO ACTION`.                                                                             |
 | Unique employee number and email, ignoring capitals (BR-05)          | Unique indexes, with values always stored in one case.                                                                                           |
-| Birth date in the past (BR-07), names not blank                      | A trigger and check constraints.                                                                                                                 |
+| At least 15 years old (BR-07), names not blank                       | A trigger and check constraints.                                                                                                                 |
 | No lost updates when two people edit at once                         | A `version` on every row, increased by the database on every change.                                                                             |
 | Salary not negative (BR-06)                                          | A check constraint and a decimal type with 2 places.                                                                                             |
 | No reporting loops (BR-02)                                           | A database trigger walks up the management chain on every manager change, and takes a short lock so two clashing changes can't both get through. |

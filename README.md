@@ -174,13 +174,13 @@ Every command is a shortcut for a pnpm script, so `pnpm dev`, `pnpm test` or `pn
 
 ## Testing
 
-| Suite                | What it covers                                                                       | Tests |
-| -------------------- | ------------------------------------------------------------------------------------ | ----- |
-| Web                  | Screens, forms, search, drag and drop, the orbit, clashes, accessibility, CSV export | 121   |
-| Shared               | Validation rules and hierarchy helpers                                               | 15    |
-| API unit             | Services, mappers, settings, error handling, version checks                          | 36    |
-| Database integration | Constraints, the reporting loop trigger, clashing changes, against real PostgreSQL   | 37    |
-| API end to end       | Every endpoint and rule over HTTP, security, rate limits, speed with 10,000 people   | 81    |
+| Suite                | What it covers                                                                                            | Tests |
+| -------------------- | --------------------------------------------------------------------------------------------------------- | ----- |
+| Web                  | Screens, forms, search, drag and drop, the orbit, clashes, accessibility, CSV export                      | 121   |
+| Shared               | Validation rules and hierarchy helpers                                                                    | 32    |
+| API unit             | Services, mappers, settings, error handling, version checks                                               | 37    |
+| Database integration | Constraints, the reporting loop trigger, clashing changes, against real PostgreSQL                        | 37    |
+| API end to end       | Every endpoint and rule over HTTP, every attack we tried, security, rate limits, speed with 10,000 people | 113   |
 
 Every pull request runs all of them in GitHub Actions, against a real PostgreSQL database, along with formatting, linting, type checks and the build.
 
