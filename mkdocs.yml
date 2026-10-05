@@ -106,6 +106,7 @@ nav:
       - 0013 API security layer: adr/0013-api-security-layer.md
       - 0014 Custom org chart and table: adr/0014-custom-org-chart-and-table.md
       - 0015 Docs site: adr/0015-docs-site.md
+      - 0016 Accounts and sessions: adr/0016-accounts-and-sessions.md
   - Design:
       - Brand guide: design/BRAND.md
       - Design: design/README.md

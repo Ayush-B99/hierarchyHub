@@ -39,10 +39,34 @@ As a safety net, any value the database itself refuses (Postgres "data exception
 | An empty change (`{}`)                                | Refused: "Send at least one field to change"                                   |
 | Mixed case and spaces in emails and employee numbers  | Tidied up, so `EMP-1` and `emp-1` count as the same                            |
 
+## Attacks on signing in
+
+Once accounts arrived (ADR 0016), we attacked those too. All of these are tests in `apps/api/test/accounts.e2e-spec.ts`.
+
+| Attack                                                                | Result                                                                                             |
+| --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Calling any employee or account endpoint without signing in           | 401                                                                                                |
+| A made up, empty or tampered session cookie                           | 401                                                                                                |
+| Guessing a password                                                   | Locked for 15 minutes after 5 wrong tries, even for the right password. Plus the rate limit per IP |
+| Telling real emails from made up ones by the error or the timing      | Same message, and an unknown email is checked against a dummy hash so it takes as long             |
+| Finding out who has an account by signing up with their email         | Everyone gets the same answer, and nothing changes for an existing email                           |
+| Signing up with `isAdmin`, `status` or `employeeId` in the body       | Refused as unknown fields                                                                          |
+| A 10,000 character password, to make hashing slow                     | Refused before hashing (at most 128 characters)                                                    |
+| Signing in to an account nobody has approved                          | 403, and no cookie is set                                                                          |
+| Reading the session cookie from a page script                         | It's `httpOnly`                                                                                    |
+| Using a session after signing out, or after the account is turned off | 401 straight away. Every request checks the account                                                |
+| A copied sessions table                                               | Useless: only SHA-256 hashes of the cookies are stored                                             |
+| Approving yourself in as your boss, or as someone above you           | 403: an admin can only link accounts to people below them                                          |
+| Linking two accounts to one employee                                  | 409                                                                                                |
+| Two admins approving the same request at the same moment              | One wins, the other gets 409                                                                       |
+| Someone who isn't an admin approving accounts or changing employees   | 403                                                                                                |
+| Another website making changes with a signed in person's cookie       | 403, from the `Origin` and `Sec-Fetch-Site` checks, on top of the same-site cookie                 |
+| A sign in link like `?next=https://evil.example`                      | Ignored: after signing in you only ever go to a page inside the app                                |
+
 ## Still open, fixed in the next parts
 
 These need accounts, so they're covered by the next steps of the build:
 
-- **Anyone can change anyone.** There is no login yet, so the API can't tell a junior from the CEO. Accounts and permissions based on the hierarchy fix this.
+- **Any admin can change anyone.** Everyone now signs in, and only admins can make changes, but an admin can still change people above or beside them. Permissions based on the hierarchy (ADR 0017) fix this.
 - **Everyone sees every salary and birth date.** These will only be shown to the person themselves and the people above them, filtered by the API. Filtering and sorting by salary or birth date will only use the people you're allowed to see, so the filters can't be used to guess someone's salary.
 - **Nobody can see who changed what.** An audit trail fixes this.

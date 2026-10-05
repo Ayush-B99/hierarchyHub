@@ -6,7 +6,21 @@ Live app: _link added after deployment_
 
 ## 1. Getting started
 
-Open the app in a current browser. There are two main pages, which you switch between with the tabs in the top bar:
+### Signing in
+
+Open the app in a current browser and sign in with your work email and password. Your name appears in the top bar, with an **Admin** badge if you're an admin. Select **Sign out** there when you're done.
+
+If you type the wrong password five times in a row, your account is locked for 15 minutes, even for the right password. This stops anyone guessing it.
+
+### Asking for an account
+
+If you don't have an account yet, select **Ask for an account** on the sign in page. Enter your full name, your work email and a password of at least 12 characters. A few words you'll remember works well, for example `river lamp autumn tea`.
+
+Your account does nothing until an admin approves it and links it to your employee record. You'll get the same message whatever you enter, so nobody can use this page to find out who has an account. Once you're approved, sign in as normal.
+
+### Finding your way around
+
+There are two main pages, which you switch between with the tabs in the top bar:
 
 - **Explore** shows the organisation one person at a time.
 - **People** lists everyone in a table.
@@ -193,6 +207,11 @@ For privacy, the email address is turned into a code (a hash) in your browser be
 | "We couldn't find that person"                               | The link points to someone who has been deleted. You're shown the top of the organisation instead.                               |
 | "Someone else changed ... while you were editing"            | Select **Load the latest version**, then make your change again. See section 3.                                                  |
 | The Orbit view isn't turning                                 | It stops while your pointer is over a card. If it never turns, your device is set to reduce motion. You can still drag it round. |
+| "Email or password is wrong"                                 | Check both. For your safety, the app doesn't say which one is wrong.                                                             |
+| "Your account is waiting for an admin to approve it"         | An admin hasn't linked your account to your employee record yet. Ask your manager.                                               |
+| "Too many wrong passwords"                                   | Wait the number of minutes shown, then try again.                                                                                |
+| You're sent back to the sign in page                         | Your session ended: you signed out elsewhere, it ran out, or an admin turned your account off. Sign in again.                    |
+| There's no **Add employee**, **Edit details** or **Delete**  | Only admins can make changes for now. Ask an admin above the person you want to change.                                          |
 
 ## 10. Extra features
 
@@ -202,6 +221,7 @@ These go beyond what the brief asked for. [Beyond the brief](../extras/EXTRAS.md
 | ---------------------------------------------------------- | ----------------------------- |
 | Two ways to explore: Orbit and Levels                      | Explore page, section 6       |
 | A rotating 3D Orbit you can spin, with moons for team size | Explore page, section 6       |
+| Sign in, with new accounts approved by an admin            | Sections 1 and 11             |
 | Path to the top and "Works alongside"                      | Explore page, section 6       |
 | Drag a person onto a new manager                           | Orbit view, section 4         |
 | Search from any page, with keyboard shortcuts              | Top bar, section 6            |
@@ -213,3 +233,16 @@ These go beyond what the brief asked for. [Beyond the brief](../extras/EXTRAS.md
 | Works on phones and tablets                                | Everywhere                    |
 | Keyboard and screen reader support                         | Everywhere                    |
 | Respects your device's reduced motion setting              | Everywhere                    |
+
+## 11. Approving accounts (admins)
+
+Admins see an **Accounts** tab in the top bar. It has two parts.
+
+**Waiting for approval** lists everyone who has asked for an account. For each person:
+
+1. Check who they are, for example by asking their manager.
+2. In **Link to employee**, choose their employee record. Only people below you who don't have an account yet are listed, because you can only approve accounts for your own part of the organisation. If their email matches an employee's, that person is chosen for you.
+3. If the email they signed up with doesn't match the employee you chose, a note says so. Make sure it's really them before going on.
+4. Select **Approve**. They can sign in straight away. Or select **Reject** to remove the request.
+
+**Your team's accounts** lists the accounts of the people below you: whether they're an admin, and when they last signed in. You never see the accounts of people above you or beside you.

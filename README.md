@@ -34,6 +34,7 @@ Add, edit and delete employees, set reporting lines, explore the organisation in
 - **See the hierarchy.** A rotating 3D Orbit view and a Levels view, a path to the top, and colleagues who share a manager.
 - **Find anyone fast.** Search by name, email, employee number or role from any page, then view, edit or delete them.
 - **Profile pictures from Gravatar,** with initials for people who don't have one.
+- **Sign in, with approval.** Anyone can ask for an account, and an admin above them approves it. Passwords are hashed with Argon2id, repeated wrong guesses lock the account, and sessions end the moment an account is turned off.
 - **Safe for teams.** If two people edit the same employee at once, the second save is stopped instead of quietly overwriting the first.
 - **Comfortable to use.** Light and dark mode, phone and tablet layouts, full keyboard and screen reader support, and respect for reduced motion settings.
 
@@ -144,31 +145,34 @@ hierarchyHub/
 
 ```bash
 task setup     # install dependencies, create .env files, start and migrate the database
-task db:seed   # load the sample people into your local database
+task db:seed   # load the sample people and sample accounts into your local database
 task dev       # start the web app and the API
 ```
 
 - Web app: http://localhost:5173, using the real API and your local database
 - API: http://localhost:3000/api/health
 
-The sample people can only be loaded into a database on your own machine. The seed script refuses to run against any other database.
+Sign in as `thandi.nkosi@example.com` (the CEO, an admin) with the password `hierarchy hub demo`. The seed prints the other sample accounts: another admin, a manager, someone without a team, and someone waiting for approval.
+
+The sample people and accounts can only be loaded into a database on your own machine. The seed script refuses to run against any other database. On a real database, create the first admin with `task admin:create EMPLOYEE=EMP-0001`, which asks for a password without showing it. Every other account is approved from inside the app.
 
 ### Common commands
 
 Run `task` on its own to see every command. The main ones:
 
-| Command                                         | What it does                                                                    |
-| ----------------------------------------------- | ------------------------------------------------------------------------------- |
-| `task dev`                                      | Start the web app and the API together                                          |
-| `task web`, `task api`                          | Start just one of them                                                          |
-| `task web:mock`                                 | Start just the web app, against the mock API (no backend needed)                |
-| `task check`                                    | Run everything CI runs: format, lint, types, every test, build                  |
-| `task unit`                                     | Run all unit tests                                                              |
-| `task integration`                              | Run the database integration tests                                              |
-| `task e2e`                                      | Run the API end-to-end tests against the test database                          |
-| `task db:seed`, `task db:reset`, `task db:psql` | Load sample people, start the database fresh, open a SQL prompt                 |
-| `task build`, `task clean`                      | Build everything, or remove build output and caches                             |
-| `task docs`, `task docs:build`                  | Preview the docs site at http://localhost:8000, or build it strictly as CI does |
+| Command                                         | What it does                                                                     |
+| ----------------------------------------------- | -------------------------------------------------------------------------------- |
+| `task dev`                                      | Start the web app and the API together                                           |
+| `task web`, `task api`                          | Start just one of them                                                           |
+| `task web:mock`                                 | Start just the web app, against the mock API (no backend needed)                 |
+| `task check`                                    | Run everything CI runs: format, lint, types, every test, build                   |
+| `task unit`                                     | Run all unit tests                                                               |
+| `task integration`                              | Run the database integration tests                                               |
+| `task e2e`                                      | Run the API end-to-end tests against the test database                           |
+| `task db:seed`, `task db:reset`, `task db:psql` | Load sample people, start the database fresh, open a SQL prompt                  |
+| `task admin:create EMPLOYEE=...`                | Make an employee an admin who can sign in, for the first admin on a new database |
+| `task build`, `task clean`                      | Build everything, or remove build output and caches                              |
+| `task docs`, `task docs:build`                  | Preview the docs site at http://localhost:8000, or build it strictly as CI does  |
 
 Every command is a shortcut for a pnpm script, so `pnpm dev`, `pnpm test` or `pnpm --filter @hierarchy-hub/api test:e2e` work too. The full list is in `Taskfile.yml`.
 
@@ -176,11 +180,11 @@ Every command is a shortcut for a pnpm script, so `pnpm dev`, `pnpm test` or `pn
 
 | Suite                | What it covers                                                                                            | Tests |
 | -------------------- | --------------------------------------------------------------------------------------------------------- | ----- |
-| Web                  | Screens, forms, search, drag and drop, the orbit, clashes, accessibility, CSV export                      | 121   |
+| Web                  | Screens, forms, search, drag and drop, the orbit, clashes, accessibility, CSV export                      | 139   |
 | Shared               | Validation rules and hierarchy helpers                                                                    | 32    |
 | API unit             | Services, mappers, settings, error handling, version checks                                               | 37    |
 | Database integration | Constraints, the reporting loop trigger, clashing changes, against real PostgreSQL                        | 37    |
-| API end to end       | Every endpoint and rule over HTTP, every attack we tried, security, rate limits, speed with 10,000 people | 113   |
+| API end to end       | Every endpoint and rule over HTTP, every attack we tried, security, rate limits, speed with 10,000 people | 147   |
 
 Every pull request runs all of them in GitHub Actions, against a real PostgreSQL database, along with formatting, linting, type checks and the build.
 

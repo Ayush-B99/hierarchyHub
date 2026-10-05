@@ -62,13 +62,15 @@ The brief's own requirements, and where each is met, are in the [SRS checklist](
 
 The brief doesn't mention security, but the app holds salaries and birth dates on a public URL.
 
-| Extra                    | What it does                                                                                                                       |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Least privilege database | The API's database user can only read and write rows. A separate user changes the tables.                                          |
-| Hardened API             | Security headers, calls only accepted from the web app, a 16 KB request limit, and strict input checks that reject unknown fields. |
-| Rate limits              | Per visitor, with a lower limit for changes. Health checks are never limited, so AWS can always see the API.                       |
-| Private by design        | Emails are hashed before reaching Gravatar. Logs never contain salaries, birth dates, searches or request bodies.                  |
-| Traceable                | Every response carries a request ID that also appears in the logs.                                                                 |
+| Extra                    | What it does                                                                                                                                                                   |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Least privilege database | The API's database user can only read and write rows. A separate user changes the tables.                                                                                      |
+| Accounts with approval   | Anyone can ask for an account, but an admin above them has to approve it and link it to their employee record ([ADR 0016](../adr/0016-accounts-and-sessions.md)).              |
+| Hardened sign in         | Argon2id passwords, lockout after 5 wrong tries, no clues about which emails exist, sessions that end the moment an account is turned off, and no changes from other websites. |
+| Hardened API             | Security headers, calls only accepted from the web app, a 16 KB request limit, and strict input checks that reject unknown fields.                                             |
+| Rate limits              | Per visitor, with a lower limit for changes. Health checks are never limited, so AWS can always see the API.                                                                   |
+| Private by design        | Emails are hashed before reaching Gravatar. Logs never contain salaries, birth dates, searches or request bodies.                                                              |
+| Traceable                | Every response carries a request ID that also appears in the logs.                                                                                                             |
 
 More detail in [ADR 0013](../adr/0013-api-security-layer.md).
 
@@ -76,7 +78,7 @@ More detail in [ADR 0013](../adr/0013-api-security-layer.md).
 
 | Extra                         | What it does                                                                                                                                                                  |
 | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 340 automated tests           | Web, shared, API unit, database integration and API end-to-end suites ([technical document, section 7](../technical/TECHNICAL.md#7-testing)).                                 |
+| 392 automated tests           | Web, shared, API unit, database integration and API end-to-end suites ([technical document, section 7](../technical/TECHNICAL.md#7-testing)).                                 |
 | Tests against real PostgreSQL | Integration and end-to-end tests run against a real database, in CI as well as locally.                                                                                       |
 | Contract tests                | The same examples run against the mock API and the real API, so the two can never drift apart.                                                                                |
 | Performance tests             | 10,000 extra employees are loaded, and the table and org chart must answer within half a second and one second.                                                               |

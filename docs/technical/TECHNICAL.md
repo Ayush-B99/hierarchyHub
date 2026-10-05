@@ -177,9 +177,13 @@ The brief says no data may be mocked using hardcoded values or local files, and 
 
 ## 6. Security
 
-The app has no login (an optional extra, FR-17), so the API protects itself in other ways (ADR 0013):
+Everyone signs in (ADR 0016), and the API protects itself in several more ways (ADR 0013):
 
 - HTTPS only, and the database is not reachable from the internet
+- sessions in the database with an `httpOnly`, same-site cookie. Only a hash of the cookie is stored, and every request checks the account, so signing out or turning an account off works straight away
+- passwords hashed with Argon2id, five wrong guesses lock the account for 15 minutes, and neither the errors nor the timing reveal which emails have accounts
+- new accounts do nothing until an admin above the person approves them
+- changes sent from other websites are refused, on top of the same-site cookie
 - two database users: the API's user can only read and write rows, and only a separate migration user can change the tables (ADR 0010)
 - security headers, and the API only accepts calls from the web app's own address (CORS)
 - rate limits per visitor, with a separate, lower limit for changes
@@ -192,10 +196,10 @@ The app has no login (an optional extra, FR-17), so the API protects itself in o
 | Kind                 | What it covers                                                                                             | Tool                                       | Count |
 | -------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ----- |
 | Shared unit tests    | Validation rules and hierarchy helpers                                                                     | Vitest                                     | 32    |
-| Web tests            | Screens, forms, search, drag and drop, the orbit, clashes, accessibility (axe), CSV export                 | Vitest, Testing Library, MSW               | 121   |
+| Web tests            | Screens, forms, search, drag and drop, the orbit, clashes, accessibility (axe), CSV export                 | Vitest, Testing Library, MSW               | 139   |
 | API unit tests       | Services, mappers, settings, error handling, version checks, the seed guard                                | Jest                                       | 37    |
 | Database integration | Constraints, the loop trigger, clashing changes made at the same moment                                    | Jest against real PostgreSQL               | 37    |
-| API end to end       | Every endpoint and rule over HTTP, clashing saves, security headers, rate limits, speed with 10,000 people | Jest and Supertest against real PostgreSQL | 113   |
+| API end to end       | Every endpoint and rule over HTTP, clashing saves, security headers, rate limits, speed with 10,000 people | Jest and Supertest against real PostgreSQL | 147   |
 
 All of these run on every pull request in GitHub Actions, together with formatting, linting, type checks and the build. The end-to-end tests can only ever run against a database whose name ends in `_test`.
 
