@@ -18,6 +18,14 @@ export const envSchema = z
     RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).default(300),
     RATE_LIMIT_WRITES_PER_MINUTE: z.coerce.number().int().min(1).default(60),
 
+    // --- sign in (adr 0016) ---
+    // a session ends after this many hours without a request
+    SESSION_HOURS: z.coerce.number().min(0.25).max(72).default(12),
+    // and after this many days whatever happens, so a stolen cookie can't last forever
+    SESSION_MAX_DAYS: z.coerce.number().min(1).max(30).default(7),
+    // send the cookie over https only. on unless you say otherwise, except on your own machine
+    COOKIE_SECURE: z.enum(['true', 'false']).optional(),
+
     // --- database ---
     // the app user (hh_app), never the migrator. see docs/adr/0010-database-design.md
     DATABASE_URL: z

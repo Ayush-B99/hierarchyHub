@@ -1,5 +1,9 @@
 import type {
+  AccountSummary,
   ApiErrorBody,
+  Me,
+  SignInInput,
+  SignUpInput,
   CreateEmployeeInput,
   Employee,
   HealthResponse,
@@ -26,6 +30,9 @@ export class ApiError extends Error {
   }
 }
 
+/** sent on window whenever the api says the session has ended */
+export const SIGNED_OUT = 'hierarchy-hub:signed-out';
+
 function toUrl(path: string): string {
   return new URL(`${config.apiUrl}${path}`, window.location.origin).toString();
 }
@@ -37,6 +44,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
   if (!response.ok) {
     const body = (await response.json().catch(() => ({}))) as Partial<ApiErrorBody>;
+    // the session ended (signed out elsewhere, ran out, or the account was turned off), so
+    // let the app know and it shows the sign in page. a wrong password isn't that
+    if (response.status === 401 && path !== '/auth/login') {
+      window.dispatchEvent(new Event(SIGNED_OUT));
+    }
     throw new ApiError(response.status, body);
   }
   return (response.status === 204 ? undefined : await response.json()) as T;
@@ -76,4 +88,19 @@ export const api = {
       method: 'DELETE',
       headers: { 'If-Match': versionTag(version) },
     }),
+
+  // accounts (adr 0016). the session is an httpOnly cookie the browser sends by itself
+  me: () => request<Me>('/auth/me'),
+  signIn: (input: SignInInput) =>
+    request<Me>('/auth/login', { method: 'POST', body: JSON.stringify(input) }),
+  signUp: (input: SignUpInput) =>
+    request<{ message: string }>('/auth/signup', { method: 'POST', body: JSON.stringify(input) }),
+  signOut: () => request<void>('/auth/logout', { method: 'POST' }),
+  accounts: () => request<AccountSummary[]>('/accounts'),
+  approveAccount: (id: string, employeeId: string) =>
+    request<AccountSummary>(`/accounts/${id}/approve`, {
+      method: 'POST',
+      body: JSON.stringify({ employeeId }),
+    }),
+  rejectAccount: (id: string) => request<void>(`/accounts/${id}/reject`, { method: 'POST' }),
 };

@@ -19,8 +19,13 @@ The project is built in parts. Each part is one branch and one pull request, mad
 | 5d   | Rotating 3D Orbit view, drag to spin, moons for team size                                   | `feat/orbit-3d`              | Done        |
 | 5e   | Bring every document in line with the brief and the built app                               | `docs/match-the-brief`       | Done        |
 | 5f   | Docs website on GitHub Pages                                                                | `docs/site`                  | Done        |
-| 6    | AWS setup and deployment                                                                    | `feat/aws-deployment`        | Not started |
-| 7    | Final pass: live URL, deployment details and fresh screenshots                              | `docs/final-documentation`   | Not started |
+| 6a   | Attack the app, fix what broke, keep every attack as a test                                 | `fix/break-it`               | Done        |
+| 6b   | Accounts: sign up, sign in, sessions, admin approval                                        | `feat/accounts`              | Done        |
+| 6c   | Permissions based on the hierarchy, and salary privacy                                      | `feat/permissions`           | Not started |
+| 6d   | Audit trail and audit page                                                                  | `feat/audit`                 | Not started |
+| 6e   | Tidy comments and finish the docs                                                           | `chore/tidy`                 | Not started |
+| 7    | AWS setup and deployment                                                                    | `feat/aws-deployment`        | Not started |
+| 8    | Final pass: live URL, deployment details and fresh screenshots                              | `docs/final-documentation`   | Not started |
 
 ## Requirements by part
 
@@ -33,5 +38,5 @@ The project is built in parts. Each part is one branch and one pull request, mad
 | 3e   | FR-08, FR-12                                                 |
 | 4    | SRS section 6, BR-01, BR-03, BR-05, BR-06, C-01              |
 | 5    | FR-01 to FR-06, FR-21, FR-22, BR-01 to BR-07, NFR-03, NFR-10 |
-| 6    | C-03, NFR-01, NFR-04, NFR-11, NFR-12                         |
-| 7    | User guide, technical document, C-03                         |
+| 7    | C-03, NFR-01, NFR-04, NFR-11, NFR-12                         |
+| 8    | User guide, technical document, C-03                         |

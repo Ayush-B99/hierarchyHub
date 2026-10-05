@@ -203,6 +203,13 @@ tasks:
 
   # ---------- Build and clean ----------
 
+  admin:create:
+    desc: 'Make an employee an admin who can sign in, eg task admin:create EMPLOYEE=EMP-0001'
+    cmds:
+      - pnpm --filter {{.API}} admin:create
+    env:
+      EMPLOYEE: '{{.EMPLOYEE}}'
+
   # ---------- Docs site (adr 0015) ----------
 
   docs:setup:

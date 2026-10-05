@@ -12,7 +12,7 @@ describe('App', () => {
 
   it('moves to the People page from the navigation', async () => {
     renderApp('/');
-    await userEvent.click(screen.getByRole('link', { name: 'People' }));
+    await userEvent.click(await screen.findByRole('link', { name: 'People' }));
     expect(await screen.findByText('Showing 1 to 10 of 14 people')).toBeInTheDocument();
     expect(screen.getAllByRole('row')).toHaveLength(11);
     expect(screen.getByRole('link', { name: 'People' })).toHaveAttribute('aria-current', 'page');

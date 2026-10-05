@@ -1,8 +1,7 @@
 import { type INestApplication } from '@nestjs/common';
 import { WRITE_SCENARIOS } from '@hierarchy-hub/shared/testing';
-import request from 'supertest';
 import type { DatabaseService } from '../src/database/database.service';
-import { loadSamplePeople, startApp } from './app';
+import { client, loadSamplePeople, startApp } from './app';
 
 const THANDI = '00000000-0000-4000-8000-000000000001';
 const SIPHO = '00000000-0000-4000-8000-000000000002';
@@ -12,7 +11,7 @@ const NOBODY = '00000000-0000-4000-8000-999999999999';
 
 let app: INestApplication;
 let db: DatabaseService;
-const http = () => request(app.getHttpServer());
+const http = () => client(app);
 
 const newPerson = {
   employeeNumber: 'emp-0100',
@@ -214,14 +213,10 @@ describe('DELETE /api/employees/:id', () => {
 
   it('makes the team top level when the person deleted was at the top', async () => {
     await http().delete(`/api/employees/${THANDI}`).set('If-Match', '"v1"').expect(204);
-    const roots = (await http().get('/api/employees/hierarchy')).body.filter(
-      (e: { managerId: string | null }) => e.managerId === null,
-    );
-    expect(roots.map((e: { lastName: string }) => e.lastName).sort()).toEqual([
-      'Dlamini',
-      'Mokoena',
-      'Patel',
-    ]);
+    // read straight from the database: thandi was the one signed in, so her session ended
+    // with her record, which is exactly what should happen
+    const roots = await db.employee.findMany({ where: { managerId: null } });
+    expect(roots.map((e) => e.lastName).sort()).toEqual(['Dlamini', 'Mokoena', 'Patel']);
   });
 
   it('refuses with 412 when they changed since you loaded them', async () => {

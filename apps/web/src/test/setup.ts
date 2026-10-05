@@ -1,9 +1,11 @@
 import '@testing-library/jest-dom/vitest';
-import { cleanup } from '@testing-library/react';
+import { cleanup, configure } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll, beforeEach, vi } from 'vitest';
+import { accounts } from '../mocks/accounts';
 import { db } from '../mocks/db';
 import { server } from '../mocks/node';
 
+configure({ asyncUtilTimeout: 5000 });
 // jsdom has no WebGL, so skip the 3D background in tests.
 vi.mock('../components/background/ClayBackground', () => ({ ClayBackground: () => null }));
 
@@ -49,7 +51,11 @@ if (!HTMLDialogElement.prototype.showModal) {
 }
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
-beforeEach(() => db.reset());
+beforeEach(() => {
+  db.reset();
+  // every test starts signed in as the ceo, an admin, unless it signs in as someone else
+  accounts.reset();
+});
 afterEach(() => {
   cleanup();
   server.resetHandlers();

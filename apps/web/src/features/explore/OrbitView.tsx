@@ -1,3 +1,4 @@
+import { useAuth } from '../auth/useAuth';
 import type { Employee } from '@hierarchy-hub/shared';
 import { descendantsOf } from '@hierarchy-hub/shared';
 import { useEffect, useMemo, useRef, useState, type FocusEvent, type PointerEvent } from 'react';
@@ -100,10 +101,13 @@ export function OrbitView({ person, org, onSelect, onShowAll }: OrbitViewProps) 
     if (org.byId.get(draggedId)?.managerId === targetId) return false;
     return !descendantsOf(draggedId, everyone).some((e) => e.id === targetId);
   };
-  const { drag, handlesFor } = useOrbitDrag({
+  const canChange = useAuth().me?.isAdmin ?? false;
+  const { drag, handlesFor: dragHandlesFor } = useOrbitDrag({
     canDrop,
     onDrop: (id, to) => setPending({ id, to }),
   });
+  // only people who can change managers get to drag them
+  const handlesFor = (id: string) => (canChange ? dragHandlesFor(id) : undefined);
 
   // the ring stops turning while you point at a card, tab through them, drag someone or confirm a move
   const [hovering, setHovering] = useState(false);

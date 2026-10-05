@@ -1,10 +1,9 @@
 import { type INestApplication } from '@nestjs/common';
-import request from 'supertest';
-import { loadSamplePeople, startApp } from './app';
+import { client, loadSamplePeople, startApp } from './app';
 
 describe('security (e2e)', () => {
   let app: INestApplication;
-  const http = () => request(app.getHttpServer());
+  const http = () => client(app);
 
   beforeAll(async () => {
     const started = await startApp();

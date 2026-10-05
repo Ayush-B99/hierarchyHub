@@ -1,6 +1,11 @@
 import { http, HttpResponse, delay } from 'msw';
 import {
+  approveAccountSchema,
   createEmployeeSchema,
+  descendantsOf,
+  signInSchema,
+  signUpSchema,
+  SIGN_UP_RECEIVED,
   listEmployeesQuerySchema,
   updateEmployeeSchema,
   wouldCreateCycle,
@@ -8,6 +13,7 @@ import {
   type Employee,
   type HealthResponse,
 } from '@hierarchy-hub/shared';
+import { accounts } from './accounts';
 import { db } from './db';
 
 const API = '*/api';
@@ -45,15 +51,15 @@ const etagFor = (row: Employee) => `"v${row.version}"`;
 
 /**
  * the same If-Match rules as the real api (apps/api/src/common/if-match.ts):
- * missing is 428, malformed is 400, an old version is 412, and * skips the check
+ * missing is 428, anything but an exact version (including * and weak tags) is 400, and an
+ * old version is 412
  */
 function versionProblem(ifMatch: string | null, row: Employee | undefined) {
   if (!ifMatch) {
     return error(428, 'Send the If-Match header with the version you loaded, eg If-Match: "v3"');
   }
-  if (ifMatch.trim() === '*') return null;
-  const version = /^(?:W\/)?"v(\d{1,9})"$/.exec(ifMatch.trim())?.[1];
-  if (!version) return error(400, 'If-Match must look like "v3"');
+  const version = /^"v(\d{1,9})"$/.exec(ifMatch.trim())?.[1];
+  if (!version) return error(400, 'If-Match must be the exact version you loaded, eg "v3"');
   if (row && Number(version) !== row.version) {
     return error(
       412,
@@ -66,7 +72,105 @@ function versionProblem(ifMatch: string | null, row: Employee | undefined) {
 const managerOf = (id: string) => db.find(id)?.managerId;
 
 /** Mock implementation of docs/api/API.md, including business rules BR-01 to BR-05. */
+const SAFE = new Set(['GET', 'HEAD']);
+
+/** the same sign in rules as the real api (apps/api/src/auth/session.guard.ts) */
+function signInProblem(adminOnly: boolean) {
+  const me = accounts.me();
+  if (!me) return error(401, 'Please sign in.');
+  if (adminOnly && !me.isAdmin) return error(403, 'Only admins can do that.');
+  return undefined;
+}
+
+const authHandlers = [
+  // every employee route needs a signed in account, and for now only admins change anyone.
+  // returning nothing passes the request on to the handlers below
+  http.all(`${API}/employees*`, ({ request }) => signInProblem(!SAFE.has(request.method))),
+  http.all(`${API}/accounts*`, () => signInProblem(true)),
+
+  http.get(`${API}/auth/me`, () => {
+    const me = accounts.me();
+    return me ? HttpResponse.json(me) : error(401, 'Please sign in.');
+  }),
+
+  http.post(`${API}/auth/login`, async ({ request }) => {
+    const parsed = signInSchema.safeParse(await request.json());
+    if (!parsed.success) return validationError(parsed.error);
+    const row = accounts.byEmail(parsed.data.email);
+    if (!row || row.password !== parsed.data.password)
+      return error(401, 'Email or password is wrong.');
+    if (row.status === 'pending')
+      return error(403, 'Your account is waiting for an admin to approve it.');
+    if (row.status !== 'active') {
+      return error(
+        403,
+        'This account has been turned off. Ask an admin if you think that’s wrong.',
+      );
+    }
+    accounts.start(row.id);
+    return HttpResponse.json(accounts.me());
+  }),
+
+  http.post(`${API}/auth/signup`, async ({ request }) => {
+    const parsed = signUpSchema.safeParse(await request.json());
+    if (!parsed.success) return validationError(parsed.error);
+    if (!accounts.byEmail(parsed.data.email)) {
+      accounts.add(parsed.data.name, parsed.data.email, parsed.data.password);
+    }
+    return HttpResponse.json({ message: SIGN_UP_RECEIVED }, { status: 202 });
+  }),
+
+  http.post(`${API}/auth/logout`, () => {
+    if (!accounts.me()) return error(401, 'Please sign in.');
+    accounts.end();
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.get(`${API}/accounts`, () => {
+    const me = accounts.me()!;
+    const team = new Set(descendantsOf(me.employeeId, db.all()).map((e) => e.id));
+    return HttpResponse.json(
+      accounts
+        .all()
+        .filter(
+          (a) =>
+            a.status === 'pending' ||
+            (a.employeeId && (team.has(a.employeeId) || a.employeeId === me.employeeId)),
+        ),
+    );
+  }),
+
+  http.post(`${API}/accounts/:id/approve`, async ({ params, request }) => {
+    const me = accounts.me()!;
+    const parsed = approveAccountSchema.safeParse(await request.json());
+    if (!parsed.success) return validationError(parsed.error);
+    const { employeeId } = parsed.data;
+    if (!db.find(employeeId))
+      return fieldError(404, 'employeeId', 'That employee no longer exists');
+    if (!descendantsOf(me.employeeId, db.all()).some((e) => e.id === employeeId)) {
+      return fieldError(403, 'employeeId', 'You can only link accounts to people below you');
+    }
+    if (accounts.all().some((a) => a.employeeId === employeeId)) {
+      return fieldError(409, 'employeeId', 'That employee already has an account');
+    }
+    const row = accounts.find(String(params.id));
+    if (!row) return error(404, 'Account not found');
+    if (row.status !== 'pending') return error(409, 'Someone has already dealt with this account');
+    return HttpResponse.json(accounts.approve(row.id, employeeId));
+  }),
+
+  http.post(`${API}/accounts/:id/reject`, ({ params }) => {
+    const row = accounts.find(String(params.id));
+    if (!row) return error(404, 'Account not found');
+    if (row.status !== 'pending') return error(409, 'Someone has already dealt with this account');
+    accounts.remove(row.id);
+    return new HttpResponse(null, { status: 204 });
+  }),
+];
+
 export const handlers = [
+  ...authHandlers,
+
   http.get(`${API}/health`, () =>
     HttpResponse.json<HealthResponse>({
       status: 'ok',

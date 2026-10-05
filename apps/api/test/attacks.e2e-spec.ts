@@ -1,7 +1,6 @@
 import { type INestApplication } from '@nestjs/common';
-import request from 'supertest';
 import type { DatabaseService } from '../src/database/database.service';
-import { loadSamplePeople, startApp } from './app';
+import { client, loadSamplePeople, startApp } from './app';
 
 /**
  * every way we found to break the api when we went looking (docs/security/ATTACKS.md),
@@ -16,7 +15,7 @@ const RUAN = '00000000-0000-4000-8000-000000000007';
 
 let app: INestApplication;
 let db: DatabaseService;
-const http = () => request(app.getHttpServer());
+const http = () => client(app);
 
 let n = 0;
 const person = (changes: Record<string, unknown> = {}) => {

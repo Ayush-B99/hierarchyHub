@@ -1,16 +1,20 @@
 import { type INestApplication } from '@nestjs/common';
-import request from 'supertest';
-import { startApp } from './app';
+import { client, loadSamplePeople, startApp } from './app';
 
 // in its own file so the app loads fresh with these tiny limits, see startApp
 
 describe('rate limits (e2e)', () => {
   let app: INestApplication;
-  const http = () => request(app.getHttpServer());
+  const http = () => client(app);
 
   beforeAll(async () => {
     // tiny limits so the test can hit them quickly
-    ({ app } = await startApp({ RATE_LIMIT_PER_MINUTE: '5', RATE_LIMIT_WRITES_PER_MINUTE: '2' }));
+    const started = await startApp({
+      RATE_LIMIT_PER_MINUTE: '5',
+      RATE_LIMIT_WRITES_PER_MINUTE: '2',
+    });
+    app = started.app;
+    await loadSamplePeople(started.db);
   });
   afterAll(() => app.close());
 

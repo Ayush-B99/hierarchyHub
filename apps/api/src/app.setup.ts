@@ -1,6 +1,7 @@
 import type { INestApplication } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import type { NextFunction, Request, Response } from 'express';
+import { refuseCrossSiteChanges } from './common/same-site';
 import helmet from 'helmet';
 import { requestIdAndAccessLog } from './common/request-id';
 
@@ -33,6 +34,7 @@ export function configureApp(app: INestApplication, options: AppSetupOptions) {
   });
 
   express.use(requestIdAndAccessLog({ log: options.accessLog }));
+  express.use(refuseCrossSiteChanges(options.corsOrigins));
 
   // only json, and only small bodies, so nobody can tie the api up with huge uploads
   express.useBodyParser('json', { limit: BODY_LIMIT });

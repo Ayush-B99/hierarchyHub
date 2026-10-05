@@ -7,20 +7,55 @@ This is the agreement between the web app and the API. It is written before the 
 - Base URL: `/api`. Locally this is `http://localhost:3000/api`.
 - Requests and responses are JSON.
 - Dates use ISO 8601. Birth dates are `YYYY-MM-DD`.
-- There is no login in the first version.
+- Every endpoint needs you to be signed in, except the health checks and the sign in forms (`/auth/signup` and `/auth/login`). Without a session you get **401**. See [Signing in](#signing-in).
 
 ## Endpoints
 
-| Method | Path                   | What it does                                                                         | Success code |
-| ------ | ---------------------- | ------------------------------------------------------------------------------------ | ------------ |
-| GET    | `/health`              | Checks the API process is up (used by the load balancer).                            | 200          |
-| GET    | `/health/ready`        | Checks the API can reach the database. Returns 503 with `"database": "down"` if not. | 200          |
-| GET    | `/employees`           | Lists employees one page at a time, with sorting and filters.                        | 200          |
-| GET    | `/employees/hierarchy` | Returns every employee in one flat list, used to build the org chart.                | 200          |
-| GET    | `/employees/{id}`      | Returns one employee.                                                                | 200          |
-| POST   | `/employees`           | Adds an employee.                                                                    | 201          |
-| PATCH  | `/employees/{id}`      | Changes some or all of an employee's details, including their manager.               | 200          |
-| DELETE | `/employees/{id}`      | Deletes an employee. Their direct reports move to the deleted employee's manager.    | 204          |
+| Method | Path                     | What it does                                                                         | Success code |
+| ------ | ------------------------ | ------------------------------------------------------------------------------------ | ------------ |
+| GET    | `/health`                | Checks the API process is up (used by the load balancer).                            | 200          |
+| GET    | `/health/ready`          | Checks the API can reach the database. Returns 503 with `"database": "down"` if not. | 200          |
+| GET    | `/employees`             | Lists employees one page at a time, with sorting and filters.                        | 200          |
+| GET    | `/employees/hierarchy`   | Returns every employee in one flat list, used to build the org chart.                | 200          |
+| GET    | `/employees/{id}`        | Returns one employee.                                                                | 200          |
+| POST   | `/employees`             | Adds an employee.                                                                    | 201          |
+| PATCH  | `/employees/{id}`        | Changes some or all of an employee's details, including their manager.               | 200          |
+| DELETE | `/employees/{id}`        | Deletes an employee. Their direct reports move to the deleted employee's manager.    | 204          |
+| POST   | `/auth/signup`           | Asks for an account. Always the same answer, whether or not the email is taken.      | 202          |
+| POST   | `/auth/login`            | Signs in and sets the session cookie.                                                | 200          |
+| POST   | `/auth/logout`           | Ends the session and clears the cookie.                                              | 204          |
+| GET    | `/auth/me`               | Who is signed in.                                                                    | 200          |
+| GET    | `/accounts`              | Admins: accounts waiting for approval, and the accounts of people below you.         | 200          |
+| POST   | `/accounts/{id}/approve` | Admins: links a waiting account to an employee below you, so they can sign in.       | 200          |
+| POST   | `/accounts/{id}/reject`  | Admins: removes a request for an account.                                            | 204          |
+
+For now only admins can add, change or delete employees. Anyone else gets **403**. Who can change whom, based on where you sit in the organisation, is described in ADR 0017.
+
+## Signing in
+
+`POST /auth/login` with `{ "email": "...", "password": "..." }`. On success the response is who you are, and the API sets an `hh_session` cookie the browser sends from then on. Scripts can't read it (`httpOnly`), other websites can't send it (`SameSite=Lax`), and in production it only travels over HTTPS (ADR 0016).
+
+```json
+{
+  "id": "3f0c…",
+  "name": "Johan van der Merwe",
+  "email": "johan.vandermerwe@example.com",
+  "isAdmin": false,
+  "employeeId": "00000000-0000-4000-8000-000000000005"
+}
+```
+
+| Code | When                                                                                   |
+| ---- | -------------------------------------------------------------------------------------- |
+| 401  | The email or password is wrong. The same answer either way.                            |
+| 403  | The password is right, but the account is still waiting for approval or is turned off. |
+| 429  | Five wrong passwords in a row. The account is locked for 15 minutes.                   |
+
+`POST /auth/signup` takes `{ "name", "email", "password" }`. Passwords are 12 to 128 characters and can't contain the name part of your email. The answer is always **202** with the same message, so it can't be used to find out who has an account.
+
+`POST /accounts/{id}/approve` takes `{ "employeeId": "..." }`. It answers **403** if that employee isn't below you, **409** if they already have an account or someone else has dealt with the request, and **404** if the employee no longer exists.
+
+Any request that changes data has to come from the web app's own address. Changes sent by another website get **403**.
 
 ## List parameters
 

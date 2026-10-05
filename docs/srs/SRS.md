@@ -58,7 +58,7 @@ flowchart LR
 | Manager or executive | Looks at team structures.          | A clear org chart and a fast search.                         |
 | Assessor             | Reviews the solution.              | A working URL, a user guide, and clear technical documents.  |
 
-In this version every user can do everything. Logins and roles are an optional extra (`FR-17`).
+Everyone signs in (FR-17). Anyone can ask for an account, and an admin above them approves it and links it to their employee record. For now only admins can change employees; who can change whom based on the hierarchy is FR-25.
 
 ### 2.3 Constraints
 
@@ -94,7 +94,7 @@ These come straight from the assessment brief.
 | Gravatar             | System    | Supplies profile pictures for email hashes.                                                               |
 | PostgreSQL database  | System    | Stores every change and enforces the key rules. Inside the system boundary, shown for clarity in the SAS. |
 
-There is no login in this version (FR-17 is an optional extra), so every user can do everything. The two primary actors describe the two ways people use the app, not two permission levels. A Manager or executive can therefore also do everything an HR administrator can.
+Everyone signs in (FR-17). The two primary actors describe the two ways people use the app. What each person can change depends on whether they're an admin and where they sit in the organisation, not on which actor they are.
 
 ### 3.2 Use case diagram: managing employees
 
@@ -361,14 +361,16 @@ Status: **Built** means it works in the delivered app and has automated tests. *
 
 ### 4.5 Optional extras
 
-| ID    | Requirement                                                                                                                                   | Priority | Status    |
-| ----- | --------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------- |
-| FR-17 | Login with two roles: Admin (can change data) and Viewer (read only).                                                                         | Could    | Not built |
-| FR-18 | Keep a history of who changed what and when.                                                                                                  | Could    | Not built |
-| FR-19 | A dashboard with headcount by role and the size of each team.                                                                                 | Could    | Not built |
-| FR-20 | Import employees from a CSV file into the database.                                                                                           | Could    | Not built |
-| FR-22 | If two people change the same employee at the same time, refuse the second save instead of overwriting, and offer to load the latest version. | Should   | Built     |
-| FR-23 | Light and dark mode, remembered between visits.                                                                                               | Could    | Built     |
+| ID    | Requirement                                                                                                                                       | Priority | Status        |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------- |
+| FR-17 | Sign in and out. Anyone can ask for an account, but it does nothing until an admin approves it and links it to an employee below them (ADR 0016). | Could    | Built         |
+| FR-18 | Keep a history of who changed what and when.                                                                                                      | Could    | Not built     |
+| FR-19 | A dashboard with headcount by role and the size of each team.                                                                                     | Could    | Not built     |
+| FR-20 | Import employees from a CSV file into the database.                                                                                               | Could    | Not built     |
+| FR-22 | If two people change the same employee at the same time, refuse the second save instead of overwriting, and offer to load the latest version.     | Should   | Built         |
+| FR-23 | Light and dark mode, remembered between visits.                                                                                                   | Could    | Built         |
+| FR-24 | Admins approve or reject new accounts, and see the accounts of the people below them.                                                             | Should   | Built         |
+| FR-25 | Who can change whom follows the hierarchy: people below you only, never yourself or anyone above or beside you (ADR 0017).                        | Should   | Not built yet |
 
 ## 5. Business rules
 
@@ -436,7 +438,7 @@ Each requirement says what is needed, how the solution meets it, and how that is
 | NFR-07 | Accessibility    | Works with a keyboard, has visible focus, labelled fields and good colour contrast (WCAG 2.2 AA). The table is an accessible alternative to the chart.                              | Real buttons and form controls, focus management in dialogs, labels on every icon button, measured contrast of at least 5.2 to 1, and reduced motion support.                                      | Automated axe checks on every page, keyboard tests, and the contrast table in the brand guide.                                                                                        |
 | NFR-08 | Screen sizes     | Works on screens from 360 pixels wide (phones) upwards.                                                                                                                             | Fluid layouts. The Orbit view becomes a stacked list on narrow screens.                                                                                                                            | Checked in the browser at phone, tablet and desktop widths.                                                                                                                           |
 | NFR-09 | Maintainability  | TypeScript everywhere, shared validation rules, and linting, type checks and tests on every pull request.                                                                           | One monorepo with a shared package. A written decision record for every major choice.                                                                                                              | GitHub Actions runs formatting, lint, types, all tests and the build on every pull request.                                                                                           |
-| NFR-10 | Testing          | Business rules have unit tests. API endpoints have tests that run against a real PostgreSQL database.                                                                               | 340 automated tests across five suites (technical document, section 7).                                                                                                                            | The same CI run, with a real PostgreSQL service.                                                                                                                                      |
+| NFR-10 | Testing          | Business rules have unit tests. API endpoints have tests that run against a real PostgreSQL database.                                                                               | 392 automated tests across five suites (technical document, section 7).                                                                                                                            | The same CI run, with a real PostgreSQL service.                                                                                                                                      |
 | NFR-11 | Repeatable setup | The API runs in a Docker container. Cloud resources are defined in code.                                                                                                            | The same database setup scripts run in Docker, in CI and on AWS. The AWS setup is written as code (ADR 0004).                                                                                      | CI builds the database from the scripts on every run. The cloud setup is checked during deployment.                                                                                   |
 | NFR-12 | Cost             | Runs on the AWS free tier or for a few dollars a month.                                                                                                                             | The smallest sizes, no NAT gateway, and everything removed after the assessment.                                                                                                                   | AWS billing alerts, set up during deployment.                                                                                                                                         |
 

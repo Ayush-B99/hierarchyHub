@@ -1,6 +1,7 @@
-import { NavLink, Outlet } from 'react-router';
+import { NavLink, Outlet, useNavigate } from 'react-router';
 import { EmployeeDialogsProvider } from '../../features/employees/EmployeeDialogsProvider';
 import { useEmployeeDialogs } from '../../features/employees/useEmployeeDialogs';
+import { useAuth } from '../../features/auth/useAuth';
 import { GlobalSearch } from '../../features/search/GlobalSearch';
 import { ClayBackground } from '../background/ClayBackground';
 import { Magnet } from '../motion/Magnet';
@@ -11,6 +12,7 @@ import { ThemeToggle } from './ThemeToggle';
 
 /** Moving background, floating glass navigation and the current page. */
 export function AppShell() {
+  const { me } = useAuth();
   return (
     <EmployeeDialogsProvider>
       <ClayBackground />
@@ -38,11 +40,18 @@ export function AppShell() {
               <NavLink to="/people" className={styles.tab}>
                 People
               </NavLink>
+              {me?.isAdmin && (
+                <NavLink to="/accounts" className={styles.tab}>
+                  Accounts
+                </NavLink>
+              )}
             </nav>
             <div className={styles.end}>
               <GlobalSearch />
-              <AddEmployeeButton />
+              {/* the api checks this too, this just hides a button that would be refused */}
+              {me?.isAdmin && <AddEmployeeButton />}
               <ThemeToggle />
+              <AccountMenu />
             </div>
           </Panel>
         </div>
@@ -62,5 +71,27 @@ function AddEmployeeButton() {
         Add employee
       </Button>
     </Magnet>
+  );
+}
+
+function AccountMenu() {
+  const { me, signOut } = useAuth();
+  const navigate = useNavigate();
+  if (!me) return null;
+  return (
+    <div className={styles.account}>
+      <span className={styles.accountName} title={me.email}>
+        {me.name}
+        {me.isAdmin && <span className={styles.badge}>Admin</span>}
+      </span>
+      <Button
+        onClick={async () => {
+          await signOut();
+          navigate('/signin', { replace: true });
+        }}
+      >
+        Sign out
+      </Button>
+    </div>
   );
 }

@@ -21,3 +21,4 @@ To add one, copy [template.md](template.md) and give it the next number.
 | [0013](0013-api-security-layer.md)         | API security layer                                                 | Accepted |
 | [0014](0014-custom-org-chart-and-table.md) | Build the org chart views and the employee table ourselves         | Accepted |
 | [0015](0015-docs-site.md)                  | Publish the docs as a website with MkDocs on GitHub Pages          | Accepted |
+| [0016](0016-accounts-and-sessions.md)      | Accounts, sessions and approval by an admin                        | Accepted |
