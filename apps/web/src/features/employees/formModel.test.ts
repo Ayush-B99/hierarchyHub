@@ -26,7 +26,7 @@ describe('form model', () => {
   it('uses the shared rules for everything else', () => {
     const { errors } = validate({ ...good, email: 'nope', birthDate: '2999-01-01', salary: '-5' });
     expect(errors.email).toBe('Enter a valid email address');
-    expect(errors.birthDate).toBe('Birth date must be in the past');
+    expect(errors.birthDate).toBe('Employees must be at least 15 years old');
     expect(errors.salary).toBe('Salary cannot be negative');
   });
 

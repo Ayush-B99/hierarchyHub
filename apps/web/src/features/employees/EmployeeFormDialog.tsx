@@ -1,4 +1,4 @@
-import { descendantsOf, type Employee } from '@hierarchy-hub/shared';
+import { descendantsOf, type Employee, latestBirthDate } from '@hierarchy-hub/shared';
 import {
   useId,
   useMemo,
@@ -247,7 +247,17 @@ export function EmployeeFormDialog({
           'Employee number',
           <input {...inputProps('employeeNumber')} autoComplete="off" />,
         )}
-        {field('birthDate', 'Birth date', <input {...inputProps('birthDate')} type="date" />)}
+        {field(
+          'birthDate',
+          'Birth date',
+          <input
+            {...inputProps('birthDate')}
+            type="date"
+            min="1900-01-01"
+            // the date picker won't offer anyone under the minimum age (br-07)
+            max={latestBirthDate()}
+          />,
+        )}
         {field(
           'role',
           'Role',
