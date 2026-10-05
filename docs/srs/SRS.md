@@ -109,6 +109,8 @@ flowchart LR
         uc3(["UC-03 Edit an employee"])
         uc4(["UC-04 Delete an employee"])
         uc11(["UC-11 Resolve a clashing change"])
+        uc16(["UC-16 Approve a new account"])
+        uc17(["UC-17 Change someone's access"])
         val(["Check the input and the rules"])
     end
 
@@ -118,6 +120,8 @@ flowchart LR
     hr --- uc3
     hr --- uc4
     hr --- uc11
+    hr --- uc16
+    hr --- uc17
 
     uc1 -.->|"«include»"| val
     uc3 -.->|"«include»"| val
@@ -145,6 +149,8 @@ flowchart LR
         uc9(["UC-09 Export the table to CSV"])
         uc13(["UC-13 Share a view"])
         uc14(["UC-14 Switch light or dark mode"])
+        uc15(["UC-15 Sign in"])
+        uc18(["UC-18 Review the audit trail"])
         pic(["Show profile pictures"])
     end
 
@@ -154,6 +160,8 @@ flowchart LR
     mgr --- uc7
     mgr --- uc2
     mgr --- uc14
+    mgr --- uc15
+    hr --- uc18
     hr --- uc8
     hr --- uc9
     hr --- uc13
@@ -171,22 +179,26 @@ How to read them: a solid line joins an actor to a use case they start. «includ
 
 ### 3.4 Use case list
 
-| ID    | Use case                        | Primary actor        | Requirements          |
-| ----- | ------------------------------- | -------------------- | --------------------- |
-| UC-01 | Add an employee                 | HR administrator     | FR-01, FR-05, FR-06   |
-| UC-02 | View an employee                | Manager or executive | FR-02, FR-15          |
-| UC-03 | Edit an employee                | HR administrator     | FR-03, FR-06          |
-| UC-04 | Delete an employee              | HR administrator     | FR-04, BR-04          |
-| UC-05 | Set an employee's manager       | HR administrator     | FR-05, BR-01 to BR-03 |
-| UC-06 | Explore the org chart           | Manager or executive | FR-07, FR-11          |
-| UC-07 | Search for someone              | Manager or executive | FR-08                 |
-| UC-08 | Sort and filter the table       | HR administrator     | FR-09, FR-10, FR-13   |
-| UC-09 | Export the table to CSV         | HR administrator     | FR-14                 |
-| UC-10 | Drag someone onto a new manager | HR administrator     | FR-12                 |
-| UC-11 | Resolve a clashing change       | HR administrator     | FR-22                 |
-| UC-12 | Spin the orbit                  | Manager or executive | FR-21                 |
-| UC-13 | Share a view                    | Any user             | FR-13                 |
-| UC-14 | Switch light or dark mode       | Any user             | FR-23                 |
+| ID    | Use case                        | Primary actor            | Requirements          |
+| ----- | ------------------------------- | ------------------------ | --------------------- |
+| UC-01 | Add an employee                 | HR administrator         | FR-01, FR-05, FR-06   |
+| UC-02 | View an employee                | Manager or executive     | FR-02, FR-15          |
+| UC-03 | Edit an employee                | HR administrator         | FR-03, FR-06          |
+| UC-04 | Delete an employee              | HR administrator         | FR-04, BR-04          |
+| UC-05 | Set an employee's manager       | HR administrator         | FR-05, BR-01 to BR-03 |
+| UC-06 | Explore the org chart           | Manager or executive     | FR-07, FR-11          |
+| UC-07 | Search for someone              | Manager or executive     | FR-08                 |
+| UC-08 | Sort and filter the table       | HR administrator         | FR-09, FR-10, FR-13   |
+| UC-09 | Export the table to CSV         | HR administrator         | FR-14                 |
+| UC-10 | Drag someone onto a new manager | HR administrator         | FR-12                 |
+| UC-11 | Resolve a clashing change       | HR administrator         | FR-22                 |
+| UC-12 | Spin the orbit                  | Manager or executive     | FR-21                 |
+| UC-13 | Share a view                    | Any user                 | FR-13                 |
+| UC-14 | Switch light or dark mode       | Any user                 | FR-23                 |
+| UC-15 | Sign in                         | Any user                 | FR-17                 |
+| UC-16 | Approve a new account           | HR administrator (admin) | FR-24                 |
+| UC-17 | Change someone's access         | HR administrator (admin) | FR-27                 |
+| UC-18 | Review the audit trail          | HR administrator (admin) | FR-18                 |
 
 ### 3.5 Use case descriptions
 
@@ -315,6 +327,40 @@ How to read them: a solid line joins an actor to a use case they start. «includ
 | ---------- | -------------------------------------------------------------------------------------------------------------- |
 | Actor      | Any user                                                                                                       |
 | Main steps | 1. The user selects the round theme button in the top bar. 2. The app switches theme and remembers the choice. |
+
+#### UC-15 Sign in
+
+|                          |                                                                                                                                        |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Actor                    | Any user                                                                                                                               |
+| Before                   | They have an approved account. If not, they select **Ask for an account** and wait for UC-16.                                          |
+| Main steps               | 1. The user enters their email and password. 2. The system checks them and starts a session. 3. They go on to the page they asked for. |
+| If the details are wrong | The same message for a wrong email or a wrong password. Five wrong passwords lock the account for 15 minutes.                          |
+| After                    | Signed in until they sign out, the session runs out, or an admin turns their account off.                                              |
+
+#### UC-16 Approve a new account
+
+|            |                                                                                                                                                                                                         |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Actor      | An admin                                                                                                                                                                                                |
+| Main steps | 1. The admin opens **Accounts**. 2. For a waiting request, they choose the employee it belongs to, from the people below them who don't have an account yet. 3. They select **Approve**, or **Reject**. |
+| After      | The person can sign in, and the approval is in the audit trail (UC-18).                                                                                                                                 |
+
+#### UC-17 Change someone's access
+
+|            |                                                                                                                                           |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Actor      | An admin                                                                                                                                  |
+| Main steps | 1. The admin opens **Accounts**. 2. For someone below them, they select **Make admin**, **Remove admin**, **Turn off** or **Turn on**.    |
+| After      | The change applies to the person's next request. Turning an account off signs them out straight away. Nobody can change their own access. |
+
+#### UC-18 Review the audit trail
+
+|            |                                                                                                                                                             |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Actor      | An admin                                                                                                                                                    |
+| Main steps | 1. The admin opens **Audit**, or **View history** on someone's details. 2. They read what happened, newest first, and narrow it by person or kind of event. |
+| After      | Nothing changes. They only see events about people who were below them at the time, and about themselves.                                                   |
 
 ## 4. Functional requirements
 

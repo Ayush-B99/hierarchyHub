@@ -78,7 +78,7 @@ flowchart TB
 
 ## 5. Inside the API
 
-Every request passes through the same pipeline before it reaches an endpoint, then down through three layers. Each layer only talks to the one below it.
+Every request passes through the same pipeline before it reaches an endpoint, then down through three layers. Each layer only talks to the one below it. Every route needs a signed in, approved account except the health checks and the sign in forms (ADR 0016), what each person may change follows the hierarchy (ADR 0017), and every change is recorded in the same transaction (ADR 0018).
 
 ```mermaid
 flowchart TB
@@ -90,10 +90,24 @@ flowchart TB
             helmet["<b>Helmet</b><br/>Security headers"]
             cors["<b>CORS</b><br/>Only the web app's address"]
             rid["<b>Request ID and access log</b><br/>No query strings or bodies"]
+            cross["<b>Same-site check</b><br/>Changes only from the app itself"]
             body["<b>JSON body parser</b><br/>16 KB limit"]
             throttle["<b>Rate limit guard</b><br/>Reads and changes counted apart"]
-            helmet --> cors --> rid --> body --> throttle
+            guard["<b>Session guard</b><br/>Signed in, approved account. Admin only routes"]
+            helmet --> cors --> rid --> cross --> body --> throttle --> guard
         end
+
+        subgraph authm["Auth and accounts modules"]
+            authc["<b>Auth controller</b><br/>Sign up, sign in, sign out, me"]
+            authsvc["<b>Auth service</b><br/>Argon2id, lockout, sessions"]
+            acc["<b>Accounts</b><br/>Approve, reject, change access"]
+        end
+
+        subgraph aud["Audit module"]
+            audsvc["<b>Audit service</b><br/>Writes events in the same transaction,<br/>reads them by who can see what"]
+        end
+
+        hier["<b>Hierarchy service</b><br/>Who is below whom, the reporting lines lock"]
 
         subgraph emp["Employees module"]
             ctrl["<b>Controller</b><br/>Routes, status codes, ETag and Location headers"]
@@ -121,8 +135,18 @@ flowchart TB
     db[("PostgreSQL")]
 
     req --> helmet
-    throttle --> ctrl
+    guard --> ctrl
+    guard --> authc
+    guard --> acc
     throttle --> hc
+    authc --> authsvc
+    authsvc --> audsvc
+    acc --> audsvc
+    svc --> hier
+    svc --> audsvc
+    audsvc --> dbs
+    hier --> dbs
+    authsvc --> dbs
     ctrl --> pipe
     ctrl --> ifm
     pipe -.-> shared
@@ -266,10 +290,39 @@ erDiagram
         decimal salary
         string role
         uuid manager_id FK "empty for top-level"
+        int version "goes up on every change"
         datetime created_at
         datetime updated_at
     }
+    EMPLOYEE |o--o| ACCOUNT : "signs in as"
+    ACCOUNT ||--o{ SESSION : "has"
+    ACCOUNT {
+        uuid id PK
+        string email UK
+        string password_hash "argon2id only"
+        string status "pending, active or disabled"
+        boolean is_admin
+        uuid employee_id FK,UK "set when approved"
+        int failed_logins
+        datetime locked_until
+    }
+    SESSION {
+        string id PK "sha-256 of the cookie"
+        uuid account_id FK
+        datetime expires_at
+    }
+    AUDIT_EVENT {
+        uuid id PK
+        datetime at
+        string action
+        string actor_name "copied at the time"
+        string subject_name "copied at the time"
+        uuid_array scope "the subject and everyone above them then"
+        json changes "each field before and after"
+    }
 ```
+
+Accounts link to employees one to one. Sessions belong to an account and are deleted with it. Audit events deliberately have no links to anything: they copy the names and positions they need at the time, so they still read correctly after people are renamed, moved or deleted, and deleting someone can never touch their history. The audit table is append only (ADR 0018).
 
 ### 8.2 Rules enforced by the database
 
