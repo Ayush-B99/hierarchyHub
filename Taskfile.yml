@@ -144,6 +144,7 @@ tasks:
       - task: db:up
       - pnpm --filter {{.API}} db:migrate
       - pnpm --filter {{.API}} db:migrate:test
+      - pnpm --filter {{.API}} db:generate
 
   db:new-migration:
     desc: 'Create a migration after editing schema.prisma, eg: task db:new-migration -- add_department'
