@@ -86,6 +86,20 @@ With permissions based on the hierarchy (ADR 0017), we tried every rule from eve
 | A shared cache serving one person's view to someone else                            | Reads are `Cache-Control: private` with `Vary: Cookie`                             |
 | A turned off account carrying on with an open session                               | Signed out straight away                                                           |
 
-## Still open, fixed in the next part
+## Attacks on the audit trail
 
-- **Nobody can see who changed what.** An audit trail fixes this.
+The audit trail (ADR 0018) is only useful if it can't be bent. All of these are tests in `apps/api/test/audit.e2e-spec.ts`.
+
+| Attack                                                             | Result                                                                               |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| Editing or deleting an event through the API                       | There's no endpoint for it (404)                                                     |
+| Editing, deleting or emptying the table as the API's database user | Refused: that user can only add and read events                                      |
+| The same, as the table's owner                                     | Refused by a trigger. Removing it would need a migration                             |
+| Leaving an event behind for a change that didn't happen            | Refused, stale and rule-breaking changes and deletes write nothing: same transaction |
+| Hiding a change by making it at the same time as something else    | Every change writes its own event in its own transaction                             |
+| Reading the history of people above or beside you                  | Not returned. You only see events about people who were below you, and yourself      |
+| Learning a salary from the history that you couldn't see anyway    | Not possible: only people above someone at the time can see their events             |
+| Someone who isn't an admin reading the history                     | 403                                                                                  |
+| Finding a password, hash or session in the history                 | None are ever recorded                                                               |
+| Losing history by deleting or renaming someone                     | Names and the people above them are copied into each event at the time               |
+| Unknown or extra filters, or huge pages                            | 400                                                                                  |

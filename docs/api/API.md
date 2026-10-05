@@ -11,24 +11,25 @@ This is the agreement between the web app and the API. It is written before the 
 
 ## Endpoints
 
-| Method | Path                     | What it does                                                                               | Success code |
-| ------ | ------------------------ | ------------------------------------------------------------------------------------------ | ------------ |
-| GET    | `/health`                | Checks the API process is up (used by the load balancer).                                  | 200          |
-| GET    | `/health/ready`          | Checks the API can reach the database. Returns 503 with `"database": "down"` if not.       | 200          |
-| GET    | `/employees`             | Lists employees one page at a time, with sorting and filters.                              | 200          |
-| GET    | `/employees/hierarchy`   | Returns every employee in one flat list, used to build the org chart.                      | 200          |
-| GET    | `/employees/{id}`        | Returns one employee.                                                                      | 200          |
-| POST   | `/employees`             | Adds an employee.                                                                          | 201          |
-| PATCH  | `/employees/{id}`        | Changes some or all of an employee's details, including their manager.                     | 200          |
-| DELETE | `/employees/{id}`        | Deletes an employee. Their direct reports move to the deleted employee's manager.          | 204          |
-| POST   | `/auth/signup`           | Asks for an account. Always the same answer, whether or not the email is taken.            | 202          |
-| POST   | `/auth/login`            | Signs in and sets the session cookie.                                                      | 200          |
-| POST   | `/auth/logout`           | Ends the session and clears the cookie.                                                    | 204          |
-| GET    | `/auth/me`               | Who is signed in.                                                                          | 200          |
-| GET    | `/accounts`              | Admins: accounts waiting for approval, and the accounts of people below you.               | 200          |
-| POST   | `/accounts/{id}/approve` | Admins: links a waiting account to an employee below you, so they can sign in.             | 200          |
-| POST   | `/accounts/{id}/reject`  | Admins: removes a request for an account.                                                  | 204          |
-| PATCH  | `/accounts/{id}`         | Admins: `{ "isAdmin": true }` or `{ "status": "disabled" }`, for an account in your reach. | 200          |
+| Method | Path                     | What it does                                                                                                                           | Success code |
+| ------ | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| GET    | `/health`                | Checks the API process is up (used by the load balancer).                                                                              | 200          |
+| GET    | `/health/ready`          | Checks the API can reach the database. Returns 503 with `"database": "down"` if not.                                                   | 200          |
+| GET    | `/employees`             | Lists employees one page at a time, with sorting and filters.                                                                          | 200          |
+| GET    | `/employees/hierarchy`   | Returns every employee in one flat list, used to build the org chart.                                                                  | 200          |
+| GET    | `/employees/{id}`        | Returns one employee.                                                                                                                  | 200          |
+| POST   | `/employees`             | Adds an employee.                                                                                                                      | 201          |
+| PATCH  | `/employees/{id}`        | Changes some or all of an employee's details, including their manager.                                                                 | 200          |
+| DELETE | `/employees/{id}`        | Deletes an employee. Their direct reports move to the deleted employee's manager.                                                      | 204          |
+| POST   | `/auth/signup`           | Asks for an account. Always the same answer, whether or not the email is taken.                                                        | 202          |
+| POST   | `/auth/login`            | Signs in and sets the session cookie.                                                                                                  | 200          |
+| POST   | `/auth/logout`           | Ends the session and clears the cookie.                                                                                                | 204          |
+| GET    | `/auth/me`               | Who is signed in.                                                                                                                      | 200          |
+| GET    | `/accounts`              | Admins: accounts waiting for approval, and the accounts of people below you.                                                           | 200          |
+| POST   | `/accounts/{id}/approve` | Admins: links a waiting account to an employee below you, so they can sign in.                                                         | 200          |
+| POST   | `/accounts/{id}/reject`  | Admins: removes a request for an account.                                                                                              | 204          |
+| PATCH  | `/accounts/{id}`         | Admins: `{ "isAdmin": true }` or `{ "status": "disabled" }`, for an account in your reach.                                             | 200          |
+| GET    | `/audit`                 | Admins: the history of your part of the organisation, newest first. Filters: `employeeId`, `action`, `page`, `pageSize` (at most 100). | 200          |
 
 ## Who can do what
 
@@ -46,6 +47,33 @@ Everything depends on where you sit in the organisation (ADR 0017). Your reach i
 Anything else gets **403**. Filtering or sorting by `salary` or `birthDate` only includes you and your reach, so the filters can't reveal anyone else's.
 
 Reads are sent with `Cache-Control: private, no-cache` and `Vary: Cookie`, because what you see depends on who you are.
+
+## The audit trail
+
+`GET /audit` returns events, newest first, in the same page shape as the employee list. Each event says who did what to whom, and for each field what it was before and after (ADR 0018):
+
+```json
+{
+  "id": "4b1e…",
+  "at": "2026-10-07T09:14:03.120Z",
+  "action": "employee.updated",
+  "actor": { "employeeId": "…0005", "name": "Johan van der Merwe" },
+  "subject": { "employeeId": "…0007", "name": "Ruan Botha" },
+  "changes": {
+    "role": { "from": "Senior Engineer", "to": "Lead Engineer" },
+    "managerId": {
+      "from": { "id": "…0005", "name": "Johan van der Merwe" },
+      "to": { "id": "…0006", "name": "Naledi Khumalo" }
+    }
+  },
+  "details": null,
+  "requestId": "a10d2a45-…"
+}
+```
+
+`action` is one of `employee.created`, `employee.updated`, `employee.deleted`, `account.signed_up`, `account.approved`, `account.rejected`, `account.updated`, `auth.signed_in`, `auth.sign_in_failed`, `auth.locked` and `auth.signed_out`. `requestId` matches the `X-Request-Id` of the request that made the change, and the logs.
+
+You see events about people who were below you when it happened and about yourself, plus every request for an account. Someone at the top sees everything. There are no endpoints to change or delete events, and the database refuses to.
 
 ## Signing in
 
