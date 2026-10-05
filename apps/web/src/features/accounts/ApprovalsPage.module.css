@@ -1,0 +1,164 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.panel {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.title,
+.subtitle {
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.title {
+  font-size: 32px;
+}
+
+.subtitle {
+  font-size: 22px;
+}
+
+.intro,
+.empty,
+.loading {
+  margin: 0;
+  color: var(--muted);
+}
+
+.loading {
+  padding: 40px;
+  text-align: center;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(220px, 1.4fr) auto;
+  gap: 20px;
+  align-items: start;
+  padding: 20px;
+  border-radius: 24px;
+  background: var(--surface-2);
+  box-shadow: var(--well);
+}
+
+.who {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.email,
+.when {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.link {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.link label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.link select {
+  width: 100%;
+  min-width: 0;
+  height: 48px;
+  padding: 0 14px;
+  border: 2px solid transparent;
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  box-shadow: var(--well);
+}
+
+.link select:focus {
+  outline: none;
+  border-color: var(--fill);
+}
+
+.note,
+.problem {
+  margin: 0;
+  font-size: 13px;
+}
+
+.note {
+  color: var(--muted);
+}
+
+.problem {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  padding-top: 22px;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th {
+  text-align: left;
+  font-size: 12px;
+  color: var(--muted);
+  padding: 10px 12px;
+}
+
+.table td {
+  padding: 12px;
+  border-top: 1px solid var(--surface-3);
+  vertical-align: top;
+}
+
+@media (max-width: 760px) {
+  .panel {
+    padding: 22px;
+  }
+
+  .item {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    padding-top: 0;
+  }
+}
