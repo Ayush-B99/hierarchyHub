@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import { accounts, MOCK_PASSWORD } from '../../mocks/accounts';
 import { server } from '../../mocks/node';
@@ -27,6 +27,25 @@ describe('signing in', () => {
     expect(router.state.location.pathname).toBe('/people');
     // the top bar says who is signed in
     expect(screen.getByTitle('ruan.botha@example.com')).toHaveTextContent('Ruan Botha');
+  });
+
+  it('stays signed in when the first "who is signed in" check answers late', async () => {
+    // on a slow connection you can sign in before the app's first check comes back. that old
+    // answer says nobody is signed in, and mustn't undo the sign in that happened since
+    accounts.signInAs(null);
+    server.use(
+      http.get('*/api/auth/me', async () => {
+        await delay(400);
+        return HttpResponse.json({ statusCode: 401, message: 'Please sign in.' }, { status: 401 });
+      }),
+    );
+    const { router } = renderApp('/signin');
+    await signInWith('ruan.botha@example.com', MOCK_PASSWORD);
+    await screen.findByTitle('ruan.botha@example.com');
+    // wait past the slow answer
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    expect(router.state.location.pathname).toBe('/');
+    expect(screen.getByTitle('ruan.botha@example.com')).toBeInTheDocument();
   });
 
   it('says so when the password is wrong, without signing in', async () => {

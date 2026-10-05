@@ -49,7 +49,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     const body = (await response.json().catch(() => ({}))) as Partial<ApiErrorBody>;
     // the session ended (signed out elsewhere, ran out, or the account was turned off), so
     // let the app know and it shows the sign in page. a wrong password isn't that
-    if (response.status === 401 && path !== '/auth/login') {
+    if (response.status === 401 && path !== '/auth/login' && path !== '/auth/me') {
       window.dispatchEvent(new Event(SIGNED_OUT));
     }
     throw new ApiError(response.status, body);
