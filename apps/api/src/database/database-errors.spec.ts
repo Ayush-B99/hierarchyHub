@@ -44,7 +44,7 @@ describe('mapDatabaseError', () => {
         rule: 'employees_no_reporting_loop',
       },
     );
-    expect(mapDatabaseError(checkError('birth date must be in the past'))).toMatchObject({
+    expect(mapDatabaseError(checkError('employees must be at least 15 years old'))).toMatchObject({
       field: 'birthDate',
     });
   });

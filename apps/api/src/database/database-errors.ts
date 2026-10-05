@@ -27,9 +27,9 @@ const RULES: Record<string, Omit<MappedError, 'rule'>> = {
     message: "Salary can't be negative",
     field: 'salary',
   },
-  employees_birth_date_in_past: {
+  employees_minimum_age: {
     status: HttpStatus.BAD_REQUEST,
-    message: 'Birth date must be in the past',
+    message: 'Employees must be at least 15 years old',
     field: 'birthDate',
   },
   employees_birth_date_realistic: {
@@ -60,7 +60,7 @@ const RULES: Record<string, Omit<MappedError, 'rule'>> = {
 // the trigger raises its own text rather than a constraint name, so match those here
 const TRIGGER_MESSAGES: Record<string, string> = {
   'this change would create a reporting loop': 'employees_no_reporting_loop',
-  'birth date must be in the past': 'employees_birth_date_in_past',
+  'employees must be at least 15 years old': 'employees_minimum_age',
   "an employee id can't be changed": 'employees_id_fixed',
 };
 
@@ -173,6 +173,18 @@ export function mapDatabaseError(error: unknown): MappedError | null {
       status: HttpStatus.BAD_REQUEST,
       message: 'That change breaks one of the data rules',
       rule: 'check_violation',
+    };
+  }
+
+  // the database refused a value itself: too long, a date that doesn't exist, a NUL byte
+  // and so on (class 22, data exceptions). the api checks all of these first, this is only a
+  // safety net so a gap in those checks is a clear 400, never a 500. the database's own
+  // wording isn't passed on, it can quote the value
+  if (pgCode?.startsWith('22')) {
+    return {
+      status: HttpStatus.BAD_REQUEST,
+      message: "Some of the values couldn't be saved. Check them and try again.",
+      rule: 'invalid_value',
     };
   }
 

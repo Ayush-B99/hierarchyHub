@@ -50,13 +50,23 @@ describe('the rules', () => {
     expect(row.salary).toBe('10.56');
   });
 
-  it('birth date must be in the past (br-07)', async () => {
+  it('employees must be at least 15 years old (br-07)', async () => {
+    const yearsAgo = (years: number, days = 0) => {
+      const d = new Date();
+      d.setUTCFullYear(d.getUTCFullYear() - years);
+      d.setUTCDate(d.getUTCDate() + days);
+      return d.toISOString().slice(0, 10);
+    };
     const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
-    await expectDbError(
-      insert(employee({ birth_date: tomorrow })),
-      ERRORS.checkViolation,
-      'employees_birth_date_in_past',
-    );
+    for (const birthDate of [tomorrow, yearsAgo(1), yearsAgo(15, 1)]) {
+      await expectDbError(
+        insert(employee({ birth_date: birthDate })),
+        ERRORS.checkViolation,
+        'employees_minimum_age',
+      );
+    }
+    // exactly 15 today is fine
+    await insert(employee({ birth_date: yearsAgo(15) }));
     await expectDbError(
       insert(employee({ birth_date: '1850-01-01' })),
       ERRORS.checkViolation,
