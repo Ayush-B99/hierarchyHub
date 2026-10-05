@@ -5,5 +5,5 @@
     "types": ["node", "jest"],
     "tsBuildInfoFile": "./dist/.tsbuildinfo"
   },
-  "include": ["src", "test", "prisma"]
+  "include": ["src", "test", "prisma", "scripts"]
 }

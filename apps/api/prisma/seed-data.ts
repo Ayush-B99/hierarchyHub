@@ -43,3 +43,28 @@ export const SAMPLE_EMPLOYEES = ROWS.map(
     managerId: manager === null ? null : id(manager),
   }),
 );
+
+/** the password every sample account has. local only, the seed refuses to run anywhere else */
+export const SAMPLE_PASSWORD = 'hierarchy hub demo';
+
+/**
+ * sample logins, one for each kind of person: the ceo and cto are admins, johan manages a
+ * team, ruan has no team, and amara has signed up but nobody has approved her yet
+ */
+export const SAMPLE_ACCOUNTS: {
+  email: string;
+  name: string;
+  status: 'active' | 'pending';
+  isAdmin: boolean;
+}[] = [
+  { email: 'thandi.nkosi@example.com', name: 'Thandi Nkosi', status: 'active', isAdmin: true },
+  { email: 'sipho.dlamini@example.com', name: 'Sipho Dlamini', status: 'active', isAdmin: true },
+  {
+    email: 'johan.vandermerwe@example.com',
+    name: 'Johan van der Merwe',
+    status: 'active',
+    isAdmin: false,
+  },
+  { email: 'ruan.botha@example.com', name: 'Ruan Botha', status: 'active', isAdmin: false },
+  { email: 'amara.okafor@example.com', name: 'Amara Okafor', status: 'pending', isAdmin: false },
+];

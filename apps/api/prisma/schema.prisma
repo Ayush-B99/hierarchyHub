@@ -39,6 +39,8 @@ model Employee {
   createdAt      DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
   /// set by the database on every change
   updatedAt      DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+  /// the login linked to this person, if they have one
+  account        Account?
 
   // one index per thing we sort, filter or look up by
   @@index([managerId])
@@ -47,4 +49,48 @@ model Employee {
   @@index([salary])
   @@index([birthDate])
   @@map("employees")
+}
+
+/// a login. anyone can sign up, but an account does nothing until an admin approves it and
+/// links it to an employee (adr 0016)
+model Account {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  /// always lower case
+  email        String    @unique @db.VarChar(254)
+  name         String    @db.VarChar(100)
+  /// argon2id, never the password itself
+  passwordHash String    @map("password_hash") @db.VarChar(255)
+  /// pending, active or disabled (checked by the database)
+  status       String    @default("pending") @db.VarChar(10)
+  isAdmin      Boolean   @default(false) @map("is_admin")
+  /// who this login is. if the employee is deleted the link is cleared and the account can't sign in
+  employeeId   String?   @unique @map("employee_id") @db.Uuid
+  employee     Employee? @relation(fields: [employeeId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  /// wrong passwords in a row, reset on a good one
+  failedLogins Int       @default(0) @map("failed_logins")
+  lockedUntil  DateTime? @map("locked_until") @db.Timestamptz(3)
+  approvedAt   DateTime? @map("approved_at") @db.Timestamptz(3)
+  /// the account that approved this one
+  approvedBy   String?   @map("approved_by") @db.Uuid
+  lastLoginAt  DateTime? @map("last_login_at") @db.Timestamptz(3)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  sessions     Session[]
+
+  @@index([status])
+  @@map("accounts")
+}
+
+/// a signed in browser. the id is a sha-256 hash of the cookie, so a copy of this table
+/// can't be used to sign in as anyone
+model Session {
+  id         String   @id @db.VarChar(64)
+  accountId  String   @map("account_id") @db.Uuid
+  account    Account  @relation(fields: [accountId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  lastSeenAt DateTime @default(now()) @map("last_seen_at") @db.Timestamptz(3)
+  expiresAt  DateTime @map("expires_at") @db.Timestamptz(3)
+
+  @@index([accountId])
+  @@index([expiresAt])
+  @@map("sessions")
 }
