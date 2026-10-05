@@ -1,6 +1,7 @@
 import type { RouteObject } from 'react-router';
 import { AppShell } from '../components/layout/AppShell';
 import { ApprovalsPage } from '../features/accounts/ApprovalsPage';
+import { AuditPage } from '../features/audit/AuditPage';
 import { RequireAdmin, RequireSignIn } from '../features/auth/RequireSignIn';
 import { SignInPage } from '../features/auth/SignInPage';
 import { SignUpPage } from '../features/auth/SignUpPage';
@@ -22,7 +23,10 @@ export const routes: RouteObject[] = [
           { path: 'people', element: <PeoplePage /> },
           {
             element: <RequireAdmin />,
-            children: [{ path: 'accounts', element: <ApprovalsPage /> }],
+            children: [
+              { path: 'accounts', element: <ApprovalsPage /> },
+              { path: 'audit', element: <AuditPage /> },
+            ],
           },
           { path: '*', element: <NotFoundPage /> },
         ],

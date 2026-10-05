@@ -10,6 +10,7 @@ import {
 import type { Prisma } from '@prisma/client';
 import type { SignedInAccount } from '../auth/auth.types';
 import { changedBySomeoneElse, type ExpectedVersion } from '../common/if-match';
+import { actorFrom, AuditService, type NewEvent } from '../audit/audit.service';
 import { DatabaseService } from '../database/database.service';
 import { HierarchyService } from '../hierarchy/hierarchy.service';
 import { toCreateData, toEmployee, toUpdateData } from './employee.mapper';
@@ -35,7 +36,36 @@ export class EmployeesService {
     private readonly repository: EmployeesRepository,
     private readonly org: HierarchyService,
     private readonly db: DatabaseService,
+    private readonly audit: AuditService,
   ) {}
+
+  /** a manager as the audit trail keeps them: their id and their name at the time */
+  private async managerSnapshot(managerId: string | null, tx: Prisma.TransactionClient) {
+    if (!managerId) return null;
+    const manager = await this.repository.findById(managerId, tx);
+    return { id: managerId, name: manager ? nameOf(manager) : 'someone since deleted' };
+  }
+
+  /** each field that's different, as { from, to }, with managers named */
+  private async differences(
+    before: Employee | null,
+    after: Employee,
+    tx: Prisma.TransactionClient,
+  ): Promise<Record<string, { from: unknown; to: unknown }>> {
+    const changes: Record<string, { from: unknown; to: unknown }> = {};
+    for (const field of AUDITED_FIELDS) {
+      const from = before ? before[field] : null;
+      if (from === after[field]) continue;
+      changes[field] =
+        field === 'managerId'
+          ? {
+              from: await this.managerSnapshot(from as string | null, tx),
+              to: await this.managerSnapshot(after.managerId, tx),
+            }
+          : { from, to: after[field] };
+    }
+    return changes;
+  }
 
   /** whose salary and birth date this person may see: themselves and everyone below them */
   private async visibleTo(viewer: SignedInAccount): Promise<Set<string>> {
@@ -111,7 +141,14 @@ export class EmployeesService {
     const row = await this.db.$transaction(async (tx) => {
       await this.org.lockReportingLines(tx);
       await this.checkManager(viewer, input.managerId ?? null, tx);
-      return this.repository.create(toCreateData(input), tx);
+      const created = await this.repository.create(toCreateData(input), tx);
+      await this.audit.record(tx, {
+        action: 'employee.created',
+        actor: actorFrom(viewer),
+        subject: { employeeId: created.id, name: nameOf(created) },
+        changes: await this.differences(null, toEmployee(created), tx),
+      });
+      return created;
     });
     return toEmployee(row);
   }
@@ -145,7 +182,19 @@ export class EmployeesService {
       }
 
       if (input.managerId !== undefined) await this.checkManager(viewer, input.managerId, tx);
-      return this.repository.updateIfVersion(id, expected, toUpdateData(input), tx);
+      const updated = await this.repository.updateIfVersion(id, expected, toUpdateData(input), tx);
+      // someone else saved first: nothing changed, so there's nothing to record
+      if (!updated) return null;
+      const changes = await this.differences(toEmployee(target), toEmployee(updated), tx);
+      if (Object.keys(changes).length > 0) {
+        await this.audit.record(tx, {
+          action: 'employee.updated',
+          actor: actorFrom(viewer),
+          subject: { employeeId: id, name: nameOf(updated) },
+          changes,
+        });
+      }
+      return updated;
     });
     if (row) return toEmployee(row);
     throw changedBySomeoneElse();
@@ -153,13 +202,57 @@ export class EmployeesService {
 
   /** admins only (checked by the guard), and only people below them */
   async remove(viewer: SignedInAccount, id: string, expected: ExpectedVersion): Promise<number> {
-    const outcome = await this.repository.deleteMovingTeamUp(id, expected, async (tx) => {
-      await this.org.lockReportingLines(tx);
-      if (!(await this.repository.findById(id, tx))) return;
-      if (!(await this.org.isBelow(viewer.employeeId, id, tx))) throw refused(OUT_OF_REACH);
-    });
+    // the event is worked out before they're gone, while the people above them can still be
+    // read, but only written once the delete has happened. a refused or stale delete leaves
+    // no trace in the history, because nothing happened
+    let pending: NewEvent | undefined;
+    const outcome = await this.repository.deleteMovingTeamUp(
+      id,
+      expected,
+      async (tx) => {
+        await this.org.lockReportingLines(tx);
+        const row = await this.repository.findById(id, tx);
+        if (!row) return;
+        if (!(await this.org.isBelow(viewer.employeeId, id, tx))) throw refused(OUT_OF_REACH);
+        const before = toEmployee(row);
+        const manager = await this.managerSnapshot(before.managerId, tx);
+        pending = {
+          action: 'employee.deleted',
+          actor: actorFrom(viewer),
+          subject: { employeeId: id, name: nameOf(row) },
+          scope: await this.audit.chainOf(id, tx),
+          changes: {
+            role: { from: before.role, to: null },
+            managerId: { from: manager, to: null },
+          },
+          details: {
+            employeeNumber: before.employeeNumber,
+            teamMovedTo: manager,
+            team: (await tx.employee.findMany({ where: { managerId: id } })).map(nameOf),
+          },
+        };
+      },
+      async (tx) => {
+        if (pending) await this.audit.record(tx, pending);
+      },
+    );
     if (outcome.result === 'missing') throw new NotFoundException('Employee not found');
     if (outcome.result === 'stale') throw changedBySomeoneElse();
     return outcome.moved;
   }
 }
+
+const nameOf = (person: { firstName: string; lastName: string }) =>
+  `${person.firstName} ${person.lastName}`;
+
+/** the fields whose changes go in the audit trail */
+const AUDITED_FIELDS = [
+  'employeeNumber',
+  'firstName',
+  'lastName',
+  'email',
+  'birthDate',
+  'salary',
+  'role',
+  'managerId',
+] as const;

@@ -7,6 +7,7 @@ import {
   type SignUpInput,
 } from '@hierarchy-hub/shared';
 import type { Env } from '../config/env';
+import { AuditService } from '../audit/audit.service';
 import { DatabaseService } from '../database/database.service';
 import type { SignedInAccount } from './auth.types';
 import { burnTime, hashPassword, passwordMatches } from './passwords';
@@ -33,6 +34,7 @@ export class AuthService {
 
   constructor(
     private readonly db: DatabaseService,
+    private readonly audit: AuditService,
     config: ConfigService<Env, true>,
   ) {
     this.sessionMs = config.get('SESSION_HOURS', { infer: true }) * HOUR;
@@ -57,8 +59,14 @@ export class AuthService {
     const passwordHash = await hashPassword(input.password);
     const taken = await this.db.account.findUnique({ where: { email: input.email } });
     if (!taken) {
-      await this.db.account
-        .create({ data: { email: input.email, name: input.name, passwordHash } })
+      await this.db
+        .$transaction(async (tx) => {
+          await tx.account.create({ data: { email: input.email, name: input.name, passwordHash } });
+          await this.audit.record(tx, {
+            action: 'account.signed_up',
+            details: { accountName: input.name, accountEmail: input.email },
+          });
+        })
         // two sign ups with the same email at the same moment, the first one wins quietly
         .catch((error: { code?: string }) => {
           if (error.code !== 'P2002') throw error;
@@ -72,8 +80,18 @@ export class AuthService {
     const account = await this.db.account.findUnique({ where: { email: input.email } });
     if (!account) {
       await burnTime(input.password);
+      // only someone at the top can see these, they aren't about anyone in the organisation
+      await this.db.$transaction((tx) =>
+        this.audit.record(tx, {
+          action: 'auth.sign_in_failed',
+          details: { email: input.email, reason: 'unknown email' },
+        }),
+      );
       throw new HttpException(WRONG, HttpStatus.UNAUTHORIZED);
     }
+    const subject = account.employeeId
+      ? { employeeId: account.employeeId, name: account.name }
+      : null;
 
     // while locked, even the right password is refused, so guessing can't carry on
     if (account.lockedUntil && account.lockedUntil > new Date()) {
@@ -84,9 +102,18 @@ export class AuthService {
       const failed = account.failedLogins + 1;
       const lock = failed >= MAX_FAILED_LOGINS;
       const lockedUntil = new Date(Date.now() + LOCK_MINUTES * 60_000);
-      await this.db.account.update({
-        where: { id: account.id },
-        data: lock ? { failedLogins: 0, lockedUntil } : { failedLogins: failed },
+      await this.db.$transaction(async (tx) => {
+        await tx.account.update({
+          where: { id: account.id },
+          data: lock ? { failedLogins: 0, lockedUntil } : { failedLogins: failed },
+        });
+        await this.audit.record(tx, {
+          action: lock ? 'auth.locked' : 'auth.sign_in_failed',
+          subject,
+          details: lock
+            ? { email: account.email, lockedUntil: lockedUntil.toISOString() }
+            : { email: account.email, reason: 'wrong password', attempt: failed },
+        });
       });
       throw lock ? locked(lockedUntil) : new HttpException(WRONG, HttpStatus.UNAUTHORIZED);
     }
@@ -107,17 +134,23 @@ export class AuthService {
 
     const now = new Date();
     const { token, id } = newSessionToken();
-    await this.db.$transaction([
-      this.db.account.update({
+    const employeeId = account.employeeId;
+    await this.db.$transaction(async (tx) => {
+      await tx.account.update({
         where: { id: account.id },
         data: { failedLogins: 0, lockedUntil: null, lastLoginAt: now },
-      }),
+      });
       // tidy up: this account's old sessions that have run out, and anyone else's
-      this.db.session.deleteMany({ where: { expiresAt: { lt: now } } }),
-      this.db.session.create({
+      await tx.session.deleteMany({ where: { expiresAt: { lt: now } } });
+      await tx.session.create({
         data: { id, accountId: account.id, expiresAt: new Date(now.getTime() + this.sessionMs) },
-      }),
-    ]);
+      });
+      await this.audit.record(tx, {
+        action: 'auth.signed_in',
+        actor: { accountId: account.id, employeeId, name: account.name },
+        subject: { employeeId, name: account.name },
+      });
+    });
 
     return {
       token,
@@ -131,8 +164,15 @@ export class AuthService {
     };
   }
 
-  async signOut(sessionId: string) {
-    await this.db.session.deleteMany({ where: { id: sessionId } });
+  async signOut(account: SignedInAccount) {
+    await this.db.$transaction(async (tx) => {
+      await tx.session.deleteMany({ where: { id: account.sessionId } });
+      await this.audit.record(tx, {
+        action: 'auth.signed_out',
+        actor: { accountId: account.id, employeeId: account.employeeId, name: account.name },
+        subject: { employeeId: account.employeeId, name: account.name },
+      });
+    });
   }
 
   /**

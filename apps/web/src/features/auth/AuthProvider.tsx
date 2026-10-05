@@ -38,6 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       me: query.data ?? null,
       loading: query.isPending,
       signedIn: (me) => {
+        void queryClient.cancelQueries({ queryKey: ME });
         queryClient.removeQueries({ predicate: (q) => q.queryKey[0] !== ME[0] });
         queryClient.setQueryData(ME, me);
       },

@@ -1,8 +1,14 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { randomUUID } from 'node:crypto';
 import { Logger } from '@nestjs/common';
 import type { NextFunction, Request, Response } from 'express';
 
 export const REQUEST_ID_HEADER = 'X-Request-Id';
+
+// the request id, available anywhere while the request is being handled, so the audit trail
+// can store it without passing the request through every layer
+const context = new AsyncLocalStorage<{ requestId: string }>();
+export const currentRequestId = () => context.getStore()?.requestId;
 
 /** what a caller's request id may look like, anything else is replaced so logs can't be polluted */
 const SAFE_ID = /^[A-Za-z0-9-]{8,64}$/;
@@ -34,6 +40,6 @@ export function requestIdAndAccessLog(options: { log: boolean }) {
         logger.log(`${req.method} ${req.path} ${res.statusCode} ${ms.toFixed(0)}ms [${id}]`);
       });
     }
-    next();
+    context.run({ requestId: id }, next);
   };
 }

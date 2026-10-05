@@ -144,6 +144,9 @@ export class EmployeesRepository {
     id: string,
     expected: ExpectedVersion,
     allowed: (tx: Prisma.TransactionClient) => Promise<void> = async () => undefined,
+    // runs in the same transaction once they're gone, eg to write the audit event
+    onDeleted: (tx: Prisma.TransactionClient, moved: number) => Promise<void> = async () =>
+      undefined,
   ): Promise<{ result: 'missing' } | { result: 'stale' } | { result: 'deleted'; moved: number }> {
     return this.db.$transaction(async (tx) => {
       // checked inside the transaction, so nothing can change who's allowed in between
@@ -159,6 +162,7 @@ export class EmployeesRepository {
         data: { managerId: row.managerId },
       });
       await tx.employee.delete({ where: { id } });
+      await onDeleted(tx, moved.count);
       return { result: 'deleted' as const, moved: moved.count };
     });
   }

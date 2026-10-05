@@ -154,18 +154,19 @@ Patterns from the book we did not need include Abstract Factory, Prototype, Brid
 
 ## 5. How the rules are protected
 
-| Rule                                                                                  | Form                              | API                                    | Database                                              |
-| ------------------------------------------------------------------------------------- | --------------------------------- | -------------------------------------- | ----------------------------------------------------- |
-| Nobody manages themselves (BR-01)                                                     | Yes                               | Yes                                    | Check constraint                                      |
-| No reporting loops (BR-02)                                                            | Yes                               | Yes                                    | Trigger, with a lock so changes queue safely          |
-| Someone can have no manager, like the CEO (BR-03)                                     | Yes                               | Yes                                    | The manager column is optional                        |
-| Deleting a manager moves their team up to the next manager (BR-04)                    | Explains who moves                | Yes, in one transaction                | Foreign key stops anyone pointing at a deleted person |
-| Employee number and email are unique (BR-05)                                          | Shows the error on the field      | Yes                                    | Unique indexes                                        |
-| Salary is not negative (BR-06)                                                        | Yes                               | Yes                                    | Check constraint                                      |
-| Employees are at least 15 years old (BR-07)                                           | Yes                               | Yes                                    | Trigger                                               |
-| You only change people below you, and only your name and email about yourself (FR-25) | Only shows what you can do        | Checked under the reporting lines lock | The same lock the loop trigger uses                   |
-| Salaries and birth dates only for the person and those above them (FR-26)             | Shows **Private**                 | Hidden and left out of filters         |                                                       |
-| Two people don't overwrite each other's changes                                       | Offers to load the latest version | Version check on every change          | Version column                                        |
+| Rule                                                                                  | Form                              | API                                           | Database                                                                   |
+| ------------------------------------------------------------------------------------- | --------------------------------- | --------------------------------------------- | -------------------------------------------------------------------------- |
+| Nobody manages themselves (BR-01)                                                     | Yes                               | Yes                                           | Check constraint                                                           |
+| No reporting loops (BR-02)                                                            | Yes                               | Yes                                           | Trigger, with a lock so changes queue safely                               |
+| Someone can have no manager, like the CEO (BR-03)                                     | Yes                               | Yes                                           | The manager column is optional                                             |
+| Deleting a manager moves their team up to the next manager (BR-04)                    | Explains who moves                | Yes, in one transaction                       | Foreign key stops anyone pointing at a deleted person                      |
+| Employee number and email are unique (BR-05)                                          | Shows the error on the field      | Yes                                           | Unique indexes                                                             |
+| Salary is not negative (BR-06)                                                        | Yes                               | Yes                                           | Check constraint                                                           |
+| Employees are at least 15 years old (BR-07)                                           | Yes                               | Yes                                           | Trigger                                                                    |
+| You only change people below you, and only your name and email about yourself (FR-25) | Only shows what you can do        | Checked under the reporting lines lock        | The same lock the loop trigger uses                                        |
+| Salaries and birth dates only for the person and those above them (FR-26)             | Shows **Private**                 | Hidden and left out of filters                |                                                                            |
+| Every change is recorded and the record can't be changed (FR-18)                      |                                   | Written in the same transaction as the change | The API's user can only add and read. A trigger blocks updates and deletes |
+| Two people don't overwrite each other's changes                                       | Offers to load the latest version | Version check on every change                 | Version column                                                             |
 
 The form gives instant, friendly feedback. The API is the real gatekeeper. The database is the last line of defence, so the data stays correct even if a bug slips through the code.
 
@@ -189,6 +190,7 @@ Everyone signs in (ADR 0016), and the API protects itself in several more ways (
 - what you can change follows the hierarchy: people below you only, never yourself beyond your name and email, never anyone above or beside you (ADR 0017)
 - salaries and birth dates are hidden by the API from everyone but the person and those above them, and salary filters only look at people you can see
 - reads are `Cache-Control: private` with `Vary: Cookie`, so caches never mix up two people's views
+- every change, sign in and access change is written to an append only audit trail in the same transaction. The API can't edit or delete it, and a trigger stops anyone else (ADR 0018)
 - changes sent from other websites are refused, on top of the same-site cookie
 - two database users: the API's user can only read and write rows, and only a separate migration user can change the tables (ADR 0010)
 - security headers, and the API only accepts calls from the web app's own address (CORS)
@@ -202,10 +204,10 @@ Everyone signs in (ADR 0016), and the API protects itself in several more ways (
 | Kind                 | What it covers                                                                                             | Tool                                       | Count |
 | -------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ----- |
 | Shared unit tests    | Validation rules and hierarchy helpers                                                                     | Vitest                                     | 42    |
-| Web tests            | Screens, forms, search, drag and drop, the orbit, clashes, accessibility (axe), CSV export                 | Vitest, Testing Library, MSW               | 148   |
+| Web tests            | Screens, forms, search, drag and drop, the orbit, clashes, accessibility (axe), CSV export                 | Vitest, Testing Library, MSW               | 158   |
 | API unit tests       | Services, mappers, settings, error handling, version checks, the seed guard                                | Jest                                       | 37    |
 | Database integration | Constraints, the loop trigger, clashing changes made at the same moment                                    | Jest against real PostgreSQL               | 37    |
-| API end to end       | Every endpoint and rule over HTTP, clashing saves, security headers, rate limits, speed with 10,000 people | Jest and Supertest against real PostgreSQL | 189   |
+| API end to end       | Every endpoint and rule over HTTP, clashing saves, security headers, rate limits, speed with 10,000 people | Jest and Supertest against real PostgreSQL | 208   |
 
 All of these run on every pull request in GitHub Actions, together with formatting, linting, type checks and the build. The end-to-end tests can only ever run against a database whose name ends in `_test`.
 
@@ -233,6 +235,10 @@ The brief invites extra functionality. These were built, and each is explained i
 | Shareable links for any person or filtered view                                                   | FR-13                 |
 | Protection against two people overwriting each other's changes                                    | FR-22                 |
 | Light and dark mode, phone and tablet layouts, keyboard and screen reader support, reduced motion | FR-23, NFR-07, NFR-08 |
+| Sign in, with new accounts approved by an admin above the person                                  | FR-17, FR-24          |
+| Permissions that follow the hierarchy, and salaries private to the person and those above them    | FR-25 to FR-27        |
+| An audit trail of every change that nobody can edit, with an Audit page for admins                | FR-18                 |
+| Every attack we tried kept as an automated test ([security testing](../security/ATTACKS.md))      | NFR-04                |
 
 ### Picture upload
 

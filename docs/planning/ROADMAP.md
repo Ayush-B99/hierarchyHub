@@ -22,8 +22,8 @@ The project is built in parts. Each part is one branch and one pull request, mad
 | 6a   | Attack the app, fix what broke, keep every attack as a test                                 | `fix/break-it`               | Done        |
 | 6b   | Accounts: sign up, sign in, sessions, admin approval                                        | `feat/accounts`              | Done        |
 | 6c   | Permissions based on the hierarchy, and salary privacy                                      | `feat/permissions`           | Done        |
-| 6d   | Audit trail and audit page                                                                  | `feat/audit`                 | Not started |
-| 6e   | Tidy comments and finish the docs                                                           | `chore/tidy`                 | Not started |
+| 6d   | Audit trail and audit page                                                                  | `feat/audit`                 | Done        |
+| 6e   | Tidy comments, bring every document up to date, fresh screenshots                           | `chore/tidy`                 | Done        |
 | 7    | AWS setup and deployment                                                                    | `feat/aws-deployment`        | Not started |
 | 8    | Final pass: live URL, deployment details and fresh screenshots                              | `docs/final-documentation`   | Not started |
 

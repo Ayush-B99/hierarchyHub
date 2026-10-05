@@ -80,7 +80,9 @@
   flex: 1 1 auto;
   margin-left: auto;
   display: flex;
-  flex-wrap: wrap;
+  /* one line, so the account menu never drops below the search. the search shrinks instead */
+  flex-wrap: nowrap;
+  white-space: nowrap;
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
@@ -153,4 +155,13 @@
   .accountName {
     display: none;
   }
+}
+
+/* buttons keep their size, only the search gives way when space is short */
+.end > * {
+  flex-shrink: 0;
+}
+
+.end > :first-child {
+  flex-shrink: 1;
 }

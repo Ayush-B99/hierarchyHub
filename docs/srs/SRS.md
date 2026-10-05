@@ -109,6 +109,8 @@ flowchart LR
         uc3(["UC-03 Edit an employee"])
         uc4(["UC-04 Delete an employee"])
         uc11(["UC-11 Resolve a clashing change"])
+        uc16(["UC-16 Approve a new account"])
+        uc17(["UC-17 Change someone's access"])
         val(["Check the input and the rules"])
     end
 
@@ -118,6 +120,8 @@ flowchart LR
     hr --- uc3
     hr --- uc4
     hr --- uc11
+    hr --- uc16
+    hr --- uc17
 
     uc1 -.->|"«include»"| val
     uc3 -.->|"«include»"| val
@@ -145,6 +149,8 @@ flowchart LR
         uc9(["UC-09 Export the table to CSV"])
         uc13(["UC-13 Share a view"])
         uc14(["UC-14 Switch light or dark mode"])
+        uc15(["UC-15 Sign in"])
+        uc18(["UC-18 Review the audit trail"])
         pic(["Show profile pictures"])
     end
 
@@ -154,6 +160,8 @@ flowchart LR
     mgr --- uc7
     mgr --- uc2
     mgr --- uc14
+    mgr --- uc15
+    hr --- uc18
     hr --- uc8
     hr --- uc9
     hr --- uc13
@@ -171,22 +179,26 @@ How to read them: a solid line joins an actor to a use case they start. «includ
 
 ### 3.4 Use case list
 
-| ID    | Use case                        | Primary actor        | Requirements          |
-| ----- | ------------------------------- | -------------------- | --------------------- |
-| UC-01 | Add an employee                 | HR administrator     | FR-01, FR-05, FR-06   |
-| UC-02 | View an employee                | Manager or executive | FR-02, FR-15          |
-| UC-03 | Edit an employee                | HR administrator     | FR-03, FR-06          |
-| UC-04 | Delete an employee              | HR administrator     | FR-04, BR-04          |
-| UC-05 | Set an employee's manager       | HR administrator     | FR-05, BR-01 to BR-03 |
-| UC-06 | Explore the org chart           | Manager or executive | FR-07, FR-11          |
-| UC-07 | Search for someone              | Manager or executive | FR-08                 |
-| UC-08 | Sort and filter the table       | HR administrator     | FR-09, FR-10, FR-13   |
-| UC-09 | Export the table to CSV         | HR administrator     | FR-14                 |
-| UC-10 | Drag someone onto a new manager | HR administrator     | FR-12                 |
-| UC-11 | Resolve a clashing change       | HR administrator     | FR-22                 |
-| UC-12 | Spin the orbit                  | Manager or executive | FR-21                 |
-| UC-13 | Share a view                    | Any user             | FR-13                 |
-| UC-14 | Switch light or dark mode       | Any user             | FR-23                 |
+| ID    | Use case                        | Primary actor            | Requirements          |
+| ----- | ------------------------------- | ------------------------ | --------------------- |
+| UC-01 | Add an employee                 | HR administrator         | FR-01, FR-05, FR-06   |
+| UC-02 | View an employee                | Manager or executive     | FR-02, FR-15          |
+| UC-03 | Edit an employee                | HR administrator         | FR-03, FR-06          |
+| UC-04 | Delete an employee              | HR administrator         | FR-04, BR-04          |
+| UC-05 | Set an employee's manager       | HR administrator         | FR-05, BR-01 to BR-03 |
+| UC-06 | Explore the org chart           | Manager or executive     | FR-07, FR-11          |
+| UC-07 | Search for someone              | Manager or executive     | FR-08                 |
+| UC-08 | Sort and filter the table       | HR administrator         | FR-09, FR-10, FR-13   |
+| UC-09 | Export the table to CSV         | HR administrator         | FR-14                 |
+| UC-10 | Drag someone onto a new manager | HR administrator         | FR-12                 |
+| UC-11 | Resolve a clashing change       | HR administrator         | FR-22                 |
+| UC-12 | Spin the orbit                  | Manager or executive     | FR-21                 |
+| UC-13 | Share a view                    | Any user                 | FR-13                 |
+| UC-14 | Switch light or dark mode       | Any user                 | FR-23                 |
+| UC-15 | Sign in                         | Any user                 | FR-17                 |
+| UC-16 | Approve a new account           | HR administrator (admin) | FR-24                 |
+| UC-17 | Change someone's access         | HR administrator (admin) | FR-27                 |
+| UC-18 | Review the audit trail          | HR administrator (admin) | FR-18                 |
 
 ### 3.5 Use case descriptions
 
@@ -316,6 +328,40 @@ How to read them: a solid line joins an actor to a use case they start. «includ
 | Actor      | Any user                                                                                                       |
 | Main steps | 1. The user selects the round theme button in the top bar. 2. The app switches theme and remembers the choice. |
 
+#### UC-15 Sign in
+
+|                          |                                                                                                                                        |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Actor                    | Any user                                                                                                                               |
+| Before                   | They have an approved account. If not, they select **Ask for an account** and wait for UC-16.                                          |
+| Main steps               | 1. The user enters their email and password. 2. The system checks them and starts a session. 3. They go on to the page they asked for. |
+| If the details are wrong | The same message for a wrong email or a wrong password. Five wrong passwords lock the account for 15 minutes.                          |
+| After                    | Signed in until they sign out, the session runs out, or an admin turns their account off.                                              |
+
+#### UC-16 Approve a new account
+
+|            |                                                                                                                                                                                                         |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Actor      | An admin                                                                                                                                                                                                |
+| Main steps | 1. The admin opens **Accounts**. 2. For a waiting request, they choose the employee it belongs to, from the people below them who don't have an account yet. 3. They select **Approve**, or **Reject**. |
+| After      | The person can sign in, and the approval is in the audit trail (UC-18).                                                                                                                                 |
+
+#### UC-17 Change someone's access
+
+|            |                                                                                                                                           |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Actor      | An admin                                                                                                                                  |
+| Main steps | 1. The admin opens **Accounts**. 2. For someone below them, they select **Make admin**, **Remove admin**, **Turn off** or **Turn on**.    |
+| After      | The change applies to the person's next request. Turning an account off signs them out straight away. Nobody can change their own access. |
+
+#### UC-18 Review the audit trail
+
+|            |                                                                                                                                                             |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Actor      | An admin                                                                                                                                                    |
+| Main steps | 1. The admin opens **Audit**, or **View history** on someone's details. 2. They read what happened, newest first, and narrow it by person or kind of event. |
+| After      | Nothing changes. They only see events about people who were below them at the time, and about themselves.                                                   |
+
 ## 4. Functional requirements
 
 Priority: **Must** is required by the brief. **Should** is expected for a good result. **Could** is an extra if time allows.
@@ -364,7 +410,7 @@ Status: **Built** means it works in the delivered app and has automated tests. *
 | ID    | Requirement                                                                                                                                             | Priority | Status    |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------- |
 | FR-17 | Sign in and out. Anyone can ask for an account, but it does nothing until an admin approves it and links it to an employee below them (ADR 0016).       | Could    | Built     |
-| FR-18 | Keep a history of who changed what and when.                                                                                                            | Could    | Not built |
+| FR-18 | Keep a history of who changed what and when, with each field before and after, that nobody can change or delete (ADR 0018).                             | Could    | Built     |
 | FR-19 | A dashboard with headcount by role and the size of each team.                                                                                           | Could    | Not built |
 | FR-20 | Import employees from a CSV file into the database.                                                                                                     | Could    | Not built |
 | FR-22 | If two people change the same employee at the same time, refuse the second save instead of overwriting, and offer to load the latest version.           | Should   | Built     |
@@ -440,7 +486,7 @@ Each requirement says what is needed, how the solution meets it, and how that is
 | NFR-07 | Accessibility    | Works with a keyboard, has visible focus, labelled fields and good colour contrast (WCAG 2.2 AA). The table is an accessible alternative to the chart.                                                   | Real buttons and form controls, focus management in dialogs, labels on every icon button, measured contrast of at least 5.2 to 1, and reduced motion support.                                                                      | Automated axe checks on every page, keyboard tests, and the contrast table in the brand guide.                                                                                                                                                               |
 | NFR-08 | Screen sizes     | Works on screens from 360 pixels wide (phones) upwards.                                                                                                                                                  | Fluid layouts. The Orbit view becomes a stacked list on narrow screens.                                                                                                                                                            | Checked in the browser at phone, tablet and desktop widths.                                                                                                                                                                                                  |
 | NFR-09 | Maintainability  | TypeScript everywhere, shared validation rules, and linting, type checks and tests on every pull request.                                                                                                | One monorepo with a shared package. A written decision record for every major choice.                                                                                                                                              | GitHub Actions runs formatting, lint, types, all tests and the build on every pull request.                                                                                                                                                                  |
-| NFR-10 | Testing          | Business rules have unit tests. API endpoints have tests that run against a real PostgreSQL database.                                                                                                    | 453 automated tests across five suites (technical document, section 7).                                                                                                                                                            | The same CI run, with a real PostgreSQL service.                                                                                                                                                                                                             |
+| NFR-10 | Testing          | Business rules have unit tests. API endpoints have tests that run against a real PostgreSQL database.                                                                                                    | 482 automated tests across five suites (technical document, section 7).                                                                                                                                                            | The same CI run, with a real PostgreSQL service.                                                                                                                                                                                                             |
 | NFR-11 | Repeatable setup | The API runs in a Docker container. Cloud resources are defined in code.                                                                                                                                 | The same database setup scripts run in Docker, in CI and on AWS. The AWS setup is written as code (ADR 0004).                                                                                                                      | CI builds the database from the scripts on every run. The cloud setup is checked during deployment.                                                                                                                                                          |
 | NFR-12 | Cost             | Runs on the AWS free tier or for a few dollars a month.                                                                                                                                                  | The smallest sizes, no NAT gateway, and everything removed after the assessment.                                                                                                                                                   | AWS billing alerts, set up during deployment.                                                                                                                                                                                                                |
 

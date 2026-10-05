@@ -126,3 +126,10 @@
     max-width: none;
   }
 }
+
+.historyLink {
+  align-self: center;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+}

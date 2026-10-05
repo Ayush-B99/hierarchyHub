@@ -10,6 +10,8 @@ Live app: _link added after deployment_
 
 Open the app in a current browser and sign in with your work email and password. Your name appears in the top bar, with an **Admin** badge if you're an admin. Select **Sign out** there when you're done.
 
+![The sign in page](images/sign-in.jpg)
+
 If you type the wrong password five times in a row, your account is locked for 15 minutes, even for the right password. This stops anyone guessing it.
 
 ### Asking for an account
@@ -225,6 +227,7 @@ These go beyond what the brief asked for. [Beyond the brief](../extras/EXTRAS.md
 | A rotating 3D Orbit you can spin, with moons for team size     | Explore page, section 6       |
 | Sign in, with new accounts approved by an admin                | Sections 1 and 11             |
 | Permissions that follow the organisation, and private salaries | Section 12                    |
+| A history of who changed what, that can't be edited            | Section 13                    |
 | Path to the top and "Works alongside"                          | Explore page, section 6       |
 | Drag a person onto a new manager                               | Orbit view, section 4         |
 | Search from any page, with keyboard shortcuts                  | Top bar, section 6            |
@@ -240,6 +243,8 @@ These go beyond what the brief asked for. [Beyond the brief](../extras/EXTRAS.md
 ## 11. Approving accounts (admins)
 
 Admins see an **Accounts** tab in the top bar. It has two parts.
+
+![The Accounts page, with Amara waiting for approval and the team's accounts below](images/accounts.jpg)
 
 **Waiting for approval** lists everyone who has asked for an account. For each person:
 
@@ -261,6 +266,8 @@ You can't change your own account, so you can never lock yourself out or give yo
 
 What you can do depends on where you sit in the organisation. Everyone below you, at any depth, is in your reach.
 
+![Ruan's view of the People page: only his own salary and birth date are shown, everyone else's say Private](images/private-salaries.jpg)
+
 | You are              | You can see the salary and birth date of | You can change                                                                       |
 | -------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------ |
 | Anyone               | Yourself                                 | Your own name and email                                                              |
@@ -277,3 +284,20 @@ This means:
 Salaries and birth dates you can't see show as **Private** everywhere: in the details panel, on the People page and in CSV exports. Filtering or sorting by salary or birth date only includes you and the people below you, and the People page says so when that leaves anyone out.
 
 Buttons for things you can't do aren't shown. When editing yourself, the form only has your name and email. The **Reports to** list only offers managers you're allowed to choose.
+
+## 13. The audit page (admins)
+
+Admins see an **Audit** tab in the top bar. It lists everything that happened in your part of the organisation, newest first, as plain sentences such as:
+
+![The Audit page, showing Thandi's changes to Ruan, with each change before and after](images/audit.jpg)
+
+- "Johan van der Merwe changed Ruan Botha", followed by each change, like "role from Senior Engineer to Lead Engineer"
+- "Thandi Nkosi deleted Johan van der Merwe. Their team of 4 moved to Sipho Dlamini"
+- "Sipho Dlamini made Johan van der Merwe an admin"
+- "Ruan Botha signed in", or "Failed sign in for Ruan Botha: wrong password"
+
+Use **Person** and **What happened** to narrow the list. Select **Their history** next to any event, or **View history** in someone's details panel, to see everything about that one person. The address bar keeps your filters, so you can share the link.
+
+You see events about the people who were below you when it happened, and about yourself. You never see events about people above or beside you, so salary changes stay as private here as everywhere else. Every admin sees new requests for an account.
+
+Nothing on this page can be changed or deleted, by anyone. If something was changed by mistake, change it back: both changes will be in the history.

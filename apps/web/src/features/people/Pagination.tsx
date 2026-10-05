@@ -6,10 +6,18 @@ interface PaginationProps {
   pageSize: number;
   total: number;
   onPage: (page: number) => void;
+  /** what's being counted, one and many, eg ['event', 'events'] */
+  noun?: [string, string];
 }
 
 /** "showing 1 to 10 of 14 people" plus previous and next */
-export function Pagination({ page, pageSize, total, onPage }: PaginationProps) {
+export function Pagination({
+  page,
+  pageSize,
+  total,
+  onPage,
+  noun = ['person', 'people'],
+}: PaginationProps) {
   const pages = Math.max(1, Math.ceil(total / pageSize));
   const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const to = Math.min(page * pageSize, total);
@@ -19,7 +27,7 @@ export function Pagination({ page, pageSize, total, onPage }: PaginationProps) {
       <p className={styles.summary} role="status">
         {total === 0
           ? 'No people match'
-          : `Showing ${from} to ${to} of ${total} ${total === 1 ? 'person' : 'people'}`}
+          : `Showing ${from} to ${to} of ${total} ${total === 1 ? noun[0] : noun[1]}`}
       </p>
       {pages > 1 && (
         <div className={styles.buttons}>

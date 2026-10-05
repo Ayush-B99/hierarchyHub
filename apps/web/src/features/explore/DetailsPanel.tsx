@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import { permissionsFor } from '@hierarchy-hub/shared';
 import { useAuth } from '../auth/useAuth';
 import type { Employee } from '@hierarchy-hub/shared';
@@ -24,7 +25,9 @@ export function DetailsPanel({ person, org, onSelect }: DetailsPanelProps) {
   // what you can do to this person depends on where they sit relative to you (adr 0017)
   const can = me
     ? permissionsFor(me, person.id, org.byId)
-    : { editContact: false, move: false, remove: false };
+    : { editContact: false, move: false, remove: false, seePrivate: false };
+  // admins can open the history of anyone they can see in full: themselves and people below them
+  const canSeeHistory = Boolean(me?.isAdmin && can.seePrivate);
   const manager = person.managerId ? org.byId.get(person.managerId) : undefined;
   const directReports = org.reportsOf(person.id).length;
   const levelsFromTop = org.chainOf(person.id).length - 1;
@@ -115,7 +118,7 @@ export function DetailsPanel({ person, org, onSelect }: DetailsPanelProps) {
         </div>
       </div>
 
-      {(can.editContact || can.move || can.remove) && (
+      {(can.editContact || can.move || can.remove || canSeeHistory) && (
         <div className={styles.actions}>
           {can.editContact && (
             <Button variant="primary" onClick={() => dialogs.openEdit(person.id)}>
@@ -124,6 +127,11 @@ export function DetailsPanel({ person, org, onSelect }: DetailsPanelProps) {
           )}
           {can.move && (
             <Button onClick={() => dialogs.openEdit(person.id, 'managerId')}>Change manager</Button>
+          )}
+          {canSeeHistory && (
+            <Link to={`/audit?person=${person.id}`} className={styles.historyLink}>
+              View history
+            </Link>
           )}
           {can.remove && (
             <>

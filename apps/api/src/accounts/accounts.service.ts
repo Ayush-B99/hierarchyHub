@@ -7,6 +7,7 @@ import {
 import type { AccountSummary, UpdateAccountInput } from '@hierarchy-hub/shared';
 import type { Account } from '@prisma/client';
 import type { SignedInAccount } from '../auth/auth.types';
+import { actorFrom, AuditService } from '../audit/audit.service';
 import { DatabaseService } from '../database/database.service';
 import { HierarchyService } from '../hierarchy/hierarchy.service';
 
@@ -27,6 +28,7 @@ export class AccountsService {
   constructor(
     private readonly db: DatabaseService,
     private readonly hierarchy: HierarchyService,
+    private readonly audit: AuditService,
   ) {}
 
   /**
@@ -67,12 +69,23 @@ export class AccountsService {
     }
 
     try {
-      // only flips a pending account, so two admins approving at once can't both win
-      const { count } = await this.db.account.updateMany({
-        where: { id: accountId, status: 'pending' },
-        data: { status: 'active', employeeId, approvedAt: new Date(), approvedBy: admin.id },
+      return await this.db.$transaction(async (tx) => {
+        // only flips a pending account, so two admins approving at once can't both win
+        const { count } = await tx.account.updateMany({
+          where: { id: accountId, status: 'pending' },
+          data: { status: 'active', employeeId, approvedAt: new Date(), approvedBy: admin.id },
+        });
+        if (count === 0) throw await this.missingOrHandled(accountId);
+        const approved = await tx.account.findUniqueOrThrow({ where: { id: accountId } });
+        const employee = await tx.employee.findUniqueOrThrow({ where: { id: employeeId } });
+        await this.audit.record(tx, {
+          action: 'account.approved',
+          actor: actorFrom(admin),
+          subject: { employeeId, name: `${employee.firstName} ${employee.lastName}` },
+          details: { accountName: approved.name, accountEmail: approved.email },
+        });
+        return summary(approved);
       });
-      if (count === 0) throw await this.missingOrHandled(accountId);
     } catch (error) {
       if ((error as { code?: string }).code === 'P2002') {
         throw new ConflictException({
@@ -82,7 +95,6 @@ export class AccountsService {
       }
       throw error;
     }
-    return summary(await this.db.account.findUniqueOrThrow({ where: { id: accountId } }));
   }
 
   /**
@@ -102,22 +114,45 @@ export class AccountsService {
     if (!(await this.hierarchy.isBelow(admin.employeeId, account.employeeId))) {
       throw new ForbiddenException('You can only change the accounts of people below you');
     }
-    const [updated] = await this.db.$transaction([
-      this.db.account.update({ where: { id: accountId }, data: input }),
+    const employeeId = account.employeeId;
+    const updated = await this.db.$transaction(async (tx) => {
+      const after = await tx.account.update({ where: { id: accountId }, data: input });
       // turning an account off signs it out everywhere straight away
-      ...(input.status === 'disabled'
-        ? [this.db.session.deleteMany({ where: { accountId } })]
-        : []),
-    ]);
+      if (input.status === 'disabled') await tx.session.deleteMany({ where: { accountId } });
+      const changes: Record<string, { from: unknown; to: unknown }> = {};
+      if (input.isAdmin !== undefined && input.isAdmin !== account.isAdmin) {
+        changes.isAdmin = { from: account.isAdmin, to: input.isAdmin };
+      }
+      if (input.status !== undefined && input.status !== account.status) {
+        changes.status = { from: account.status, to: input.status };
+      }
+      if (Object.keys(changes).length > 0) {
+        await this.audit.record(tx, {
+          action: 'account.updated',
+          actor: actorFrom(admin),
+          subject: { employeeId, name: after.name },
+          changes,
+        });
+      }
+      return after;
+    });
     return summary(updated);
   }
 
   /** removes a request for an account. only waiting accounts can be rejected */
-  async reject(accountId: string) {
-    const { count } = await this.db.account.deleteMany({
-      where: { id: accountId, status: 'pending' },
+  async reject(admin: SignedInAccount, accountId: string) {
+    await this.db.$transaction(async (tx) => {
+      const account = await tx.account.findUnique({ where: { id: accountId } });
+      const { count } = await tx.account.deleteMany({
+        where: { id: accountId, status: 'pending' },
+      });
+      if (count === 0 || !account) throw await this.missingOrHandled(accountId);
+      await this.audit.record(tx, {
+        action: 'account.rejected',
+        actor: actorFrom(admin),
+        details: { accountName: account.name, accountEmail: account.email },
+      });
     });
-    if (count === 0) throw await this.missingOrHandled(accountId);
   }
 
   private async missingOrHandled(accountId: string) {
