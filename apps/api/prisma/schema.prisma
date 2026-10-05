@@ -94,3 +94,34 @@ model Session {
   @@index([expiresAt])
   @@map("sessions")
 }
+
+/// a record of something that happened: who did what, to whom, when, and what changed.
+/// append only, nothing in it can be changed or deleted (adr 0018). names and positions are
+/// copied in at the time, so history still reads right after people are renamed, moved or deleted
+model AuditEvent {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  at                DateTime @default(now()) @db.Timestamptz(3)
+  /// eg employee.updated or auth.sign_in_failed (checked by the database)
+  action            String   @db.VarChar(40)
+  /// who did it, if anyone was signed in
+  actorAccountId    String?  @map("actor_account_id") @db.Uuid
+  actorEmployeeId   String?  @map("actor_employee_id") @db.Uuid
+  actorName         String?  @map("actor_name") @db.VarChar(100)
+  /// who it was about
+  subjectEmployeeId String?  @map("subject_employee_id") @db.Uuid
+  subjectName       String?  @map("subject_name") @db.VarChar(201)
+  /// the subject and everyone above them when it happened, which decides who can see the event
+  scope             String[] @db.Uuid
+  /// field: { from, to } for each field that changed
+  changes           Json?
+  /// anything else worth keeping, eg the email a failed sign in used
+  details           Json?
+  requestId         String?  @map("request_id") @db.VarChar(100)
+
+  @@index([at(sort: Desc)])
+  @@index([subjectEmployeeId])
+  @@index([actorAccountId])
+  /// deciding who can see an event searches this list
+  @@index([scope], type: Gin)
+  @@map("audit_events")
+}
