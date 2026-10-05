@@ -2,6 +2,7 @@ import '@testing-library/jest-dom/vitest';
 import { cleanup, configure } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll, beforeEach, vi } from 'vitest';
 import { accounts } from '../mocks/accounts';
+import { audit } from '../mocks/audit';
 import { db } from '../mocks/db';
 import { server } from '../mocks/node';
 
@@ -59,6 +60,7 @@ beforeEach(() => {
   db.reset();
   // every test starts signed in as the ceo, an admin, unless it signs in as someone else
   accounts.reset();
+  audit.reset();
 });
 afterEach(() => {
   cleanup();

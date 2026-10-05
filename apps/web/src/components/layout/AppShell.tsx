@@ -45,6 +45,11 @@ export function AppShell() {
                   Accounts
                 </NavLink>
               )}
+              {me?.isAdmin && (
+                <NavLink to="/audit" className={styles.tab}>
+                  Audit
+                </NavLink>
+              )}
             </nav>
             <div className={styles.end}>
               <GlobalSearch />

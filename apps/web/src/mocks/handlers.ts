@@ -1,6 +1,7 @@
 import { http, HttpResponse, delay } from 'msw';
 import {
   approveAccountSchema,
+  auditQuerySchema,
   canBeTheirManager,
   createEmployeeSchema,
   descendantsOf,
@@ -18,6 +19,7 @@ import {
   type HealthResponse,
 } from '@hierarchy-hub/shared';
 import { accounts } from './accounts';
+import { audit, nameOf } from './audit';
 import { db } from './db';
 
 const API = '*/api';
@@ -91,6 +93,34 @@ function visibleTo(employeeId: string): Set<string> {
 const shown = (e: Employee, visible: Set<string>): Employee =>
   visible.has(e.id) ? e : { ...e, salary: null, birthDate: null };
 
+const managerSnapshot = (id: string | null) => {
+  const manager = id ? db.find(id) : undefined;
+  return id ? { id, name: manager ? nameOf(manager) : 'someone since deleted' } : null;
+};
+
+/** what changed, field by field, the same shape the real api records */
+function differences(before: Employee | null, after: Employee) {
+  const changes: Record<string, { from: unknown; to: unknown }> = {};
+  for (const field of [
+    'employeeNumber',
+    'firstName',
+    'lastName',
+    'email',
+    'birthDate',
+    'salary',
+    'role',
+    'managerId',
+  ] as const) {
+    const from = before ? before[field] : null;
+    if (from === after[field]) continue;
+    changes[field] =
+      field === 'managerId'
+        ? { from: managerSnapshot(from as string | null), to: managerSnapshot(after.managerId) }
+        : { from, to: after[field] };
+  }
+  return changes;
+}
+
 function managerProblem(managerId: string | null) {
   if (managerId !== null && !db.find(managerId)) {
     return fieldError(404, 'managerId', 'That manager no longer exists');
@@ -120,6 +150,14 @@ const authHandlers = [
   // returning nothing passes the request on to the handlers below
   http.all(`${API}/employees*`, ({ request }) => signInProblem(ADMIN_ONLY.has(request.method))),
   http.all(`${API}/accounts*`, () => signInProblem(true)),
+  http.all(`${API}/audit*`, () => signInProblem(true)),
+  http.get(`${API}/audit`, ({ request }) => {
+    const parsed = auditQuerySchema.safeParse(
+      Object.fromEntries(new URL(request.url).searchParams),
+    );
+    if (!parsed.success) return validationError(parsed.error);
+    return HttpResponse.json(audit.list(viewer(), parsed.data));
+  }),
 
   http.get(`${API}/auth/me`, () => {
     const me = accounts.me();
@@ -141,6 +179,11 @@ const authHandlers = [
       );
     }
     accounts.start(row.id);
+    audit.record({
+      action: 'auth.signed_in',
+      actor: accounts.me(),
+      subject: { employeeId: row.employeeId!, name: row.name },
+    });
     return HttpResponse.json(accounts.me());
   }),
 
@@ -149,12 +192,22 @@ const authHandlers = [
     if (!parsed.success) return validationError(parsed.error);
     if (!accounts.byEmail(parsed.data.email)) {
       accounts.add(parsed.data.name, parsed.data.email, parsed.data.password);
+      audit.record({
+        action: 'account.signed_up',
+        details: { accountName: parsed.data.name, accountEmail: parsed.data.email },
+      });
     }
     return HttpResponse.json({ message: SIGN_UP_RECEIVED }, { status: 202 });
   }),
 
   http.post(`${API}/auth/logout`, () => {
     if (!accounts.me()) return error(401, 'Please sign in.');
+    const me = accounts.me()!;
+    audit.record({
+      action: 'auth.signed_out',
+      actor: me,
+      subject: { employeeId: me.employeeId, name: me.name },
+    });
     accounts.end();
     return new HttpResponse(null, { status: 204 });
   }),
@@ -189,6 +242,13 @@ const authHandlers = [
     const row = accounts.find(String(params.id));
     if (!row) return error(404, 'Account not found');
     if (row.status !== 'pending') return error(409, 'Someone has already dealt with this account');
+    const employee = db.find(employeeId)!;
+    audit.record({
+      action: 'account.approved',
+      actor: me,
+      subject: { employeeId, name: nameOf(employee) },
+      details: { accountName: row.name, accountEmail: row.email },
+    });
     return HttpResponse.json(accounts.approve(row.id, employeeId));
   }),
 
@@ -200,6 +260,21 @@ const authHandlers = [
     if (!isBelow(viewer().employeeId, row.employeeId, everyoneById())) {
       return error(403, 'You can only change the accounts of people below you');
     }
+    const changes: Record<string, { from: unknown; to: unknown }> = {};
+    if (parsed.data.isAdmin !== undefined && parsed.data.isAdmin !== row.isAdmin) {
+      changes.isAdmin = { from: row.isAdmin, to: parsed.data.isAdmin };
+    }
+    if (parsed.data.status !== undefined && parsed.data.status !== row.status) {
+      changes.status = { from: row.status, to: parsed.data.status };
+    }
+    if (Object.keys(changes).length > 0) {
+      audit.record({
+        action: 'account.updated',
+        actor: viewer(),
+        subject: { employeeId: row.employeeId, name: row.name },
+        changes,
+      });
+    }
     return HttpResponse.json(accounts.update(row.id, parsed.data));
   }),
 
@@ -208,6 +283,11 @@ const authHandlers = [
     if (!row) return error(404, 'Account not found');
     if (row.status !== 'pending') return error(409, 'Someone has already dealt with this account');
     accounts.remove(row.id);
+    audit.record({
+      action: 'account.rejected',
+      actor: accounts.me(),
+      details: { accountName: row.name, accountEmail: row.email },
+    });
     return new HttpResponse(null, { status: 204 });
   }),
 ];
@@ -322,6 +402,12 @@ export const handlers = [
       updatedAt: now,
     };
     db.insert(row);
+    audit.record({
+      action: 'employee.created',
+      actor: viewer(),
+      subject: { employeeId: row.id, name: nameOf(row) },
+      changes: differences(null, row),
+    });
     return HttpResponse.json(row, {
       status: 201,
       headers: { ETag: etagFor(row), Location: `/api/employees/${row.id}` },
@@ -378,6 +464,15 @@ export const handlers = [
     if (duplicate) return duplicate;
 
     const row = db.update(id, input);
+    const changes = differences(current, row);
+    if (Object.keys(changes).length > 0) {
+      audit.record({
+        action: 'employee.updated',
+        actor: viewer(),
+        subject: { employeeId: id, name: nameOf(row) },
+        changes,
+      });
+    }
     return HttpResponse.json(row, { headers: { ETag: etagFor(row) } });
   }),
 
@@ -391,8 +486,20 @@ export const handlers = [
     if (!isBelow(viewer().employeeId, id, everyoneById())) {
       return error(403, 'You can only change people below you in the organisation');
     }
+    const team = db.all().filter((e) => e.managerId === id);
+    audit.record({
+      action: 'employee.deleted',
+      actor: viewer(),
+      subject: { employeeId: id, name: nameOf(row) },
+      scope: audit.chainOf(id),
+      changes: {
+        role: { from: row.role, to: null },
+        managerId: { from: managerSnapshot(row.managerId), to: null },
+      },
+      details: { teamMovedTo: managerSnapshot(row.managerId), team: team.map(nameOf) },
+    });
     // br-04: direct reports move up to the deleted employee's manager
-    for (const report of db.all().filter((e) => e.managerId === id)) {
+    for (const report of team) {
       db.update(report.id, { managerId: row.managerId });
     }
     db.remove(id);

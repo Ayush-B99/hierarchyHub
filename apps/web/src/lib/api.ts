@@ -1,5 +1,7 @@
 import type {
   AccountSummary,
+  AuditEvent,
+  AuditQuery,
   ApiErrorBody,
   Me,
   SignInInput,
@@ -55,7 +57,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return (response.status === 204 ? undefined : await response.json()) as T;
 }
 
-function toQueryString(query: Partial<ListEmployeesQuery>): string {
+function toQueryString(query: Partial<ListEmployeesQuery> | Partial<AuditQuery>): string {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(query)) {
     if (value !== undefined && value !== null && value !== '') params.set(key, String(value));
@@ -106,4 +108,6 @@ export const api = {
   rejectAccount: (id: string) => request<void>(`/accounts/${id}/reject`, { method: 'POST' }),
   updateAccount: (id: string, changes: UpdateAccountInput) =>
     request<AccountSummary>(`/accounts/${id}`, { method: 'PATCH', body: JSON.stringify(changes) }),
+  audit: (query: Partial<AuditQuery>) =>
+    request<Paginated<AuditEvent>>(`/audit${toQueryString(query)}`),
 };

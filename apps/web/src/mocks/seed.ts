@@ -51,6 +51,7 @@ export function seedEmployees(): Employee[] {
 export const SEED_IDS = {
   ceo: id(1),
   cto: id(2),
+  cfo: id(3),
   engineeringManager: id(5),
   seniorEngineer: id(7),
 };
