@@ -198,41 +198,44 @@ For privacy, the email address is turned into a code (a hash) in your browser be
 
 ## 9. Troubleshooting
 
-| What you see                                                 | What to do                                                                                                                       |
-| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| "We couldn't load the organisation"                          | Check your connection and select **Try again**.                                                                                  |
-| "Another employee already has that email or employee number" | Use a different value, or search for the existing person and edit them instead.                                                  |
-| A person is greyed out in **Reports to**                     | They're the person you're editing or in their team. Picking them would create a reporting loop.                                  |
-| A picture shows initials instead of a photo                  | That email has no Gravatar picture yet. See section 8.                                                                           |
-| "We couldn't find that person"                               | The link points to someone who has been deleted. You're shown the top of the organisation instead.                               |
-| "Someone else changed ... while you were editing"            | Select **Load the latest version**, then make your change again. See section 3.                                                  |
-| The Orbit view isn't turning                                 | It stops while your pointer is over a card. If it never turns, your device is set to reduce motion. You can still drag it round. |
-| "Email or password is wrong"                                 | Check both. For your safety, the app doesn't say which one is wrong.                                                             |
-| "Your account is waiting for an admin to approve it"         | An admin hasn't linked your account to your employee record yet. Ask your manager.                                               |
-| "Too many wrong passwords"                                   | Wait the number of minutes shown, then try again.                                                                                |
-| You're sent back to the sign in page                         | Your session ended: you signed out elsewhere, it ran out, or an admin turned your account off. Sign in again.                    |
-| There's no **Add employee**, **Edit details** or **Delete**  | Only admins can make changes for now. Ask an admin above the person you want to change.                                          |
+| What you see                                                  | What to do                                                                                                                       |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| "We couldn't load the organisation"                           | Check your connection and select **Try again**.                                                                                  |
+| "Another employee already has that email or employee number"  | Use a different value, or search for the existing person and edit them instead.                                                  |
+| A person is greyed out in **Reports to**                      | They're the person you're editing or in their team. Picking them would create a reporting loop.                                  |
+| A picture shows initials instead of a photo                   | That email has no Gravatar picture yet. See section 8.                                                                           |
+| "We couldn't find that person"                                | The link points to someone who has been deleted. You're shown the top of the organisation instead.                               |
+| "Someone else changed ... while you were editing"             | Select **Load the latest version**, then make your change again. See section 3.                                                  |
+| The Orbit view isn't turning                                  | It stops while your pointer is over a card. If it never turns, your device is set to reduce motion. You can still drag it round. |
+| "Email or password is wrong"                                  | Check both. For your safety, the app doesn't say which one is wrong.                                                             |
+| "Your account is waiting for an admin to approve it"          | An admin hasn't linked your account to your employee record yet. Ask your manager.                                               |
+| "Too many wrong passwords"                                    | Wait the number of minutes shown, then try again.                                                                                |
+| A salary or birth date says **Private**                       | Only the person and the people above them can see these. See section 12.                                                         |
+| Sorting by salary leaves people out                           | Salary and birth date filters and sorting only include you and the people below you. See section 12.                             |
+| You're sent back to the sign in page                          | Your session ended: you signed out elsewhere, it ran out, or an admin turned your account off. Sign in again.                    |
+| There's no **Edit details**, **Change manager** or **Delete** | You can only change people below you, and about yourself only your name and email. See section 12.                               |
 
 ## 10. Extra features
 
 These go beyond what the brief asked for. [Beyond the brief](../extras/EXTRAS.md) has the full list, including the work behind the scenes.
 
-| Feature                                                    | Where                         |
-| ---------------------------------------------------------- | ----------------------------- |
-| Two ways to explore: Orbit and Levels                      | Explore page, section 6       |
-| A rotating 3D Orbit you can spin, with moons for team size | Explore page, section 6       |
-| Sign in, with new accounts approved by an admin            | Sections 1 and 11             |
-| Path to the top and "Works alongside"                      | Explore page, section 6       |
-| Drag a person onto a new manager                           | Orbit view, section 4         |
-| Search from any page, with keyboard shortcuts              | Top bar, section 6            |
-| Filters written as a sentence                              | People page, section 7        |
-| Export to CSV                                              | People page, section 7        |
-| Shareable links for any person or filtered view            | Address bar, sections 6 and 7 |
-| Protection against overwriting someone else's changes      | Forms and dialogs, section 3  |
-| Light and dark mode                                        | Top bar, section 1            |
-| Works on phones and tablets                                | Everywhere                    |
-| Keyboard and screen reader support                         | Everywhere                    |
-| Respects your device's reduced motion setting              | Everywhere                    |
+| Feature                                                        | Where                         |
+| -------------------------------------------------------------- | ----------------------------- |
+| Two ways to explore: Orbit and Levels                          | Explore page, section 6       |
+| A rotating 3D Orbit you can spin, with moons for team size     | Explore page, section 6       |
+| Sign in, with new accounts approved by an admin                | Sections 1 and 11             |
+| Permissions that follow the organisation, and private salaries | Section 12                    |
+| Path to the top and "Works alongside"                          | Explore page, section 6       |
+| Drag a person onto a new manager                               | Orbit view, section 4         |
+| Search from any page, with keyboard shortcuts                  | Top bar, section 6            |
+| Filters written as a sentence                                  | People page, section 7        |
+| Export to CSV                                                  | People page, section 7        |
+| Shareable links for any person or filtered view                | Address bar, sections 6 and 7 |
+| Protection against overwriting someone else's changes          | Forms and dialogs, section 3  |
+| Light and dark mode                                            | Top bar, section 1            |
+| Works on phones and tablets                                    | Everywhere                    |
+| Keyboard and screen reader support                             | Everywhere                    |
+| Respects your device's reduced motion setting                  | Everywhere                    |
 
 ## 11. Approving accounts (admins)
 
@@ -246,3 +249,31 @@ Admins see an **Accounts** tab in the top bar. It has two parts.
 4. Select **Approve**. They can sign in straight away. Or select **Reject** to remove the request.
 
 **Your team's accounts** lists the accounts of the people below you: whether they're an admin, and when they last signed in. You never see the accounts of people above you or beside you.
+
+For each of them you can:
+
+- select **Make admin**, so they can add and delete people below them and approve accounts, or **Remove admin**
+- select **Turn off** when someone leaves. They're signed out straight away and can't sign in again until someone selects **Turn on**
+
+You can't change your own account, so you can never lock yourself out or give yourself more access.
+
+## 12. Who can change what
+
+What you can do depends on where you sit in the organisation. Everyone below you, at any depth, is in your reach.
+
+| You are              | You can see the salary and birth date of | You can change                                                                       |
+| -------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------ |
+| Anyone               | Yourself                                 | Your own name and email                                                              |
+| Someone with a team  | Yourself and everyone below you          | Anything about people below you, and move them to yourself or someone else below you |
+| An admin             | The same                                 | Also add and delete people below you, and manage their accounts (section 11)         |
+| At the top (the CEO) | Everyone                                 | Everyone                                                                             |
+
+This means:
+
+- nobody can give themselves a raise, change their own role, or choose their own manager
+- nobody can change anyone above them or beside them, so a junior can never make their manager report to them
+- you can only move people within your own part of the organisation, so nobody can be moved out of your reach or under someone more senior
+
+Salaries and birth dates you can't see show as **Private** everywhere: in the details panel, on the People page and in CSV exports. Filtering or sorting by salary or birth date only includes you and the people below you, and the People page says so when that leaves anyone out.
+
+Buttons for things you can't do aren't shown. When editing yourself, the form only has your name and email. The **Reports to** list only offers managers you're allowed to choose.
