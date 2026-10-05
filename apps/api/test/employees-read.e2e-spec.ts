@@ -1,15 +1,14 @@
 import { type INestApplication } from '@nestjs/common';
 import { LIST_SCENARIOS } from '@hierarchy-hub/shared/testing';
-import request from 'supertest';
 import type { DatabaseService } from '../src/database/database.service';
-import { loadSamplePeople, startApp } from './app';
+import { client, loadSamplePeople, startApp } from './app';
 
 const JOHAN = '00000000-0000-4000-8000-000000000005';
 const NOBODY = '00000000-0000-4000-8000-999999999999';
 
 let app: INestApplication;
 let db: DatabaseService;
-const http = () => request(app.getHttpServer());
+const http = () => client(app);
 
 beforeAll(async () => {
   ({ app, db } = await startApp());
