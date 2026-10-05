@@ -47,7 +47,7 @@ export class AuthController {
     @CurrentAccount() account: SignedInAccount,
     @Res({ passthrough: true }) res: Response,
   ) {
-    await this.auth.signOut(account.sessionId);
+    await this.auth.signOut(account);
     res.clearCookie(SESSION_COOKIE, cookieOptions(this.auth.secureCookie, 0));
   }
 

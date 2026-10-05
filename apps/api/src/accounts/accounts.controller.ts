@@ -60,7 +60,7 @@ export class AccountsController {
 
   @Post(':id/reject')
   @HttpCode(HttpStatus.NO_CONTENT)
-  reject(@Param('id', id) accountId: string) {
-    return this.accounts.reject(accountId);
+  reject(@CurrentAccount() admin: SignedInAccount, @Param('id', id) accountId: string) {
+    return this.accounts.reject(admin, accountId);
   }
 }

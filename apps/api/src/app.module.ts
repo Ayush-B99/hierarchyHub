@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AccountsModule } from './accounts/accounts.module';
+import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
 import { SessionGuard } from './auth/session.guard';
 import { AllExceptionsFilter } from './common/all-exceptions.filter';
@@ -45,6 +46,7 @@ const methodOf = (context: { switchToHttp(): { getRequest<T>(): T } }) =>
     }),
     DatabaseModule,
     HierarchyModule,
+    AuditModule,
     HealthModule,
     AuthModule,
     AccountsModule,
