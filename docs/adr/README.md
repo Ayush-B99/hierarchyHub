@@ -20,3 +20,4 @@ To add one, copy [template.md](template.md) and give it the next number.
 | [0012](0012-prisma-client-with-pg-pool.md) | Run Prisma through our own node-postgres pool                      | Accepted |
 | [0013](0013-api-security-layer.md)         | API security layer                                                 | Accepted |
 | [0014](0014-custom-org-chart-and-table.md) | Build the org chart views and the employee table ourselves         | Accepted |
+| [0015](0015-docs-site.md)                  | Publish the docs as a website with MkDocs on GitHub Pages          | Accepted |

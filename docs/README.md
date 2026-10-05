@@ -1,6 +1,16 @@
-# Documentation
+# Hierarchy Hub documentation
 
-This folder holds all project documentation. The two documents the brief asks for are the [user guide](user-guide/USER_GUIDE.md) and the [technical document](technical/TECHNICAL.md). The SRS ends with a checklist showing where every line of the brief is met.
+Hierarchy Hub is a cloud hosted app for managing EPI-USE Africa's employees and who they report to. This is its documentation, also published as a website at [ayush-b99.github.io/hierarchyHub](https://ayush-b99.github.io/hierarchyHub/).
+
+**Start here**
+
+- **[User guide](user-guide/USER_GUIDE.md):** how to use every feature, with screenshots. A required deliverable.
+- **[Technical document](technical/TECHNICAL.md):** the architecture, design patterns, technologies and why. A required deliverable.
+- **[Beyond the brief](extras/EXTRAS.md):** everything built beyond what was asked, with where to see it.
+
+The [SRS](srs/SRS.md) ends with a checklist showing where every line of the brief is met.
+
+## Every document
 
 | Document                                                | What it covers                                                                                                     |
 | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
@@ -17,7 +27,7 @@ This folder holds all project documentation. The two documents the brief asks fo
 
 ## Diagrams
 
-Diagrams are written in [Mermaid](https://mermaid.js.org/). GitHub shows them as pictures automatically. In VS Code, install the "Markdown Preview Mermaid Support" extension (it is in the recommended extensions list).
+Diagrams are written in [Mermaid](https://mermaid.js.org/). GitHub and the docs site show them as pictures automatically. In VS Code, install the "Markdown Preview Mermaid Support" extension (it is in the recommended extensions list).
 
 ## Keeping docs up to date
 
@@ -25,3 +35,4 @@ Diagrams are written in [Mermaid](https://mermaid.js.org/). GitHub shows them as
 - If a change affects how the system behaves, update the SRS in the same pull request.
 - If a change affects how the system is built, update the SAS or add a new ADR.
 - Documents are versioned with git, so there is no need for a change log inside each file.
+- Preview the docs site with `task docs`. Pull requests build it in strict mode, so broken links fail, and merges to `main` publish it (ADR 0015).

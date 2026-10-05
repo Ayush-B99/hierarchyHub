@@ -98,6 +98,7 @@ The web app loads the whole organisation in one request and builds the tree in m
 | Code organisation   | pnpm workspaces and Turborepo                      | One repository holding the web app, the API and the shared package. Builds and tests are cached, so only what changed is rebuilt (ADR 0001).                                    |
 | Testing             | Vitest, Jest, Testing Library, Supertest, MSW, axe | Unit, integration, end-to-end and accessibility tests (section 7).                                                                                                              |
 | Quality checks      | ESLint, Prettier, GitHub Actions, Dependabot       | Every pull request is checked for formatting, lint errors, type errors and failing tests, against a real database. Dependencies are kept up to date automatically.              |
+| Documentation site  | MkDocs Material on GitHub Pages                    | All the docs as one searchable website, with diagrams rendered and light and dark mode, built from the same markdown files and published automatically (ADR 0015).              |
 
 ## 4. Design patterns
 
