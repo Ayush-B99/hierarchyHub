@@ -132,12 +132,12 @@ describe('PATCH /api/employees/:id', () => {
     await http().patch(`/api/employees/${JOHAN}`).send({ role: 'X' }).expect(428);
   });
 
-  it('accepts If-Match: * to skip the version check on purpose', async () => {
+  it('refuses If-Match: *, a change has to say which version it was made from', async () => {
     await http()
       .patch(`/api/employees/${JOHAN}`)
       .set('If-Match', '*')
       .send({ role: 'Forced' })
-      .expect(200);
+      .expect(400);
   });
 
   it('404s someone who is not there', async () => {

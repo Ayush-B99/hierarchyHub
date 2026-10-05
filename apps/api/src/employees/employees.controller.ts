@@ -30,7 +30,8 @@ import { EmployeesService } from './employees.service';
 
 // unknown query parameters and body fields are refused rather than ignored, so typos get
 // noticed and nobody can slip in fields like id or version
-const listQuery = new ZodValidationPipe(listEmployeesQuerySchema.strict());
+// already strict, and it checks the ranges make sense
+const listQuery = new ZodValidationPipe(listEmployeesQuerySchema);
 const idParam = new ZodValidationPipe(z.string().uuid('That is not a valid employee id'));
 const createBody = new ZodValidationPipe(createEmployeeSchema.strict());
 const updateBody = new ZodValidationPipe(

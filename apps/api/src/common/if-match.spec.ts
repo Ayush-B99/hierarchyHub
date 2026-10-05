@@ -13,8 +13,12 @@ const statusOf = (header: string | undefined) => {
 describe('expectedVersion', () => {
   it('reads the version from the etag', () => {
     expect(expectedVersion('"v3"')).toBe(3);
-    expect(expectedVersion('W/"v12"')).toBe(12);
-    expect(expectedVersion('*')).toBe('any');
+    expect(expectedVersion(' "v12" ')).toBe(12);
+  });
+
+  it('refuses "any version" and weak tags, which would skip the clash check (400)', () => {
+    expect(statusOf('*')).toBe(400);
+    expect(statusOf('W/"v12"')).toBe(400);
   });
 
   it('insists on the header being there (428)', () => {

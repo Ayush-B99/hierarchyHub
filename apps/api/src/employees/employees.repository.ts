@@ -117,7 +117,7 @@ export class EmployeesRepository {
   ): Promise<EmployeeRecord | null> {
     try {
       return await this.db.employee.update({
-        where: expected === 'any' ? { id } : { id, version: expected },
+        where: { id, version: expected },
         data,
       });
     } catch (error) {
@@ -139,7 +139,7 @@ export class EmployeesRepository {
       const [row] = await tx.$queryRaw<{ managerId: string | null; version: number }[]>`
         SELECT manager_id AS "managerId", version FROM employees WHERE id = ${id}::uuid FOR UPDATE`;
       if (!row) return { result: 'missing' as const };
-      if (expected !== 'any' && row.version !== expected) return { result: 'stale' as const };
+      if (row.version !== expected) return { result: 'stale' as const };
 
       const moved = await tx.employee.updateMany({
         where: { managerId: id },
