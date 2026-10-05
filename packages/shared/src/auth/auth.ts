@@ -47,9 +47,19 @@ export const signInSchema = z
 
 export const approveAccountSchema = z.object({ employeeId: z.string().uuid() }).strict();
 
+/** what an admin can change about an account below them: admin or not, and on or off */
+export const updateAccountSchema = z
+  .object({
+    isAdmin: z.boolean().optional(),
+    status: z.enum(['active', 'disabled']).optional(),
+  })
+  .strict()
+  .refine((body) => Object.keys(body).length > 0, 'Send at least one thing to change');
+
 export type SignUpInput = z.infer<typeof signUpSchema>;
 export type SignInInput = z.infer<typeof signInSchema>;
 export type ApproveAccountInput = z.infer<typeof approveAccountSchema>;
+export type UpdateAccountInput = z.infer<typeof updateAccountSchema>;
 
 export type AccountStatus = 'pending' | 'active' | 'disabled';
 
