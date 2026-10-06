@@ -208,7 +208,7 @@ Everyone signs in (ADR 0016), and the API protects itself in several more ways (
 | API unit tests       | Services, mappers, settings, error handling, version checks, the seed guard                                | Jest                                       | 37    |
 | Database integration | Constraints, the loop trigger, clashing changes made at the same moment                                    | Jest against real PostgreSQL               | 37    |
 | API end to end       | Every endpoint and rule over HTTP, clashing saves, security headers, rate limits, speed with 10,000 people | Jest and Supertest against real PostgreSQL | 213   |
-| Infrastructure       | No NAT gateway, private encrypted database, API only through CloudFront, secrets only where needed         | Vitest and CDK assertions                  | 11    |
+| Infrastructure       | No NAT gateway, private encrypted database, API only through CloudFront, secrets only where needed         | Vitest and CDK assertions                  | 13    |
 
 All of these run on every pull request in GitHub Actions, together with formatting, linting, type checks and the build. The end-to-end tests can only ever run against a database whose name ends in `_test`.
 

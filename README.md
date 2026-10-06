@@ -13,13 +13,19 @@ Add, edit and delete employees, set reporting lines, explore the organisation in
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL_16-4169E1?logo=postgresql&logoColor=white)
 ![AWS](https://img.shields.io/badge/AWS-232F3E?logo=amazonwebservices&logoColor=white)
 
-**Live app:** _link added after deployment_ &nbsp;&nbsp;|&nbsp;&nbsp; [User guide](docs/user-guide/USER_GUIDE.md) &nbsp;&nbsp;|&nbsp;&nbsp; [Technical document](docs/technical/TECHNICAL.md) &nbsp;&nbsp;|&nbsp;&nbsp; [Beyond the brief](docs/extras/EXTRAS.md)
+**Live app:** [d6atm0gw3zjf0.cloudfront.net](https://d6atm0gw3zjf0.cloudfront.net) &nbsp;&nbsp;|&nbsp;&nbsp; [User guide](docs/user-guide/USER_GUIDE.md) &nbsp;&nbsp;|&nbsp;&nbsp; [Technical document](docs/technical/TECHNICAL.md) &nbsp;&nbsp;|&nbsp;&nbsp; [Beyond the brief](docs/extras/EXTRAS.md)
 
 **Docs site:** [ayush-b99.github.io/hierarchyHub](https://ayush-b99.github.io/hierarchyHub/)
 
 ![The Explore page: Johan in the middle, his manager above and his team circling him](docs/user-guide/images/explore-orbit.jpg)
 
 </div>
+
+## Try it live
+
+The app runs on AWS at **[d6atm0gw3zjf0.cloudfront.net](https://d6atm0gw3zjf0.cloudfront.net)**, with 14 sample employees and six weeks of sample history. Sign-in details are shared privately with the assessors rather than published here, because each sample account has its own generated password. Sign in as the CEO to see everything, then as someone further down to see permissions and private salaries at work.
+
+To run it on your own machine instead, see [Running it locally](#running-it-locally).
 
 ## What it does
 
@@ -46,18 +52,18 @@ Every feature is explained, with screenshots, in the [user guide](docs/user-guid
 
 ## How it meets the brief
 
-| The brief asks for                                                        | Where to find it                                                                                  |
-| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Create, read, update and delete employees                                 | Add employee button, details panel, **Edit details** and **Delete**                               |
-| Set the reporting line manager; nobody is their own manager; CEO has none | **Change manager**, or drag and drop. Enforced by the form, the API and the database              |
-| Name, surname, birth date, employee number, salary, role and manager      | Every employee record, plus email for Gravatar                                                    |
-| A visual representation of the hierarchy                                  | The Explore page: Orbit and Levels views                                                          |
-| Search the hierarchy to find, edit or delete                              | **Find someone** in the top bar, on every page                                                    |
-| A table that sorts and filters on any field                               | The People page                                                                                   |
-| Gravatar profile pictures                                                 | Everywhere a person appears                                                                       |
-| Cloud hosted, reachable by URL                                            | AWS (link above)                                                                                  |
-| No mocked data; every change saved to a remote database                   | The database is the only data source, and the production build contains no mock code              |
-| A user guide and a short technical document                               | [User guide](docs/user-guide/USER_GUIDE.md) and [technical document](docs/technical/TECHNICAL.md) |
+| The brief asks for                                                        | Where to find it                                                                                                                                                              |
+| ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Create, read, update and delete employees                                 | Add employee button, details panel, **Edit details** and **Delete**                                                                                                           |
+| Set the reporting line manager; nobody is their own manager; CEO has none | **Change manager**, or drag and drop. Enforced by the form, the API and the database                                                                                          |
+| Name, surname, birth date, employee number, salary, role and manager      | Every employee record, plus email for Gravatar                                                                                                                                |
+| A visual representation of the hierarchy                                  | The Explore page: Orbit and Levels views                                                                                                                                      |
+| Search the hierarchy to find, edit or delete                              | **Find someone** in the top bar, on every page                                                                                                                                |
+| A table that sorts and filters on any field                               | The People page                                                                                                                                                               |
+| Gravatar profile pictures                                                 | Everywhere a person appears                                                                                                                                                   |
+| Cloud hosted, reachable by URL                                            | AWS, at [d6atm0gw3zjf0.cloudfront.net](https://d6atm0gw3zjf0.cloudfront.net)                                                                                                  |
+| No mocked data; every change saved to a remote database                   | The live database is the only data source. Sample employees were loaded into it once, and every change since goes through the app. The production build contains no mock code |
+| A user guide and a short technical document                               | [User guide](docs/user-guide/USER_GUIDE.md) and [technical document](docs/technical/TECHNICAL.md)                                                                             |
 
 The [SRS checklist](docs/srs/SRS.md#8-checklist-against-the-brief) goes through the brief line by line.
 
