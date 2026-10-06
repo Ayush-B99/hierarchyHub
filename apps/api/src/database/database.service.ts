@@ -17,6 +17,7 @@ export class DatabaseService extends PrismaClient implements OnModuleInit, OnMod
   private readonly logger = new Logger(DatabaseService.name);
   private readonly pool: Pool;
   private closed = false;
+  private readonly startupCheck: 'strict' | 'warn';
 
   constructor(config: ConfigService<Env, true>) {
     const env = validateEnv({
@@ -32,6 +33,7 @@ export class DatabaseService extends PrismaClient implements OnModuleInit, OnMod
     // salaries and all. our exception filter logs a safe summary instead
     super({ adapter: new PrismaPg(pool), log: [], errorFormat: 'minimal' });
     this.pool = pool;
+    this.startupCheck = config.get('DATABASE_STARTUP_CHECK', { infer: true }) ?? 'strict';
 
     // a connection dropping while idle would otherwise crash the whole process
     this.pool.on('error', (error: Error & { code?: string }) => {
@@ -46,6 +48,10 @@ export class DatabaseService extends PrismaClient implements OnModuleInit, OnMod
       this.logger.log('connected to the database');
     } catch (error) {
       const code = (error as { code?: string }).code ?? (error as Error).name;
+      if (this.startupCheck === 'warn') {
+        this.logger.warn(`could not connect to the database yet (${code}), will keep trying`);
+        return;
+      }
       // the url has a password in it, so it never goes in the message
       throw new Error(
         `could not connect to the database (${code}). Is it running, and is DATABASE_URL right?`,

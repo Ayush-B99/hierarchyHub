@@ -114,6 +114,19 @@ describe('the api is only reachable through cloudfront', () => {
   });
 });
 
+describe('the first deploy can finish before the database is set up', () => {
+  it('lets the api start and keep trying instead of crashing', () => {
+    template.hasResourceProperties('AWS::ECS::TaskDefinition', {
+      ContainerDefinitions: [
+        Match.objectLike({
+          Name: 'api',
+          Environment: Match.arrayWith([{ Name: 'DATABASE_STARTUP_CHECK', Value: 'warn' }]),
+        }),
+      ],
+    });
+  });
+});
+
 describe('secrets go only where they’re needed', () => {
   const containerSecrets = (name: string) => {
     const defs = resources('AWS::ECS::TaskDefinition').flatMap(

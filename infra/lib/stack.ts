@@ -162,6 +162,7 @@ export class HierarchyHubStack extends Stack {
         ...dbEnv,
         CORS_ORIGIN: siteUrl,
         TRUST_PROXY: '2',
+        DATABASE_STARTUP_CHECK: 'warn',
       },
       secrets: { APP_DB_PASSWORD: ecs.Secret.fromSecretsManager(appPassword) },
     });

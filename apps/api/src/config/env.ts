@@ -46,6 +46,10 @@ export const envSchema = z
     DATABASE_POOL_MAX: z.coerce.number().int().min(1).max(30).default(10),
     // how long to wait for a free connection before giving up
     DATABASE_CONNECT_TIMEOUT_MS: z.coerce.number().int().min(100).default(5000),
+    // strict: refuse to start without the database, so a mistake shows up straight away
+    // warn: start anyway and keep trying, for a fresh deploy where the database users are
+    // created just after the api first starts
+    DATABASE_STARTUP_CHECK: z.enum(['strict', 'warn']).default('strict'),
   })
   // in production the connection to the database has to be encrypted and verified
   .refine((env) => env.NODE_ENV !== 'production' || env.DATABASE_SSL === 'verify-full', {
