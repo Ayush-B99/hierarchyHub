@@ -8,6 +8,7 @@ Hierarchy Hub is a cloud hosted app for managing EPI-USE Africa's employees and 
 
 - **[User guide](user-guide/USER_GUIDE.md):** how to use every feature, with screenshots. A required deliverable.
 - **[Technical document](technical/TECHNICAL.md):** the architecture, design patterns, technologies and why. A required deliverable.
+- **[Highlights](highlights/HIGHLIGHTS.md):** the strongest and most unique parts, in one page, with a five minute tour.
 - **[Beyond the brief](extras/EXTRAS.md):** everything built beyond what was asked, with where to see it.
 
 The [SRS](srs/SRS.md) ends with a checklist showing where every line of the brief is met.
@@ -24,6 +25,7 @@ The [SRS](srs/SRS.md) ends with a checklist showing where every line of the brie
 | [Deploying](deploy/DEPLOY.md)                           | Setting up the live site on AWS, step by step, and turning it off.                                                 |
 | [Security testing](security/ATTACKS.md)                 | Every attack we tried on the app, what broke, and how it's now protected.                                          |
 | [User guide](user-guide/USER_GUIDE.md)                  | How to use the app, with screenshots. This is a required deliverable.                                              |
+| [Highlights](highlights/HIGHLIGHTS.md)                  | The strongest and most unique parts, in one page                                                                   |
 | [Beyond the brief](extras/EXTRAS.md)                    | Everything built beyond the brief, in the app and under the hood, with where to see each item.                     |
 | [Roadmap](planning/ROADMAP.md)                          | The order we build things in, and the status of each part.                                                         |
 | [Brand guide](design/BRAND.md)                          | Name, logo, colours with measured contrast, typography, motion, and voice and tone.                                |
