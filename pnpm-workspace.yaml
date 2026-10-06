@@ -1,20 +1,16 @@
 packages:
   - apps/*
   - packages/*
+  - infra
 
 # Catalog: one version of shared tooling for every package.
 # Packages reference these with "catalog:" instead of a version range.
 catalog:
+  '@types/node': ^22.20.5
+  eslint: ^9.39.5
   typescript: ~5.9.3
-  '@types/node': ^22.0.0
-  eslint: ^9.0.0
-  vitest: ^3.2.0
+  vitest: ^3.2.7
   zod: ^3.25.0
-
-# pnpm 10 blocks dependency install scripts by default; allow only the ones we need.
-onlyBuiltDependencies:
-  - '@nestjs/core'
-  - esbuild
 
 # install scripts we deliberately skip. msw only refreshes a file we already commit,
 # and prisma downloads its engines on first use instead of at install time
@@ -22,3 +18,8 @@ ignoredBuiltDependencies:
   - msw
   - prisma
   - '@prisma/engines'
+
+# pnpm 10 blocks dependency install scripts by default; allow only the ones we need.
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - esbuild
