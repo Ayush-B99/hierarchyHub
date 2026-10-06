@@ -1,5 +1,7 @@
 # Hierarchy Hub documentation
 
+**Live app:** [d6atm0gw3zjf0.cloudfront.net](https://d6atm0gw3zjf0.cloudfront.net)
+
 Hierarchy Hub is a cloud hosted app for managing EPI-USE Africa's employees and who they report to. This is its documentation, also published as a website at [ayush-b99.github.io/hierarchyHub](https://ayush-b99.github.io/hierarchyHub/).
 
 **Start here**

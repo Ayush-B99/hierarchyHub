@@ -2,30 +2,30 @@
 
 The project is built in parts. Each part is one branch and one pull request, made up of small commits. We build the frontend first against a mock API ([ADR 0008](../adr/0008-frontend-first-with-msw.md)), then the backend.
 
-| Part | What it covers                                                                              | Branch                       | Status      |
-| ---- | ------------------------------------------------------------------------------------------- | ---------------------------- | ----------- |
-| 1    | Monorepo, tooling, git hooks and CI                                                         | `chore/monorepo-setup`       | Done        |
-| 2    | Initial documentation                                                                       | `docs/initial-documentation` | Done        |
-| 3a   | Frontend foundation: design tokens, themes, UI components, 3D background, routing, mock API | `feat/web-foundation`        | Done        |
-| 3b   | Explore page: Orbit and Levels views, path to the top, details panel                        | `feat/web-explore`           | Done        |
-| 3c   | People page: sentence filters and sortable table                                            | `feat/web-people`            | Done        |
-| 3d   | Add and edit forms, manager rules, delete confirmation                                      | `feat/web-forms`             | Done        |
-| 3e   | Search, React Bits effects and polish                                                       | `feat/web-polish`            | Done        |
-| 4a   | Database: local PostgreSQL, table, rules, users, migrations, integration tests              | `feat/database`              | Done        |
-| 4b   | Connect the API to the database securely, sample data for local work                        | `feat/database-access`       | Done        |
-| 5a   | Employee API, reading: list, filters, sorting, paging, hierarchy, caching                   | `feat/api-read`              | Done        |
-| 5b   | Employee API, changes: create, update, delete, clashing edits, security layer               | `feat/api-write`             | Done        |
-| 5c   | Switch the frontend from the mock to the real API                                           | `feat/web-real-api`          | Done        |
-| 5d   | Rotating 3D Orbit view, drag to spin, moons for team size                                   | `feat/orbit-3d`              | Done        |
-| 5e   | Bring every document in line with the brief and the built app                               | `docs/match-the-brief`       | Done        |
-| 5f   | Docs website on GitHub Pages                                                                | `docs/site`                  | Done        |
-| 6a   | Attack the app, fix what broke, keep every attack as a test                                 | `fix/break-it`               | Done        |
-| 6b   | Accounts: sign up, sign in, sessions, admin approval                                        | `feat/accounts`              | Done        |
-| 6c   | Permissions based on the hierarchy, and salary privacy                                      | `feat/permissions`           | Done        |
-| 6d   | Audit trail and audit page                                                                  | `feat/audit`                 | Done        |
-| 6e   | Tidy comments, bring every document up to date, fresh screenshots                           | `chore/tidy`                 | Done        |
-| 7    | AWS setup and deployment                                                                    | `feat/aws-deployment`        | Not started |
-| 8    | Final pass: live URL, deployment details and fresh screenshots                              | `docs/final-documentation`   | Not started |
+| Part | What it covers                                                                                  | Branch                       | Status |
+| ---- | ----------------------------------------------------------------------------------------------- | ---------------------------- | ------ |
+| 1    | Monorepo, tooling, git hooks and CI                                                             | `chore/monorepo-setup`       | Done   |
+| 2    | Initial documentation                                                                           | `docs/initial-documentation` | Done   |
+| 3a   | Frontend foundation: design tokens, themes, UI components, 3D background, routing, mock API     | `feat/web-foundation`        | Done   |
+| 3b   | Explore page: Orbit and Levels views, path to the top, details panel                            | `feat/web-explore`           | Done   |
+| 3c   | People page: sentence filters and sortable table                                                | `feat/web-people`            | Done   |
+| 3d   | Add and edit forms, manager rules, delete confirmation                                          | `feat/web-forms`             | Done   |
+| 3e   | Search, React Bits effects and polish                                                           | `feat/web-polish`            | Done   |
+| 4a   | Database: local PostgreSQL, table, rules, users, migrations, integration tests                  | `feat/database`              | Done   |
+| 4b   | Connect the API to the database securely, sample data for local work                            | `feat/database-access`       | Done   |
+| 5a   | Employee API, reading: list, filters, sorting, paging, hierarchy, caching                       | `feat/api-read`              | Done   |
+| 5b   | Employee API, changes: create, update, delete, clashing edits, security layer                   | `feat/api-write`             | Done   |
+| 5c   | Switch the frontend from the mock to the real API                                               | `feat/web-real-api`          | Done   |
+| 5d   | Rotating 3D Orbit view, drag to spin, moons for team size                                       | `feat/orbit-3d`              | Done   |
+| 5e   | Bring every document in line with the brief and the built app                                   | `docs/match-the-brief`       | Done   |
+| 5f   | Docs website on GitHub Pages                                                                    | `docs/site`                  | Done   |
+| 6a   | Attack the app, fix what broke, keep every attack as a test                                     | `fix/break-it`               | Done   |
+| 6b   | Accounts: sign up, sign in, sessions, admin approval                                            | `feat/accounts`              | Done   |
+| 6c   | Permissions based on the hierarchy, and salary privacy                                          | `feat/permissions`           | Done   |
+| 6d   | Audit trail and audit page                                                                      | `feat/audit`                 | Done   |
+| 6e   | Tidy comments, bring every document up to date, fresh screenshots                               | `chore/tidy`                 | Done   |
+| 7    | AWS setup and deployment, live at https://d6atm0gw3zjf0.cloudfront.net                          | `feat/deploy`                | Done   |
+| 8    | Final pass: live URL, deployment details as they really happened, final check against the brief | `docs/final`                 | Done   |
 
 ## Requirements by part
 

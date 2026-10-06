@@ -83,7 +83,7 @@ More detail in [ADR 0013](../adr/0013-api-security-layer.md).
 
 | Extra                         | What it does                                                                                                                                                                  |
 | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 533 automated tests           | Web, shared, API unit, database integration and API end-to-end suites ([technical document, section 7](../technical/TECHNICAL.md#7-testing)).                                 |
+| 535 automated tests           | Web, shared, API unit, database integration and API end-to-end suites ([technical document, section 7](../technical/TECHNICAL.md#7-testing)).                                 |
 | Tests against real PostgreSQL | Integration and end-to-end tests run against a real database, in CI as well as locally.                                                                                       |
 | Contract tests                | The same examples run against the mock API and the real API, so the two can never drift apart.                                                                                |
 | Performance tests             | 10,000 extra employees are loaded, and the table and org chart must answer within half a second and one second.                                                               |

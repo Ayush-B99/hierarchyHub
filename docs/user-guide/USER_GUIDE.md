@@ -2,13 +2,13 @@
 
 This guide shows how to use Hierarchy Hub to manage EPI-USE Africa's employees and who they report to. The screenshots use sample employees.
 
-Live app: _link added after deployment_
+Live app: [d6atm0gw3zjf0.cloudfront.net](https://d6atm0gw3zjf0.cloudfront.net)
 
 ## 1. Getting started
 
 ### Signing in
 
-Open the app in a current browser and sign in with your work email and password. Your name appears in the top bar, with an **Admin** badge if you're an admin. Select **Sign out** there when you're done.
+Open the app in a current browser, at **https://d6atm0gw3zjf0.cloudfront.net**, and sign in with your work email and password. Your name appears in the top bar, with an **Admin** badge if you're an admin. Select **Sign out** there when you're done.
 
 ![The sign in page](images/sign-in.jpg)
 

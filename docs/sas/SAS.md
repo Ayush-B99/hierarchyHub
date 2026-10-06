@@ -356,7 +356,7 @@ flowchart TB
 
     grav["<b>Gravatar</b><br/>gravatar.com"]
 
-    subgraph aws["AWS region (Cape Town, af-south-1, or Ireland, eu-west-1)"]
+    subgraph aws["AWS region: Stockholm, eu-north-1"]
         amplify["<b>Amazon S3</b><br/>Static web app files, private,<br/>served only through CloudFront"]
         cf["<b>Amazon CloudFront</b><br/>HTTPS address for the API"]
         ecr["<b>Amazon ECR</b><br/>API container images"]
@@ -402,7 +402,8 @@ Other points:
 - There is no NAT gateway. It is the most expensive part of a typical small AWS setup, and nothing in the private subnets needs the internet.
 - The API connects to the database with the `hh_app` user, which can only read and write rows. Migrations use the separate `hh_migrator` user (ADR 0010).
 - `TRUST_PROXY` is 2 (CloudFront and the load balancer), so rate limits see each visitor's real address (ADR 0013).
-- The Cape Town region keeps employee data in South Africa. If it isn't enabled on the account, Ireland is used instead.
+- The account only allows Stockholm (`eu-north-1`), the region it was created in, so everything runs there (ADR 0021). It's in the EU and priced about the same as Ireland.
+- The API may start before its database is ready, so a fresh deploy can finish before the database users exist. Its readiness check reports the database as down until it's reachable.
 
 ### 9.2 Delivery pipeline
 
@@ -420,24 +421,27 @@ flowchart LR
     end
 
     ci -->|"both green, merge to main"| main["main branch"]
-    main -->|"build and push image"| ecr["Amazon ECR"]
-    ecr -->|"run migrations, then roll out"| ecs["ECS Fargate"]
-    main -->|"build web app, upload"| amp["S3 behind CloudFront"]
-    iac["AWS setup written as code"] -.->|"creates and updates"| aws["AWS resources"]
+    main -->|"task aws:deploy"| cdk["AWS CDK"]
+    cdk -->|"build and push image"| ecr["Amazon ECR"]
+    ecr -->|"roll out, health checked"| ecs["ECS Fargate"]
+    cdk -->|"build web app, upload"| amp["S3 behind CloudFront"]
+    cdk -.->|"creates and updates"| aws["AWS resources"]
+    main -->|"task aws:migrate"| ops["Operations task:<br/>migrations"]
 ```
 
 - Nothing reaches `main` unless both CI jobs pass.
+- Deploys run from a developer's machine with `task aws:deploy`, because this account type can't create the identity provider GitHub Actions would need. The workflow for automatic deploys is in the repo for accounts that allow it (ADR 0021).
 - The database job builds a fresh PostgreSQL from the same setup scripts used locally and on AWS, so all three environments match.
 - New API containers only receive traffic once they pass the health check, so a broken release never replaces a working one.
 - A separate Docs workflow builds the documentation site on every pull request, in strict mode, and publishes it to GitHub Pages from `main` (ADR 0015).
 
 ### 9.3 Environments
 
-| Environment | Web app                    | API                           | Database                                                          | Used for                    |
-| ----------- | -------------------------- | ----------------------------- | ----------------------------------------------------------------- | --------------------------- |
-| Local       | Vite dev server, port 5173 | Node.js, port 3000            | PostgreSQL 16 in Docker: `hierarchy_hub` and `hierarchy_hub_test` | Building and testing        |
-| CI          | Built, not served          | Booted inside the test runner | PostgreSQL 16 service container: `hierarchy_hub_test` only        | Checking every pull request |
-| Production  | S3 behind CloudFront       | ECS Fargate                   | Amazon RDS                                                        | The live app                |
+| Environment | Web app                    | API                           | Database                                                          | Used for                                              |
+| ----------- | -------------------------- | ----------------------------- | ----------------------------------------------------------------- | ----------------------------------------------------- |
+| Local       | Vite dev server, port 5173 | Node.js, port 3000            | PostgreSQL 16 in Docker: `hierarchy_hub` and `hierarchy_hub_test` | Building and testing                                  |
+| CI          | Built, not served          | Booted inside the test runner | PostgreSQL 16 service container: `hierarchy_hub_test` only        | Checking every pull request                           |
+| Production  | S3 behind CloudFront       | ECS Fargate                   | Amazon RDS, Stockholm                                             | The live app, at https://d6atm0gw3zjf0.cloudfront.net |
 
 ## 10. Design patterns
 
@@ -477,7 +481,6 @@ The Gang of Four patterns used inside the code (Singleton, Factory, Builder, Ada
 | Two people change managers at the same moment and create a loop.       | Solved: the database trigger takes a lock, so manager changes are checked one at a time (ADR 0010). |
 | A very large org chart is slow to draw.                                | Solved: the Orbit and Levels views only draw one person's surroundings (ADR 0014).                  |
 | No login in the first version, so anyone with the URL can change data. | Acceptable for the assessment. Login is planned as an extra (FR-17).                                |
-| The Cape Town region is not enabled on the AWS account.                | Use Ireland (`eu-west-1`) instead.                                                                  |
 | AWS free tier rules change.                                            | Use the smallest sizes and remove everything after the assessment.                                  |
 
 ## 13. Repository layout
