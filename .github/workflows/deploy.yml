@@ -41,13 +41,13 @@ jobs:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: ${{ vars.AWS_REGION || 'eu-west-1' }}
+          aws-region: ${{ vars.AWS_REGION || 'eu-north-1' }}
 
       - name: Build the web app
         run: pnpm turbo run build --filter=@hierarchy-hub/web...
 
       - name: Deploy
-        run: pnpm --filter @hierarchy-hub/infra deploy
+        run: pnpm --filter @hierarchy-hub/infra run deploy
 
       - name: Apply new migrations
         run: pnpm --filter @hierarchy-hub/infra ops migrate

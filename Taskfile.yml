@@ -223,7 +223,7 @@ tasks:
     desc: Build the web app and deploy everything to AWS
     cmds:
       - pnpm turbo run build --filter=@hierarchy-hub/web...
-      - pnpm --filter @hierarchy-hub/infra deploy
+      - pnpm --filter @hierarchy-hub/infra run deploy
 
   aws:setup:
     desc: One time after the first deploy, creates the database users and the database

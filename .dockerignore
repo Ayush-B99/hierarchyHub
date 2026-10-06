@@ -10,3 +10,4 @@ docs-site
 apps/web
 **/.env
 **/coverage
+**/cdk.out
