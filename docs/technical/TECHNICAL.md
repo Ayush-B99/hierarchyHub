@@ -203,11 +203,11 @@ Everyone signs in (ADR 0016), and the API protects itself in several more ways (
 
 | Kind                 | What it covers                                                                                             | Tool                                       | Count |
 | -------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ----- |
-| Shared unit tests    | Validation rules and hierarchy helpers                                                                     | Vitest                                     | 42    |
-| Web tests            | Screens, forms, search, drag and drop, the orbit, clashes, accessibility (axe), CSV export                 | Vitest, Testing Library, MSW               | 158   |
+| Shared unit tests    | Validation rules and hierarchy helpers                                                                     | Vitest                                     | 61    |
+| Web tests            | Screens, forms, search, drag and drop, the orbit, clashes, accessibility (axe), CSV export                 | Vitest, Testing Library, MSW               | 174   |
 | API unit tests       | Services, mappers, settings, error handling, version checks, the seed guard                                | Jest                                       | 37    |
 | Database integration | Constraints, the loop trigger, clashing changes made at the same moment                                    | Jest against real PostgreSQL               | 37    |
-| API end to end       | Every endpoint and rule over HTTP, clashing saves, security headers, rate limits, speed with 10,000 people | Jest and Supertest against real PostgreSQL | 208   |
+| API end to end       | Every endpoint and rule over HTTP, clashing saves, security headers, rate limits, speed with 10,000 people | Jest and Supertest against real PostgreSQL | 213   |
 
 All of these run on every pull request in GitHub Actions, together with formatting, linting, type checks and the build. The end-to-end tests can only ever run against a database whose name ends in `_test`.
 
@@ -239,6 +239,7 @@ The brief invites extra functionality. These were built, and each is explained i
 | Permissions that follow the hierarchy, and salaries private to the person and those above them    | FR-25 to FR-27        |
 | An audit trail of every change that nobody can edit, with an Audit page for admins                | FR-18                 |
 | A pay check: a least squares regression that flags salaries out of line and suggests ranges       | FR-28                 |
+| Time travel: the organisation at any past moment, rebuilt from the audit trail                    | FR-29                 |
 | Every attack we tried kept as an automated test ([security testing](../security/ATTACKS.md))      | NFR-04                |
 
 ### Picture upload

@@ -38,6 +38,7 @@ Add, edit and delete employees, set reporting lines, explore the organisation in
 - **Permissions that follow the organisation.** You can only change people below you, and about yourself only your name and email. Salaries and birth dates are private to the person and those above them.
 - **A history nobody can edit.** Every change, sign in and access change is recorded with who did it, when, and what it was before. Admins see the history of their own part of the organisation.
 - **A pay check.** A small regression learns what positions here usually earn, flags salaries out of line and suggests ranges, using only salaries you're allowed to see.
+- **Time travel.** Drag a slider or press play to see the organisation as it was on any day, rebuilt from the audit trail.
 - **Safe for teams.** If two people edit the same employee at once, the second save is stopped instead of quietly overwriting the first.
 - **Comfortable to use.** Light and dark mode, phone and tablet layouts, full keyboard and screen reader support, and respect for reduced motion settings.
 
@@ -183,11 +184,11 @@ Every command is a shortcut for a pnpm script, so `pnpm dev`, `pnpm test` or `pn
 
 | Suite                | What it covers                                                                                            | Tests |
 | -------------------- | --------------------------------------------------------------------------------------------------------- | ----- |
-| Web                  | Screens, forms, search, drag and drop, the orbit, clashes, accessibility, CSV export                      | 158   |
-| Shared               | Validation rules and hierarchy helpers                                                                    | 42    |
+| Web                  | Screens, forms, search, drag and drop, the orbit, clashes, accessibility, CSV export                      | 174   |
+| Shared               | Validation rules and hierarchy helpers                                                                    | 61    |
 | API unit             | Services, mappers, settings, error handling, version checks                                               | 37    |
 | Database integration | Constraints, the reporting loop trigger, clashing changes, against real PostgreSQL                        | 37    |
-| API end to end       | Every endpoint and rule over HTTP, every attack we tried, security, rate limits, speed with 10,000 people | 208   |
+| API end to end       | Every endpoint and rule over HTTP, every attack we tried, security, rate limits, speed with 10,000 people | 213   |
 
 Every pull request runs all of them in GitHub Actions, against a real PostgreSQL database, along with formatting, linting, type checks and the build.
 

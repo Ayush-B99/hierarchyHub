@@ -2,6 +2,7 @@ import { http, HttpResponse, delay } from 'msw';
 import {
   approveAccountSchema,
   auditQuerySchema,
+  toOrgChange,
   canBeTheirManager,
   createEmployeeSchema,
   descendantsOf,
@@ -151,6 +152,15 @@ const authHandlers = [
   http.all(`${API}/employees*`, ({ request }) => signInProblem(ADMIN_ONLY.has(request.method))),
   http.all(`${API}/accounts*`, () => signInProblem(true)),
   http.all(`${API}/audit*`, () => signInProblem(true)),
+  http.all(`${API}/history*`, () => signInProblem(false)),
+  http.get(`${API}/history`, () =>
+    HttpResponse.json(
+      audit
+        .employeeChanges()
+        .map(toOrgChange)
+        .filter((c) => c.action !== 'employee.updated' || Object.keys(c.changes).length > 0),
+    ),
+  ),
   http.get(`${API}/audit`, ({ request }) => {
     const parsed = auditQuerySchema.safeParse(
       Object.fromEntries(new URL(request.url).searchParams),
@@ -496,7 +506,20 @@ export const handlers = [
         role: { from: row.role, to: null },
         managerId: { from: managerSnapshot(row.managerId), to: null },
       },
-      details: { teamMovedTo: managerSnapshot(row.managerId), team: team.map(nameOf) },
+      details: {
+        teamMovedTo: managerSnapshot(row.managerId),
+        team: team.map(nameOf),
+        teamIds: team.map((member) => member.id),
+        person: {
+          id: row.id,
+          firstName: row.firstName,
+          lastName: row.lastName,
+          email: row.email,
+          employeeNumber: row.employeeNumber,
+          role: row.role,
+          managerId: row.managerId,
+        },
+      },
     });
     // br-04: direct reports move up to the deleted employee's manager
     for (const report of team) {

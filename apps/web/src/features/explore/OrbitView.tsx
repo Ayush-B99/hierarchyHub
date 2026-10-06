@@ -1,3 +1,4 @@
+import { usePast } from '../history/useTimeTravel';
 import { useAuth } from '../auth/useAuth';
 import type { Employee } from '@hierarchy-hub/shared';
 import { canBeTheirManager, descendantsOf, permissionsFor } from '@hierarchy-hub/shared';
@@ -109,8 +110,9 @@ export function OrbitView({ person, org, onSelect, onShowAll }: OrbitViewProps) 
     onDrop: (id, to) => setPending({ id, to }),
   });
   // you can only drag people you're allowed to move: those below you
+  const past = usePast();
   const handlesFor = (id: string) =>
-    me && permissionsFor(me, id, org.byId).move ? dragHandlesFor(id) : undefined;
+    me && !past && permissionsFor(me, id, org.byId).move ? dragHandlesFor(id) : undefined;
 
   // the ring stops turning while you point at a card, tab through them, drag someone or confirm a move
   const [hovering, setHovering] = useState(false);

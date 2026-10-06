@@ -11,25 +11,26 @@ This is the agreement between the web app and the API. It is written before the 
 
 ## Endpoints
 
-| Method | Path                     | What it does                                                                                                                           | Success code |
-| ------ | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| GET    | `/health`                | Checks the API process is up (used by the load balancer).                                                                              | 200          |
-| GET    | `/health/ready`          | Checks the API can reach the database. Returns 503 with `"database": "down"` if not.                                                   | 200          |
-| GET    | `/employees`             | Lists employees one page at a time, with sorting and filters.                                                                          | 200          |
-| GET    | `/employees/hierarchy`   | Returns every employee in one flat list, used to build the org chart.                                                                  | 200          |
-| GET    | `/employees/{id}`        | Returns one employee.                                                                                                                  | 200          |
-| POST   | `/employees`             | Adds an employee.                                                                                                                      | 201          |
-| PATCH  | `/employees/{id}`        | Changes some or all of an employee's details, including their manager.                                                                 | 200          |
-| DELETE | `/employees/{id}`        | Deletes an employee. Their direct reports move to the deleted employee's manager.                                                      | 204          |
-| POST   | `/auth/signup`           | Asks for an account. Always the same answer, whether or not the email is taken.                                                        | 202          |
-| POST   | `/auth/login`            | Signs in and sets the session cookie.                                                                                                  | 200          |
-| POST   | `/auth/logout`           | Ends the session and clears the cookie.                                                                                                | 204          |
-| GET    | `/auth/me`               | Who is signed in.                                                                                                                      | 200          |
-| GET    | `/accounts`              | Admins: accounts waiting for approval, and the accounts of people below you.                                                           | 200          |
-| POST   | `/accounts/{id}/approve` | Admins: links a waiting account to an employee below you, so they can sign in.                                                         | 200          |
-| POST   | `/accounts/{id}/reject`  | Admins: removes a request for an account.                                                                                              | 204          |
-| PATCH  | `/accounts/{id}`         | Admins: `{ "isAdmin": true }` or `{ "status": "disabled" }`, for an account in your reach.                                             | 200          |
-| GET    | `/audit`                 | Admins: the history of your part of the organisation, newest first. Filters: `employeeId`, `action`, `page`, `pageSize` (at most 100). | 200          |
+| Method | Path                     | What it does                                                                                                                                                    | Success code |
+| ------ | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| GET    | `/health`                | Checks the API process is up (used by the load balancer).                                                                                                       | 200          |
+| GET    | `/health/ready`          | Checks the API can reach the database. Returns 503 with `"database": "down"` if not.                                                                            | 200          |
+| GET    | `/employees`             | Lists employees one page at a time, with sorting and filters.                                                                                                   | 200          |
+| GET    | `/employees/hierarchy`   | Returns every employee in one flat list, used to build the org chart.                                                                                           | 200          |
+| GET    | `/employees/{id}`        | Returns one employee.                                                                                                                                           | 200          |
+| POST   | `/employees`             | Adds an employee.                                                                                                                                               | 201          |
+| PATCH  | `/employees/{id}`        | Changes some or all of an employee's details, including their manager.                                                                                          | 200          |
+| DELETE | `/employees/{id}`        | Deletes an employee. Their direct reports move to the deleted employee's manager.                                                                               | 204          |
+| POST   | `/auth/signup`           | Asks for an account. Always the same answer, whether or not the email is taken.                                                                                 | 202          |
+| POST   | `/auth/login`            | Signs in and sets the session cookie.                                                                                                                           | 200          |
+| POST   | `/auth/logout`           | Ends the session and clears the cookie.                                                                                                                         | 204          |
+| GET    | `/auth/me`               | Who is signed in.                                                                                                                                               | 200          |
+| GET    | `/accounts`              | Admins: accounts waiting for approval, and the accounts of people below you.                                                                                    | 200          |
+| POST   | `/accounts/{id}/approve` | Admins: links a waiting account to an employee below you, so they can sign in.                                                                                  | 200          |
+| POST   | `/accounts/{id}/reject`  | Admins: removes a request for an account.                                                                                                                       | 204          |
+| PATCH  | `/accounts/{id}`         | Admins: `{ "isAdmin": true }` or `{ "status": "disabled" }`, for an account in your reach.                                                                      | 200          |
+| GET    | `/audit`                 | Admins: the history of your part of the organisation, newest first. Filters: `employeeId`, `action`, `page`, `pageSize` (at most 100).                          | 200          |
+| GET    | `/history`               | Everyone signed in: every structural change, newest first, to rebuild the organisation at any past moment. Never salaries, birth dates or who made each change. | 200          |
 
 ## Who can do what
 
