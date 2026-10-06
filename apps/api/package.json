@@ -41,6 +41,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.1146.0",
     "@hierarchy-hub/eslint-config": "workspace:*",
     "@hierarchy-hub/tsconfig": "workspace:*",
     "@nestjs/cli": "^11.0.0",
