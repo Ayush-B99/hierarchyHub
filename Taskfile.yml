@@ -211,6 +211,48 @@ tasks:
     env:
       EMPLOYEE: '{{.EMPLOYEE}}'
 
+  # ---------- AWS (adr 0021) ----------
+
+  aws:bootstrap:
+    desc: One time per account and region, prepares AWS for CDK deployments
+    dir: infra
+    cmds:
+      - pnpm exec cdk bootstrap
+
+  aws:deploy:
+    desc: Build the web app and deploy everything to AWS
+    cmds:
+      - pnpm turbo run build --filter=@hierarchy-hub/web...
+      - pnpm --filter @hierarchy-hub/infra deploy
+
+  aws:setup:
+    desc: One time after the first deploy, creates the database users and the database
+    cmds:
+      - pnpm --filter @hierarchy-hub/infra ops setup
+      - pnpm --filter @hierarchy-hub/infra ops migrate
+
+  aws:migrate:
+    desc: Apply new migrations to the live database
+    cmds:
+      - pnpm --filter @hierarchy-hub/infra ops migrate
+
+  aws:load-sample:
+    desc: Load the sample people, accounts and history into an empty live database
+    prompt: This loads sample data into the live database. It only works while that database is empty. Continue?
+    cmds:
+      - CONFIRM="load sample data" pnpm --filter @hierarchy-hub/infra ops load-sample
+
+  aws:passwords:
+    desc: Show the live sample accounts and their passwords
+    cmds:
+      - pnpm --filter @hierarchy-hub/infra ops passwords
+
+  aws:destroy:
+    desc: Delete everything on AWS, including the database
+    prompt: This deletes the live site and its database for good. Continue?
+    cmds:
+      - pnpm --filter @hierarchy-hub/infra destroy
+
   # ---------- Docs site (adr 0015) ----------
 
   docs:setup:

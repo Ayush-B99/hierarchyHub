@@ -1,0 +1,9 @@
+{
+  "extends": "@hierarchy-hub/tsconfig/base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler"
+  },
+  "include": ["bin", "lib", "scripts"]
+}

@@ -51,7 +51,7 @@ flowchart TB
     user(["Browser"])
 
     subgraph aws["AWS"]
-        web["<b>Web app</b><br/>React + Vite<br/>Hosted on AWS Amplify"]
+        web["<b>Web app</b><br/>React + Vite<br/>Files in S3, served by CloudFront"]
         cdn["<b>CloudFront</b><br/>Gives the API an HTTPS address"]
         api["<b>API</b><br/>NestJS + Prisma<br/>Docker container on ECS Fargate"]
         db[("<b>Database</b><br/>PostgreSQL on Amazon RDS")]
@@ -357,7 +357,7 @@ flowchart TB
     grav["<b>Gravatar</b><br/>gravatar.com"]
 
     subgraph aws["AWS region (Cape Town, af-south-1, or Ireland, eu-west-1)"]
-        amplify["<b>AWS Amplify Hosting</b><br/>Static web app files<br/>HTTPS, served from a CDN"]
+        amplify["<b>Amazon S3</b><br/>Static web app files, private,<br/>served only through CloudFront"]
         cf["<b>Amazon CloudFront</b><br/>HTTPS address for the API"]
         ecr["<b>Amazon ECR</b><br/>API container images"]
         sm["<b>AWS Secrets Manager</b><br/>Database passwords"]
@@ -387,15 +387,15 @@ flowchart TB
     task -.->|"logs"| logs
 ```
 
-| Node            | What it holds                                     | Why it's set up this way                                                                             |
-| --------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Amplify Hosting | The built web app: HTML, JavaScript, CSS, fonts   | Static files over HTTPS, cached close to users, rebuilt from GitHub on every merge.                  |
-| CloudFront      | Nothing, it forwards API calls                    | Gives the API an HTTPS address without buying a domain. Without HTTPS, the web app couldn't call it. |
-| Load balancer   | Nothing, it routes                                | Checks `/api/health` and replaces a container that stops answering.                                  |
-| ECS Fargate     | The API container                                 | Runs the same image as local Docker and CI, with no servers to patch.                                |
-| RDS             | The employees database                            | Managed backups and patches. In private subnets, so only the API's security group can reach it.      |
-| Secrets Manager | Database passwords for the app and migrator users | Secrets never sit in git, images or environment files.                                               |
-| CloudWatch      | API logs and alarms                               | Logs carry request IDs, never personal data (NFR-05).                                                |
+| Node            | What it holds                                     | Why it's set up this way                                                                                  |
+| --------------- | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| S3 bucket       | The built web app: HTML, JavaScript, CSS, fonts   | Private. Only CloudFront can read it, and serves it over HTTPS on the same address as the API (ADR 0021). |
+| CloudFront      | Nothing, it forwards API calls                    | Gives the API an HTTPS address without buying a domain. Without HTTPS, the web app couldn't call it.      |
+| Load balancer   | Nothing, it routes                                | Checks `/api/health` and replaces a container that stops answering.                                       |
+| ECS Fargate     | The API container                                 | Runs the same image as local Docker and CI, with no servers to patch.                                     |
+| RDS             | The employees database                            | Managed backups and patches. In private subnets, so only the API's security group can reach it.           |
+| Secrets Manager | Database passwords for the app and migrator users | Secrets never sit in git, images or environment files.                                                    |
+| CloudWatch      | API logs and alarms                               | Logs carry request IDs, never personal data (NFR-05).                                                     |
 
 Other points:
 
@@ -422,7 +422,7 @@ flowchart LR
     ci -->|"both green, merge to main"| main["main branch"]
     main -->|"build and push image"| ecr["Amazon ECR"]
     ecr -->|"run migrations, then roll out"| ecs["ECS Fargate"]
-    main -->|"build web app"| amp["Amplify Hosting"]
+    main -->|"build web app, upload"| amp["S3 behind CloudFront"]
     iac["AWS setup written as code"] -.->|"creates and updates"| aws["AWS resources"]
 ```
 
@@ -437,7 +437,7 @@ flowchart LR
 | ----------- | -------------------------- | ----------------------------- | ----------------------------------------------------------------- | --------------------------- |
 | Local       | Vite dev server, port 5173 | Node.js, port 3000            | PostgreSQL 16 in Docker: `hierarchy_hub` and `hierarchy_hub_test` | Building and testing        |
 | CI          | Built, not served          | Booted inside the test runner | PostgreSQL 16 service container: `hierarchy_hub_test` only        | Checking every pull request |
-| Production  | Amplify Hosting            | ECS Fargate                   | Amazon RDS                                                        | The live app                |
+| Production  | S3 behind CloudFront       | ECS Fargate                   | Amazon RDS                                                        | The live app                |
 
 ## 10. Design patterns
 

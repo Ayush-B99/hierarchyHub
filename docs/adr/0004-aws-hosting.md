@@ -1,6 +1,6 @@
 # 0004. Host on AWS with Amplify, ECS Fargate and RDS
 
-- Status: Accepted
+- Status: Accepted. The hosting details were replaced by [0021](0021-deployment.md)
 - Date: 2026-10-02
 
 ## Context
