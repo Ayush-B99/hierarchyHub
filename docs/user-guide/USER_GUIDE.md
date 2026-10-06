@@ -221,24 +221,25 @@ For privacy, the email address is turned into a code (a hash) in your browser be
 
 These go beyond what the brief asked for. [Beyond the brief](../extras/EXTRAS.md) has the full list, including the work behind the scenes.
 
-| Feature                                                        | Where                         |
-| -------------------------------------------------------------- | ----------------------------- |
-| Two ways to explore: Orbit and Levels                          | Explore page, section 6       |
-| A rotating 3D Orbit you can spin, with moons for team size     | Explore page, section 6       |
-| Sign in, with new accounts approved by an admin                | Sections 1 and 11             |
-| Permissions that follow the organisation, and private salaries | Section 12                    |
-| A history of who changed what, that can't be edited            | Section 13                    |
-| Path to the top and "Works alongside"                          | Explore page, section 6       |
-| Drag a person onto a new manager                               | Orbit view, section 4         |
-| Search from any page, with keyboard shortcuts                  | Top bar, section 6            |
-| Filters written as a sentence                                  | People page, section 7        |
-| Export to CSV                                                  | People page, section 7        |
-| Shareable links for any person or filtered view                | Address bar, sections 6 and 7 |
-| Protection against overwriting someone else's changes          | Forms and dialogs, section 3  |
-| Light and dark mode                                            | Top bar, section 1            |
-| Works on phones and tablets                                    | Everywhere                    |
-| Keyboard and screen reader support                             | Everywhere                    |
-| Respects your device's reduced motion setting                  | Everywhere                    |
+| Feature                                                          | Where                         |
+| ---------------------------------------------------------------- | ----------------------------- |
+| Two ways to explore: Orbit and Levels                            | Explore page, section 6       |
+| A rotating 3D Orbit you can spin, with moons for team size       | Explore page, section 6       |
+| Sign in, with new accounts approved by an admin                  | Sections 1 and 11             |
+| Permissions that follow the organisation, and private salaries   | Section 12                    |
+| A history of who changed what, that can't be edited              | Section 13                    |
+| A pay check that spots salaries out of line, and suggests ranges | Section 14                    |
+| Path to the top and "Works alongside"                            | Explore page, section 6       |
+| Drag a person onto a new manager                                 | Orbit view, section 4         |
+| Search from any page, with keyboard shortcuts                    | Top bar, section 6            |
+| Filters written as a sentence                                    | People page, section 7        |
+| Export to CSV                                                    | People page, section 7        |
+| Shareable links for any person or filtered view                  | Address bar, sections 6 and 7 |
+| Protection against overwriting someone else's changes            | Forms and dialogs, section 3  |
+| Light and dark mode                                              | Top bar, section 1            |
+| Works on phones and tablets                                      | Everywhere                    |
+| Keyboard and screen reader support                               | Everywhere                    |
+| Respects your device's reduced motion setting                    | Everywhere                    |
 
 ## 11. Approving accounts (admins)
 
@@ -301,3 +302,15 @@ Use **Person** and **What happened** to narrow the list. Select **Their history*
 You see events about the people who were below you when it happened, and about yourself. You never see events about people above or beside you, so salary changes stay as private here as everywhere else. Every admin sees new requests for an account.
 
 Nothing on this page can be changed or deleted, by anyone. If something was changed by mistake, change it back: both changes will be in the history.
+
+## 14. Pay check
+
+Hierarchy Hub learns what people in your organisation are usually paid for their position, and points out salaries that look out of line.
+
+- **In someone's details**, a **Pay check** note appears when their salary is more than 25% above or below what their position usually earns here, with the usual amount for comparison.
+- **On the People page**, flagged salaries have a small tag such as **+43%** or **−31%**.
+- **When adding or editing someone**, the Salary field suggests a range, for example "Similar positions here usually earn R 45 000 to R 59 000".
+
+It learns from two things only: how many people are below someone, and whether they manage anyone. It can't know about seniority, skills or experience, so a flag is a prompt to take a look, not a verdict.
+
+It only ever learns from the salaries you're allowed to see (section 12), so it can't reveal anyone else's. It needs at least five salaries to learn from, so people who can only see their own salary don't see pay checks.

@@ -1,3 +1,5 @@
+import { PayTag } from '../insights/PayNote';
+import { usePayInsights } from '../insights/usePayInsights';
 import type { Employee, EmployeeSortField } from '@hierarchy-hub/shared';
 import { Link, useNavigate } from 'react-router';
 import { Avatar } from '../../components/ui/Avatar';
@@ -33,6 +35,7 @@ interface PeopleTableProps {
 
 /** the employee table, click any heading to sort and any row to open that person */
 export function PeopleTable({ rows, org, sort, dir, onSort, busy }: PeopleTableProps) {
+  const pay = usePayInsights();
   const navigate = useNavigate();
   // so the team bars are relative to the biggest team in the whole org
   const biggestTeam = Math.max(1, ...org.roots.map((r) => org.teamSizeOf(r.id)));
@@ -124,7 +127,10 @@ export function PeopleTable({ rows, org, sort, dir, onSort, busy }: PeopleTableP
                   </span>
                 </td>
                 <td className="muted">{formatDate(e.birthDate)}</td>
-                <td className={`${styles.rightCell} num`}>{formatSalary(e.salary)}</td>
+                <td className={`${styles.rightCell} num`}>
+                  {formatSalary(e.salary)}
+                  {pay.flags.get(e.id) && <PayTag flag={pay.flags.get(e.id)!} />}
+                </td>
               </tr>
             );
           })}

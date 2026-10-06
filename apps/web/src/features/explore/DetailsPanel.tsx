@@ -1,3 +1,5 @@
+import { PayNote } from '../insights/PayNote';
+import { usePayInsights } from '../insights/usePayInsights';
 import { Link } from 'react-router';
 import { permissionsFor } from '@hierarchy-hub/shared';
 import { useAuth } from '../auth/useAuth';
@@ -21,6 +23,8 @@ interface DetailsPanelProps {
 /** everything about the selected person, plus quick links to the people they work with */
 export function DetailsPanel({ person, org, onSelect }: DetailsPanelProps) {
   const dialogs = useEmployeeDialogs();
+  const pay = usePayInsights();
+  const payFlag = pay.flags.get(person.id);
   const { me } = useAuth();
   // what you can do to this person depends on where they sit relative to you (adr 0017)
   const can = me
@@ -89,6 +93,7 @@ export function DetailsPanel({ person, org, onSelect }: DetailsPanelProps) {
           <dd>{person.email}</dd>
         </div>
       </dl>
+      {payFlag && pay.model && <PayNote flag={payFlag} trainedOn={pay.model.trainedOn} />}
 
       <div>
         <h3>Works alongside</h3>

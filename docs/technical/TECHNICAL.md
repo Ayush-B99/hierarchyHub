@@ -238,6 +238,7 @@ The brief invites extra functionality. These were built, and each is explained i
 | Sign in, with new accounts approved by an admin above the person                                  | FR-17, FR-24          |
 | Permissions that follow the hierarchy, and salaries private to the person and those above them    | FR-25 to FR-27        |
 | An audit trail of every change that nobody can edit, with an Audit page for admins                | FR-18                 |
+| A pay check: a least squares regression that flags salaries out of line and suggests ranges       | FR-28                 |
 | Every attack we tried kept as an automated test ([security testing](../security/ATTACKS.md))      | NFR-04                |
 
 ### Picture upload

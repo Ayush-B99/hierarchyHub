@@ -407,18 +407,19 @@ Status: **Built** means it works in the delivered app and has automated tests. *
 
 ### 4.5 Optional extras
 
-| ID    | Requirement                                                                                                                                             | Priority | Status    |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------- |
-| FR-17 | Sign in and out. Anyone can ask for an account, but it does nothing until an admin approves it and links it to an employee below them (ADR 0016).       | Could    | Built     |
-| FR-18 | Keep a history of who changed what and when, with each field before and after, that nobody can change or delete (ADR 0018).                             | Could    | Built     |
-| FR-19 | A dashboard with headcount by role and the size of each team.                                                                                           | Could    | Not built |
-| FR-20 | Import employees from a CSV file into the database.                                                                                                     | Could    | Not built |
-| FR-22 | If two people change the same employee at the same time, refuse the second save instead of overwriting, and offer to load the latest version.           | Should   | Built     |
-| FR-23 | Light and dark mode, remembered between visits.                                                                                                         | Could    | Built     |
-| FR-24 | Admins approve or reject new accounts, and see the accounts of the people below them.                                                                   | Should   | Built     |
-| FR-25 | Who can change whom follows the hierarchy: people below you only, never yourself (beyond your name and email) or anyone above or beside you (ADR 0017). | Should   | Built     |
-| FR-26 | Salaries and birth dates are only shown to the person and the people above them, and filters can't be used to guess them.                               | Should   | Built     |
-| FR-27 | Admins make people below them admins, or turn their accounts off.                                                                                       | Should   | Built     |
+| ID    | Requirement                                                                                                                                                                       | Priority | Status    |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------- |
+| FR-17 | Sign in and out. Anyone can ask for an account, but it does nothing until an admin approves it and links it to an employee below them (ADR 0016).                                 | Could    | Built     |
+| FR-18 | Keep a history of who changed what and when, with each field before and after, that nobody can change or delete (ADR 0018).                                                       | Could    | Built     |
+| FR-19 | A dashboard with headcount by role and the size of each team.                                                                                                                     | Could    | Not built |
+| FR-20 | Import employees from a CSV file into the database.                                                                                                                               | Could    | Not built |
+| FR-22 | If two people change the same employee at the same time, refuse the second save instead of overwriting, and offer to load the latest version.                                     | Should   | Built     |
+| FR-23 | Light and dark mode, remembered between visits.                                                                                                                                   | Could    | Built     |
+| FR-24 | Admins approve or reject new accounts, and see the accounts of the people below them.                                                                                             | Should   | Built     |
+| FR-25 | Who can change whom follows the hierarchy: people below you only, never yourself (beyond your name and email) or anyone above or beside you (ADR 0017).                           | Should   | Built     |
+| FR-26 | Salaries and birth dates are only shown to the person and the people above them, and filters can't be used to guess them.                                                         | Should   | Built     |
+| FR-27 | Admins make people below them admins, or turn their accounts off.                                                                                                                 | Should   | Built     |
+| FR-28 | Flag salaries more than 25% away from what the person's position usually earns, and suggest a range when adding someone, learning only from salaries the user can see (ADR 0019). | Could    | Built     |
 
 ## 5. Business rules
 

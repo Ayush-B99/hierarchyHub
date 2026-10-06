@@ -1,4 +1,5 @@
-import { canBeTheirManager } from '@hierarchy-hub/shared';
+import { usePayInsights } from '../insights/usePayInsights';
+import { canBeTheirManager, salaryRange } from '@hierarchy-hub/shared';
 import { useAuth } from '../auth/useAuth';
 import { descendantsOf, type Employee, latestBirthDate } from '@hierarchy-hub/shared';
 import {
@@ -13,7 +14,7 @@ import {
 import { Button } from '../../components/ui/Button';
 import { Dialog, DialogActions } from '../../components/ui/Dialog';
 import { api, ApiError } from '../../lib/api';
-import { fullName } from '../../lib/format';
+import { formatSalary, fullName } from '../../lib/format';
 import styles from './EmployeeFormDialog.module.css';
 import {
   changedFields,
@@ -68,6 +69,13 @@ export function EmployeeFormDialog({
   }, [employee, everyone]);
 
   const { me } = useAuth();
+  const pay = usePayInsights();
+  const range = pay.model
+    ? salaryRange(pay.model, employee ? (pay.teamSizes.get(employee.id) ?? 0) : 0)
+    : null;
+  const salaryHelp = range
+    ? `Similar positions here usually earn ${formatSalary(range.low)} to ${formatSalary(range.high)}`
+    : undefined;
   const byId = useMemo(() => new Map(everyone.map((e) => [e.id, e])), [everyone]);
   // editing yourself is only ever your name and email (adr 0017)
   const contactOnly = Boolean(employee && me && employee.id === me.employeeId);
@@ -288,12 +296,13 @@ export function EmployeeFormDialog({
               'salary',
               'Salary (R)',
               <input
-                {...inputProps('salary')}
+                {...inputProps('salary', Boolean(salaryHelp))}
                 type="number"
                 min="0"
                 step="0.01"
                 inputMode="decimal"
               />,
+              { help: salaryHelp },
             )}
             {field(
               'managerId',

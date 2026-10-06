@@ -37,6 +37,7 @@ Add, edit and delete employees, set reporting lines, explore the organisation in
 - **Sign in, with approval.** Anyone can ask for an account, and an admin above them approves it. Passwords are hashed with Argon2id, repeated wrong guesses lock the account, and sessions end the moment an account is turned off.
 - **Permissions that follow the organisation.** You can only change people below you, and about yourself only your name and email. Salaries and birth dates are private to the person and those above them.
 - **A history nobody can edit.** Every change, sign in and access change is recorded with who did it, when, and what it was before. Admins see the history of their own part of the organisation.
+- **A pay check.** A small regression learns what positions here usually earn, flags salaries out of line and suggests ranges, using only salaries you're allowed to see.
 - **Safe for teams.** If two people edit the same employee at once, the second save is stopped instead of quietly overwriting the first.
 - **Comfortable to use.** Light and dark mode, phone and tablet layouts, full keyboard and screen reader support, and respect for reduced motion settings.
 

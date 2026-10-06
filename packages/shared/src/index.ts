@@ -4,3 +4,4 @@ export * from './hierarchy/hierarchy';
 export * from './auth/auth';
 export * from './permissions/permissions';
 export * from './audit/audit';
+export * from './insights/payModel';
