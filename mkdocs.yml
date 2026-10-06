@@ -111,7 +111,9 @@ nav:
       - 0018 Audit trail: adr/0018-audit-trail.md
       - 0019 Pay check: adr/0019-pay-check.md
       - 0020 Time travel: adr/0020-time-travel.md
+      - 0021 Deploying to AWS: adr/0021-deployment.md
   - Design:
       - Brand guide: design/BRAND.md
       - Design: design/README.md
+  - Deploying: deploy/DEPLOY.md
   - Roadmap: planning/ROADMAP.md

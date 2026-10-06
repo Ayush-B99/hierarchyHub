@@ -80,7 +80,7 @@ A React web app talks to a NestJS API, which is the only part that touches the P
 | Web app  | React 19, Vite, React Router, TanStack Query, Three.js                     |
 | API      | NestJS, Zod, Prisma with node-postgres, Helmet, NestJS Throttler           |
 | Database | PostgreSQL 16, with constraints and a trigger guarding the hierarchy rules |
-| Hosting  | AWS: Amplify, ECS Fargate, CloudFront, RDS                                 |
+| Hosting  | AWS: CloudFront, S3, ECS Fargate, RDS, Secrets Manager, all as CDK code    |
 | Tooling  | pnpm workspaces, Turborepo, ESLint, Prettier, Husky, GitHub Actions        |
 | Testing  | Vitest, Jest, Testing Library, Supertest, MSW, axe                         |
 
@@ -111,6 +111,7 @@ hierarchyHub/
 │           ├── mocks/              Mock API, for automated tests and optional design work
 │           ├── pages/              Explore, People and not found
 │           └── styles/, theme/     Design tokens and light and dark themes
+├── infra/                          AWS setup as code (CDK), its tests, and the operations script
 ├── packages/
 │   ├── shared/                     Types, Zod schemas, hierarchy helpers and contract examples (@hierarchy-hub/shared)
 │   ├── tsconfig/                   Shared TypeScript settings
@@ -182,13 +183,14 @@ Every command is a shortcut for a pnpm script, so `pnpm dev`, `pnpm test` or `pn
 
 ## Testing
 
-| Suite                | What it covers                                                                                            | Tests |
-| -------------------- | --------------------------------------------------------------------------------------------------------- | ----- |
-| Web                  | Screens, forms, search, drag and drop, the orbit, clashes, accessibility, CSV export                      | 174   |
-| Shared               | Validation rules and hierarchy helpers                                                                    | 61    |
-| API unit             | Services, mappers, settings, error handling, version checks                                               | 37    |
-| Database integration | Constraints, the reporting loop trigger, clashing changes, against real PostgreSQL                        | 37    |
-| API end to end       | Every endpoint and rule over HTTP, every attack we tried, security, rate limits, speed with 10,000 people | 213   |
+| Suite                | What it covers                                                                                                    | Tests |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------- | ----- |
+| Web                  | Screens, forms, search, drag and drop, the orbit, clashes, accessibility, CSV export                              | 174   |
+| Shared               | Validation rules and hierarchy helpers                                                                            | 61    |
+| API unit             | Services, mappers, settings, error handling, version checks                                                       | 37    |
+| Database integration | Constraints, the reporting loop trigger, clashing changes, against real PostgreSQL                                | 37    |
+| API end to end       | Every endpoint and rule over HTTP, every attack we tried, security, rate limits, speed with 10,000 people         | 213   |
+| Infrastructure       | The AWS setup: no NAT gateway, private encrypted database, API only through CloudFront, secrets only where needed | 11    |
 
 Every pull request runs all of them in GitHub Actions, against a real PostgreSQL database, along with formatting, linting, type checks and the build.
 
@@ -202,6 +204,7 @@ Every pull request runs all of them in GitHub Actions, against a real PostgreSQL
 | [Requirements (SRS)](docs/srs/SRS.md)             | Use case diagrams, functional and non-functional requirements, what was built, and the checklist against the brief |
 | [Architecture (SAS)](docs/sas/SAS.md)             | Architecture and deployment diagrams, data model, request flows and the delivery pipeline                          |
 | [Decision records](docs/adr/README.md)            | One short record per major decision, with the options considered                                                   |
+| [Deploying](docs/deploy/DEPLOY.md)                | Setting up the live site on AWS, and turning it off                                                                |
 | [API contract](docs/api/API.md)                   | Every endpoint, with examples and error codes                                                                      |
 | [Brand guide](docs/design/BRAND.md)               | Logo, colours, typography, motion, and voice and tone                                                              |
 | [Design](docs/design/README.md)                   | The clay and glass visual direction and its building blocks                                                        |

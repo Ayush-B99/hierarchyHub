@@ -26,3 +26,4 @@ To add one, copy [template.md](template.md) and give it the next number.
 | [0018](0018-audit-trail.md)                      | An append only audit trail                                         | Accepted |
 | [0019](0019-pay-check.md)                        | A pay check that learns from the organisation                      | Accepted |
 | [0020](0020-time-travel.md)                      | Time travel through the organisation                               | Accepted |
+| [0021](0021-deployment.md)                       | Deploying to AWS on one address                                    | Accepted |

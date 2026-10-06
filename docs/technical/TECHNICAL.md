@@ -23,12 +23,12 @@ flowchart LR
     browser -->|"SHA-256 hash of the email"| grav["Gravatar"]
 ```
 
-| Part           | What it does                                                                                                                                                    | Where it runs (ADR 0004)                                           |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Web app        | The Explore page (org chart), the People page (table), the forms and search. Loads profile pictures straight from Gravatar.                                     | AWS Amplify Hosting, as static files over HTTPS                    |
-| API            | The only way to read or change data. Checks every request, applies the business rules and talks to the database.                                                | A Docker container on AWS ECS Fargate, behind CloudFront for HTTPS |
-| Database       | Stores employees. Each employee points to their manager. Constraints and a trigger enforce the key rules even if the code has a bug.                            | Amazon RDS for PostgreSQL, in a private network                    |
-| Shared package | Types, validation rules and hierarchy helpers used by both the web app and the API. Also holds the contract examples both sides are tested against (section 7). | Built into both, never deployed on its own                         |
+| Part           | What it does                                                                                                                                                    | Where it runs (ADR 0004, ADR 0021)                                        |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Web app        | The Explore page (org chart), the People page (table), the forms and search. Loads profile pictures straight from Gravatar.                                     | Amazon S3, served over HTTPS by CloudFront on the same address as the API |
+| API            | The only way to read or change data. Checks every request, applies the business rules and talks to the database.                                                | A Docker container on AWS ECS Fargate, behind CloudFront for HTTPS        |
+| Database       | Stores employees. Each employee points to their manager. Constraints and a trigger enforce the key rules even if the code has a bug.                            | Amazon RDS for PostgreSQL, in a private network                           |
+| Shared package | Types, validation rules and hierarchy helpers used by both the web app and the API. Also holds the contract examples both sides are tested against (section 7). | Built into both, never deployed on its own                                |
 
 Locally, the same API container and the same database setup scripts run through Docker, so development, CI and AWS all match. The live URL is added to the [README](../../README.md) and the [user guide](../user-guide/USER_GUIDE.md) once the deployment is complete.
 
@@ -38,7 +38,7 @@ Locally, the same API container and the same database setup scripts run through 
 flowchart LR
     browser(["Browser"])
     subgraph aws["AWS"]
-        amp["Amplify Hosting<br/>web app files"]
+        amp["S3 bucket<br/>web app files"]
         cf["CloudFront<br/>HTTPS for the API"]
         subgraph vpc["Private network (VPC)"]
             alb["Load balancer"]
@@ -94,7 +94,7 @@ The web app loads the whole organisation in one request and builds the tree in m
 | Database            | PostgreSQL 16                                      | Enforces relationships, uniqueness and checks. Recursive queries for the hierarchy. Fast sorting and filtering with indexes.                                                    |
 | Security            | Helmet, NestJS Throttler                           | Standard security headers and per-visitor rate limits (ADR 0013).                                                                                                               |
 | Profile pictures    | Gravatar                                           | Required by the brief. Pictures are looked up by a hash of the email, built in the browser (ADR 0006).                                                                          |
-| Hosting             | AWS: Amplify, ECS Fargate, CloudFront, RDS         | Managed services with HTTPS, a private database and no servers to patch, at a low monthly cost (ADR 0004).                                                                      |
+| Hosting             | AWS: CloudFront, S3, ECS Fargate, RDS, as CDK code | Managed services with HTTPS, a private database and no servers to patch, at a low monthly cost (ADR 0004, ADR 0021).                                                            |
 | Code organisation   | pnpm workspaces and Turborepo                      | One repository holding the web app, the API and the shared package. Builds and tests are cached, so only what changed is rebuilt (ADR 0001).                                    |
 | Testing             | Vitest, Jest, Testing Library, Supertest, MSW, axe | Unit, integration, end-to-end and accessibility tests (section 7).                                                                                                              |
 | Quality checks      | ESLint, Prettier, GitHub Actions, Dependabot       | Every pull request is checked for formatting, lint errors, type errors and failing tests, against a real database. Dependencies are kept up to date automatically.              |
@@ -121,7 +121,7 @@ The patterns are in two groups: architectural patterns that shape the whole solu
 | Provider and custom hooks         | Dialogs and toasts are React context providers. Behaviour like dragging and spinning the orbit lives in hooks (`useOrbitDrag`, `useOrbitSpin`) | Logic is reusable and testable apart from the markup.                                             |
 | URL as state                      | The selected person, view, filters, sort and page                                                                                              | Back button, bookmarks and shared links all just work.                                            |
 | Contract testing                  | Shared examples in `packages/shared/src/testing` run against both the mock API and the real API                                                | The mock used by frontend tests can't drift away from the real API.                               |
-| Infrastructure as code            | The AWS setup is described in code (ADR 0004)                                                                                                  | The cloud environment can be rebuilt or removed at any time.                                      |
+| Infrastructure as code            | The AWS setup is described in code (ADR 0004, ADR 0021)                                                                                        | The cloud environment can be rebuilt or removed at any time.                                      |
 
 ### 4.2 Gang of Four patterns
 
@@ -208,6 +208,7 @@ Everyone signs in (ADR 0016), and the API protects itself in several more ways (
 | API unit tests       | Services, mappers, settings, error handling, version checks, the seed guard                                | Jest                                       | 37    |
 | Database integration | Constraints, the loop trigger, clashing changes made at the same moment                                    | Jest against real PostgreSQL               | 37    |
 | API end to end       | Every endpoint and rule over HTTP, clashing saves, security headers, rate limits, speed with 10,000 people | Jest and Supertest against real PostgreSQL | 213   |
+| Infrastructure       | No NAT gateway, private encrypted database, API only through CloudFront, secrets only where needed         | Vitest and CDK assertions                  | 11    |
 
 All of these run on every pull request in GitHub Actions, together with formatting, linting, type checks and the build. The end-to-end tests can only ever run against a database whose name ends in `_test`.
 
