@@ -103,14 +103,3 @@ More detail in [ADR 0013](../adr/0013-api-security-layer.md).
 | Documentation website            | All the docs as a searchable site with diagrams, light and dark mode, published automatically from `main` ([ADR 0015](../adr/0015-docs-site.md)).                                                  |
 | Full specification set           | Requirements with use case diagrams ([SRS](../srs/SRS.md)), architecture and deployment diagrams ([SAS](../sas/SAS.md)), an [API contract](../api/API.md) and a [brand guide](../design/BRAND.md). |
 | Built in reviewed parts          | Each part was a branch and pull request of small commits ([roadmap](../planning/ROADMAP.md)).                                                                                                      |
-
-## Optional extras we chose not to build
-
-To be clear about scope, these optional ideas were considered and left out:
-
-| Idea                                    | Why not                                                                                                                        |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Picture upload (FR-16)                  | Gravatar already lets each employee manage their own picture, and storing uploads would add file storage and privacy concerns. |
-| Login and roles (FR-17)                 | Not required by the brief. The API protects itself with rate limits and strict checks instead.                                 |
-| Change history (FR-18)                  | Version numbers already prevent lost changes. A full audit trail would be the natural next step.                               |
-| Dashboard and CSV import (FR-19, FR-20) | Not needed to meet the brief. The table and CSV export cover reporting.                                                        |

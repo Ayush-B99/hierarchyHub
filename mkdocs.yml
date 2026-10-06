@@ -83,6 +83,7 @@ nav:
   - Deliverables:
       - User guide: user-guide/USER_GUIDE.md
       - Technical document: technical/TECHNICAL.md
+      - Highlights: highlights/HIGHLIGHTS.md
       - Beyond the brief: extras/EXTRAS.md
   - API contract: api/API.md
   - Security testing: security/ATTACKS.md

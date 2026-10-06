@@ -13,7 +13,7 @@ Add, edit and delete employees, set reporting lines, explore the organisation in
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL_16-4169E1?logo=postgresql&logoColor=white)
 ![AWS](https://img.shields.io/badge/AWS-232F3E?logo=amazonwebservices&logoColor=white)
 
-**Live app:** [d6atm0gw3zjf0.cloudfront.net](https://d6atm0gw3zjf0.cloudfront.net) &nbsp;&nbsp;|&nbsp;&nbsp; [User guide](docs/user-guide/USER_GUIDE.md) &nbsp;&nbsp;|&nbsp;&nbsp; [Technical document](docs/technical/TECHNICAL.md) &nbsp;&nbsp;|&nbsp;&nbsp; [Beyond the brief](docs/extras/EXTRAS.md)
+**Live app:** [d6atm0gw3zjf0.cloudfront.net](https://d6atm0gw3zjf0.cloudfront.net) &nbsp;&nbsp;|&nbsp;&nbsp; [User guide](docs/user-guide/USER_GUIDE.md) &nbsp;&nbsp;|&nbsp;&nbsp; [Technical document](docs/technical/TECHNICAL.md) &nbsp;&nbsp;|&nbsp;&nbsp; [Highlights](docs/highlights/HIGHLIGHTS.md) &nbsp;&nbsp;|&nbsp;&nbsp; [Beyond the brief](docs/extras/EXTRAS.md)
 
 **Docs site:** [ayush-b99.github.io/hierarchyHub](https://ayush-b99.github.io/hierarchyHub/)
 
@@ -206,6 +206,7 @@ Every pull request runs all of them in GitHub Actions, against a real PostgreSQL
 | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | [User guide](docs/user-guide/USER_GUIDE.md)       | How to use every feature, with screenshots                                                                         |
 | [Technical document](docs/technical/TECHNICAL.md) | Architecture, design patterns, technologies and why                                                                |
+| [Highlights](docs/highlights/HIGHLIGHTS.md)       | The strongest and most unique parts, in one page, with a five minute tour                                          |
 | [Beyond the brief](docs/extras/EXTRAS.md)         | Every extra feature and engineering choice beyond the brief, with where to see it                                  |
 | [Requirements (SRS)](docs/srs/SRS.md)             | Use case diagrams, functional and non-functional requirements, what was built, and the checklist against the brief |
 | [Architecture (SAS)](docs/sas/SAS.md)             | Architecture and deployment diagrams, data model, request flows and the delivery pipeline                          |
