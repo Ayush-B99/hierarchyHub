@@ -13,6 +13,7 @@ import { DatabaseModule } from './database/database.module';
 import { EmployeesModule } from './employees/employees.module';
 import { HealthModule } from './health/health.module';
 import { HierarchyModule } from './hierarchy/hierarchy.module';
+import { HistoryModule } from './history/history.module';
 
 const MINUTE = 60_000;
 const isRead = (method: string) => method === 'GET' || method === 'HEAD';
@@ -51,6 +52,7 @@ const methodOf = (context: { switchToHttp(): { getRequest<T>(): T } }) =>
     AuthModule,
     AccountsModule,
     EmployeesModule,
+    HistoryModule,
   ],
   providers: [
     // one place that shapes every error response, see common/all-exceptions.filter.ts

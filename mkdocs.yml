@@ -110,6 +110,7 @@ nav:
       - 0017 Permissions follow the hierarchy: adr/0017-permissions-follow-the-hierarchy.md
       - 0018 Audit trail: adr/0018-audit-trail.md
       - 0019 Pay check: adr/0019-pay-check.md
+      - 0020 Time travel: adr/0020-time-travel.md
   - Design:
       - Brand guide: design/BRAND.md
       - Design: design/README.md

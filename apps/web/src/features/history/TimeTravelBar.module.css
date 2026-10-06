@@ -1,0 +1,35 @@
+.bar {
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.slider {
+  flex: 1 1 260px;
+  display: flex;
+}
+
+.slider input {
+  width: 100%;
+  accent-color: var(--fill);
+}
+
+.when {
+  min-width: 120px;
+  font-weight: 800;
+}
+
+.what {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}

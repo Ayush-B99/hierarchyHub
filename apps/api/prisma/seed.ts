@@ -7,7 +7,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { parseEnv } from 'node:util';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { hash } from '@node-rs/argon2';
-import { PrismaClient } from '@prisma/client';
+import { sampleHistory } from '@hierarchy-hub/shared/testing';
+import { PrismaClient, type Prisma } from '@prisma/client';
 import { whyNotSafeToSeed } from '../src/database/seed-guard';
 import { SAMPLE_ACCOUNTS, SAMPLE_EMPLOYEES, SAMPLE_PASSWORD } from './seed-data';
 
@@ -51,6 +52,25 @@ async function main() {
       }),
     }),
   ]);
+  const seededHistory = await prisma.auditEvent.count({
+    where: { details: { path: ['seeded'], equals: true } },
+  });
+  if (seededHistory === 0) {
+    await prisma.auditEvent.createMany({
+      data: sampleHistory().map((event) => ({
+        at: event.at,
+        action: event.action,
+        actorEmployeeId: event.actor.employeeId,
+        actorName: event.actor.name,
+        subjectEmployeeId: event.subjectEmployeeId,
+        subjectName: event.subjectName,
+        scope: event.scope,
+        changes: event.changes as Prisma.InputJsonValue,
+        details: event.details as Prisma.InputJsonValue,
+      })),
+    });
+  }
+
   /* eslint-disable no-console -- this is a command line script, printing is the point */
   console.log(`Loaded ${SAMPLE_EMPLOYEES.length} sample employees into your local database.`);
   console.log(`\nSample accounts, all with the password "${SAMPLE_PASSWORD}":`);

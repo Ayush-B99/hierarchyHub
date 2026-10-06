@@ -1,3 +1,4 @@
+import { usePast } from '../history/useTimeTravel';
 import { PayNote } from '../insights/PayNote';
 import { usePayInsights } from '../insights/usePayInsights';
 import { Link } from 'react-router';
@@ -26,10 +27,12 @@ export function DetailsPanel({ person, org, onSelect }: DetailsPanelProps) {
   const pay = usePayInsights();
   const payFlag = pay.flags.get(person.id);
   const { me } = useAuth();
+  const past = usePast();
   // what you can do to this person depends on where they sit relative to you (adr 0017)
-  const can = me
-    ? permissionsFor(me, person.id, org.byId)
-    : { editContact: false, move: false, remove: false, seePrivate: false };
+  const can =
+    me && !past
+      ? permissionsFor(me, person.id, org.byId)
+      : { editContact: false, move: false, remove: false, seePrivate: false };
   // admins can open the history of anyone they can see in full: themselves and people below them
   const canSeeHistory = Boolean(me?.isAdmin && can.seePrivate);
   const manager = person.managerId ? org.byId.get(person.managerId) : undefined;
@@ -93,7 +96,7 @@ export function DetailsPanel({ person, org, onSelect }: DetailsPanelProps) {
           <dd>{person.email}</dd>
         </div>
       </dl>
-      {payFlag && pay.model && <PayNote flag={payFlag} trainedOn={pay.model.trainedOn} />}
+      {!past && payFlag && pay.model && <PayNote flag={payFlag} trainedOn={pay.model.trainedOn} />}
 
       <div>
         <h3>Works alongside</h3>

@@ -1,4 +1,12 @@
-import type { AuditAction, AuditEvent, AuditQuery, Employee, Me } from '@hierarchy-hub/shared';
+import type {
+  AuditAction,
+  AuditEvent,
+  AuditQuery,
+  Employee,
+  HistoryRow,
+  Me,
+} from '@hierarchy-hub/shared';
+import { sampleHistory } from '@hierarchy-hub/shared/testing';
 import { db } from './db';
 
 /** the mock api's audit trail, with the same rules as the real one (adr 0018) */
@@ -26,7 +34,32 @@ export const nameOf = (e: { firstName: string; lastName: string }) =>
 
 export const audit = {
   reset() {
-    rows = [];
+    rows = sampleHistory()
+      .map((event, i) => ({
+        id: `seeded-${i}`,
+        at: event.at.toISOString(),
+        action: event.action,
+        actor: event.actor,
+        subject: { employeeId: event.subjectEmployeeId, name: event.subjectName },
+        changes: event.changes,
+        details: event.details,
+        requestId: null,
+        scope: event.scope,
+      }))
+      .reverse();
+  },
+  employeeChanges(): HistoryRow[] {
+    return rows
+      .filter((row) => row.action.startsWith('employee.') && row.subject?.employeeId)
+      .map((row) => ({
+        id: row.id,
+        at: row.at,
+        action: row.action,
+        subjectEmployeeId: row.subject?.employeeId ?? null,
+        subjectName: row.subject?.name ?? null,
+        changes: row.changes,
+        details: row.details,
+      }));
   },
   record(event: {
     action: AuditAction;

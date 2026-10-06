@@ -24,7 +24,7 @@ describe('the audit page', () => {
     const router = await editRole(SEED_IDS.seniorEngineer, 'Lead Engineer');
     await router.navigate('/audit');
     const list = await screen.findByRole('list', { name: 'Events, newest first' });
-    expect(within(list).getByText('Thandi Nkosi changed Ruan Botha')).toBeInTheDocument();
+    expect(within(list).getAllByText('Thandi Nkosi changed Ruan Botha').length).toBeGreaterThan(0);
     expect(
       within(list).getByText('role from Senior Engineer to Lead Engineer'),
     ).toBeInTheDocument();
@@ -35,13 +35,18 @@ describe('the audit page', () => {
     await router.navigate(`/?person=${SEED_IDS.seniorEngineer}`);
     await userEvent.click(await screen.findByRole('link', { name: 'View history' }));
     expect(router.state.location.search).toBe(`?person=${SEED_IDS.seniorEngineer}`);
-    expect(await screen.findByText('Thandi Nkosi changed Ruan Botha')).toBeInTheDocument();
+    expect((await screen.findAllByText('Thandi Nkosi changed Ruan Botha')).length).toBeGreaterThan(
+      0,
+    );
   });
 
   it('filters by what happened', async () => {
     const router = await editRole(SEED_IDS.seniorEngineer, 'Lead Engineer');
     await router.navigate('/audit');
-    await userEvent.selectOptions(await screen.findByLabelText('What happened'), 'People deleted');
+    await userEvent.selectOptions(
+      await screen.findByLabelText('What happened'),
+      'Accounts approved',
+    );
     expect(await screen.findByText('Nothing has happened here yet.')).toBeInTheDocument();
   });
 

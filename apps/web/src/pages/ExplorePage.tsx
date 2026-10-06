@@ -1,3 +1,4 @@
+import { orgAt, type Employee } from '@hierarchy-hub/shared';
 import { useMemo } from 'react';
 import { ErrorState } from '../components/feedback/ErrorState';
 import { Panel } from '../components/ui/Panel';
@@ -9,6 +10,8 @@ import { LevelsView } from '../features/explore/LevelsView';
 import { OrbitView } from '../features/explore/OrbitView';
 import { buildOrgIndex } from '../features/explore/orgIndex';
 import { PathRail } from '../features/explore/PathRail';
+import { PastContext, useTimeTravel } from '../features/history/useTimeTravel';
+import { TimeTravelBar } from '../features/history/TimeTravelBar';
 import { useExploreParams } from '../features/explore/useExploreParams';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { fullName } from '../lib/format';
@@ -19,12 +22,26 @@ export function ExplorePage() {
   const { data, isPending, error, refetch } = useHierarchy();
   const { personId, view, selectPerson, setView } = useExploreParams();
 
-  const org = useMemo(() => (data ? buildOrgIndex(data) : null), [data]);
+  const travel = useTimeTravel();
+  const people = useMemo<Employee[] | undefined>(() => {
+    if (!data || !travel.at) return data;
+    return orgAt(data, travel.changes, travel.at).map((p) => ({
+      ...p,
+      salary: null,
+      birthDate: null,
+      version: 0,
+      createdAt: '',
+      updatedAt: '',
+    }));
+  }, [data, travel.at, travel.changes]);
+
+  const org = useMemo(() => (people ? buildOrgIndex(people) : null), [people]);
+  const past = travel.at;
 
   // whoever is in the url, or the top of the org if nobody is picked yet
   const fromUrl = personId ? org?.byId.get(personId) : undefined;
   const person = fromUrl ?? org?.roots[0];
-  const missing = Boolean(personId && org && !fromUrl);
+  const missing = Boolean(personId && org && !fromUrl && !past);
 
   useDocumentTitle(person ? `${fullName(person)} · Hierarchy Hub` : 'Explore · Hierarchy Hub');
 
@@ -41,7 +58,21 @@ export function ExplorePage() {
   }
 
   return (
-    <>
+    <PastContext.Provider value={past}>
+      <TimeTravelBar travel={travel} people={org.byId} />
+
+      {past && (
+        <Panel className={styles.notice} role="status">
+          You&apos;re looking at the organisation as it was on{' '}
+          {new Date(past).toLocaleDateString('en-ZA', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+          })}
+          . Changes are switched off until you go back to today.
+        </Panel>
+      )}
+
       {missing && (
         <Panel className={styles.notice} role="status">
           We couldn't find that person. They may have been deleted, so here's the top of the
@@ -67,6 +98,6 @@ export function ExplorePage() {
         )}
         <DetailsPanel person={person} org={org} onSelect={selectPerson} />
       </div>
-    </>
+    </PastContext.Provider>
   );
 }

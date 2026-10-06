@@ -229,6 +229,7 @@ These go beyond what the brief asked for. [Beyond the brief](../extras/EXTRAS.md
 | Permissions that follow the organisation, and private salaries   | Section 12                    |
 | A history of who changed what, that can't be edited              | Section 13                    |
 | A pay check that spots salaries out of line, and suggests ranges | Section 14                    |
+| Time travel: see and replay the organisation at any past moment  | Section 15                    |
 | Path to the top and "Works alongside"                            | Explore page, section 6       |
 | Drag a person onto a new manager                                 | Orbit view, section 4         |
 | Search from any page, with keyboard shortcuts                    | Top bar, section 6            |
@@ -314,3 +315,15 @@ Hierarchy Hub learns what people in your organisation are usually paid for their
 It learns from two things only: how many people are below someone, and whether they manage anyone. It can't know about seniority, skills or experience, so a flag is a prompt to take a look, not a verdict.
 
 It only ever learns from the salaries you're allowed to see (section 12), so it can't reveal anyone else's. It needs at least five salaries to learn from, so people who can only see their own salary don't see pay checks.
+
+## 15. Time travel
+
+The Explore page has a slider above the org chart. Drag it left to see the organisation as it was on an earlier day: people who have since joined disappear, people who have since left come back with their team, and everyone is back in the role and team they had then. The sentence under the slider says what changed at that moment, for example "Ruan Botha moved to Johan van der Merwe's team".
+
+- Select **Play history** to watch the organisation change, one step at a time, from the earliest moment to today.
+- Select **Back to today** to return.
+- The address bar keeps the moment, so you can share a link to the organisation as it was.
+
+While you're looking at the past, a note says which day it is, and editing, dragging and the pay check are switched off. Salaries aren't kept in the history, so the past shows people and teams only.
+
+History goes back to when Hierarchy Hub started recording changes.

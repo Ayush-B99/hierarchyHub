@@ -216,6 +216,7 @@ export class EmployeesService {
         if (!(await this.org.isBelow(viewer.employeeId, id, tx))) throw refused(OUT_OF_REACH);
         const before = toEmployee(row);
         const manager = await this.managerSnapshot(before.managerId, tx);
+        const teamRows = await tx.employee.findMany({ where: { managerId: id } });
         pending = {
           action: 'employee.deleted',
           actor: actorFrom(viewer),
@@ -228,7 +229,17 @@ export class EmployeesService {
           details: {
             employeeNumber: before.employeeNumber,
             teamMovedTo: manager,
-            team: (await tx.employee.findMany({ where: { managerId: id } })).map(nameOf),
+            team: teamRows.map(nameOf),
+            teamIds: teamRows.map((member) => member.id),
+            person: {
+              id,
+              firstName: before.firstName,
+              lastName: before.lastName,
+              email: before.email,
+              employeeNumber: before.employeeNumber,
+              role: before.role,
+              managerId: before.managerId,
+            },
           },
         };
       },

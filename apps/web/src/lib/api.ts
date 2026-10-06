@@ -4,6 +4,7 @@ import type {
   AuditQuery,
   ApiErrorBody,
   Me,
+  OrgChange,
   SignInInput,
   SignUpInput,
   UpdateAccountInput,
@@ -108,6 +109,7 @@ export const api = {
   rejectAccount: (id: string) => request<void>(`/accounts/${id}/reject`, { method: 'POST' }),
   updateAccount: (id: string, changes: UpdateAccountInput) =>
     request<AccountSummary>(`/accounts/${id}`, { method: 'PATCH', body: JSON.stringify(changes) }),
+  history: () => request<OrgChange[]>('/history'),
   audit: (query: Partial<AuditQuery>) =>
     request<Paginated<AuditEvent>>(`/audit${toQueryString(query)}`),
 };
