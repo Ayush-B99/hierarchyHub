@@ -7,19 +7,25 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { HierarchyHubStack } from '../lib/stack';
 
 let template: Template;
+let withGithub: Template;
 
-beforeAll(() => {
+const build = (githubDeploy: boolean) => {
   const webDist = mkdtempSync(join(tmpdir(), 'web-'));
   writeFileSync(join(webDist, 'index.html'), '<!doctype html>');
-  const app = new App();
-  const stack = new HierarchyHubStack(app, 'Test', {
-    env: { account: '123456789012', region: 'eu-west-1' },
+  const stack = new HierarchyHubStack(new App(), 'Test', {
+    env: { account: '123456789012', region: 'eu-north-1' },
     githubRepo: 'owner/repo',
+    githubDeploy,
     cloudfrontPrefixListId: 'pl-cloudfront',
     webDist,
   });
-  template = Template.fromStack(stack);
-});
+  return Template.fromStack(stack);
+};
+
+beforeAll(() => {
+  template = build(false);
+  withGithub = build(true);
+}, 120_000);
 
 const resources = (type: string) =>
   Object.values(template.findResources(type)) as {
@@ -131,8 +137,12 @@ describe('secrets go only where they’re needed', () => {
 });
 
 describe('github can deploy, and only from main', () => {
+  it('is off unless asked for, since some accounts forbid it', () => {
+    template.resourceCountIs('Custom::AWSCDKOpenIdConnectProvider', 0);
+  });
+
   it('trusts only the main branch and the production environment of this repo', () => {
-    template.hasResourceProperties('AWS::IAM::Role', {
+    withGithub.hasResourceProperties('AWS::IAM::Role', {
       AssumeRolePolicyDocument: Match.objectLike({
         Statement: [
           Match.objectLike({

@@ -28,6 +28,7 @@ const API_PORT = 3000;
 
 export interface HierarchyHubProps extends StackProps {
   githubRepo: string;
+  githubDeploy?: boolean;
   cloudfrontPrefixListId?: string;
   webDist?: string;
 }
@@ -221,46 +222,6 @@ export class HierarchyHubStack extends Stack {
       memoryLimit: 512,
     });
 
-    const github = new iam.OpenIdConnectProvider(this, 'GithubOidc', {
-      url: 'https://token.actions.githubusercontent.com',
-      clientIds: ['sts.amazonaws.com'],
-    });
-    const deployRole = new iam.Role(this, 'GithubDeploy', {
-      assumedBy: new iam.WebIdentityPrincipal(github.openIdConnectProviderArn, {
-        StringEquals: { 'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com' },
-        StringLike: {
-          'token.actions.githubusercontent.com:sub': [
-            `repo:${props.githubRepo}:ref:refs/heads/main`,
-            `repo:${props.githubRepo}:environment:production`,
-          ],
-        },
-      }),
-      maxSessionDuration: Duration.hours(1),
-    });
-    deployRole.addToPolicy(
-      new iam.PolicyStatement({
-        actions: ['sts:AssumeRole'],
-        resources: [`arn:${Aws.PARTITION}:iam::${Aws.ACCOUNT_ID}:role/cdk-*`],
-      }),
-    );
-    deployRole.addToPolicy(
-      new iam.PolicyStatement({
-        actions: [
-          'ecs:RunTask',
-          'ecs:DescribeTasks',
-          'cloudformation:DescribeStacks',
-          'logs:GetLogEvents',
-        ],
-        resources: ['*'],
-      }),
-    );
-    deployRole.addToPolicy(
-      new iam.PolicyStatement({
-        actions: ['iam:PassRole'],
-        resources: [opsTask.taskRole.roleArn, opsTask.obtainExecutionRole().roleArn],
-      }),
-    );
-
     const output = (name: string, value: string) => new CfnOutput(this, name, { value });
     output('SiteUrl', siteUrl);
     output('ClusterName', cluster.clusterName);
@@ -269,6 +230,48 @@ export class HierarchyHubStack extends Stack {
     output('PublicSubnets', vpc.publicSubnets.map((s) => s.subnetId).join(','));
     output('LogGroup', logGroup.logGroupName);
     output('SamplePasswordsSecret', samplePasswords.secretArn);
-    output('GithubDeployRole', deployRole.roleArn);
+
+    if (props.githubDeploy) {
+      const github = new iam.OpenIdConnectProvider(this, 'GithubOidc', {
+        url: 'https://token.actions.githubusercontent.com',
+        clientIds: ['sts.amazonaws.com'],
+      });
+      const deployRole = new iam.Role(this, 'GithubDeploy', {
+        assumedBy: new iam.WebIdentityPrincipal(github.openIdConnectProviderArn, {
+          StringEquals: { 'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com' },
+          StringLike: {
+            'token.actions.githubusercontent.com:sub': [
+              `repo:${props.githubRepo}:ref:refs/heads/main`,
+              `repo:${props.githubRepo}:environment:production`,
+            ],
+          },
+        }),
+        maxSessionDuration: Duration.hours(1),
+      });
+      deployRole.addToPolicy(
+        new iam.PolicyStatement({
+          actions: ['sts:AssumeRole'],
+          resources: [`arn:${Aws.PARTITION}:iam::${Aws.ACCOUNT_ID}:role/cdk-*`],
+        }),
+      );
+      deployRole.addToPolicy(
+        new iam.PolicyStatement({
+          actions: [
+            'ecs:RunTask',
+            'ecs:DescribeTasks',
+            'cloudformation:DescribeStacks',
+            'logs:GetLogEvents',
+          ],
+          resources: ['*'],
+        }),
+      );
+      deployRole.addToPolicy(
+        new iam.PolicyStatement({
+          actions: ['iam:PassRole'],
+          resources: [opsTask.taskRole.roleArn, opsTask.obtainExecutionRole().roleArn],
+        }),
+      );
+      output('GithubDeployRole', deployRole.roleArn);
+    }
   }
 }
