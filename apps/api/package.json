@@ -32,7 +32,7 @@
     "@nestjs/platform-express": "^11.1.0",
     "@nestjs/throttler": "^6.7.1",
     "@node-rs/argon2": "^2.2.1",
-    "@prisma/adapter-pg": "6.19.3",
+    "@prisma/adapter-pg": "7.10.0",
     "@prisma/client": "6.19.3",
     "helmet": "^8.3.0",
     "pg": "^8.23.1",
