@@ -10,7 +10,7 @@ catalog:
   eslint: ^9.39.5
   typescript: ~5.9.3
   vitest: ^3.2.7
-  zod: ^3.25.0
+  zod: ^4.6.5
 
 # install scripts we deliberately skip. msw only refreshes a file we already commit,
 # and prisma downloads its engines on first use instead of at install time
