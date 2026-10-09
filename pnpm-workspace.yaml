@@ -6,7 +6,7 @@ packages:
 # Catalog: one version of shared tooling for every package.
 # Packages reference these with "catalog:" instead of a version range.
 catalog:
-  '@types/node': ^22.20.5
+  '@types/node': ^26.6.4
   eslint: ^9.39.5
   typescript: ~5.9.3
   vitest: ^3.2.7
