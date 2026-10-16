@@ -31,7 +31,7 @@
     "@nestjs/core": "^11.1.0",
     "@nestjs/platform-express": "^11.1.0",
     "@nestjs/throttler": "^6.7.1",
-    "@node-rs/argon2": "^2.2.1",
+    "@node-rs/argon2": "^2.2.2",
     "@prisma/adapter-pg": "6.19.3",
     "@prisma/client": "6.19.3",
     "helmet": "^8.3.0",
@@ -41,7 +41,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@aws-sdk/client-secrets-manager": "^3.1146.0",
+    "@aws-sdk/client-secrets-manager": "^3.1150.0",
     "@hierarchy-hub/eslint-config": "workspace:*",
     "@hierarchy-hub/tsconfig": "workspace:*",
     "@nestjs/cli": "^11.0.0",
