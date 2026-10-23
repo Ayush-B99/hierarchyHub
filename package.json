@@ -25,8 +25,8 @@
   "devDependencies": {
     "husky": "^9.1.0",
     "lint-staged": "^16.0.0",
-    "prettier": "^3.5.0",
-    "turbo": "^2.5.0",
+    "prettier": "^3.9.10",
+    "turbo": "^2.11.9",
     "typescript": "catalog:"
   }
 }
